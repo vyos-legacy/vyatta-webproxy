@@ -1,0 +1,2 @@
+vyatta-webproxy: file-in-unusual-dir
+vyatta-webproxy: dir-or-file-in-opt

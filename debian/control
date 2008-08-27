@@ -1,0 +1,19 @@
+Source: vyatta-webproxy
+Section: contrib/net
+Priority: extra
+Maintainer: Stig Thormodsrud <stig@vyatta.com>
+Build-Depends: debhelper (>= 5), autotools-dev
+Standards-Version: 3.7.2
+
+Package: vyatta-webproxy
+Architecture: all
+Depends: perl,
+ vyatta-cfg,
+ vyatta-cfg-system,
+ vyatta-op,
+ squid3,
+ squid3-client,
+ squidguard
+Description: Vyatta commands for webproxy
+ Vyatta configuration/operational templates and scripts for the webproxy
+ system (squid & squidguard).

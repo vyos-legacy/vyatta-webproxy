@@ -1,0 +1,16 @@
+#!/bin/bash
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+sysconfdir=@sysconfdir@
+bindir=@bindir@
+sbindir=@sbindir@
+
+# don't start squid on boot
+update-rc.d -f squid3 remove >/dev/null
+
+# save a copy of default config files
+cp /etc/squid3/squid.conf /etc/squid3/squid.conf.bak
+mv /etc/squid/squidGuard.conf /etc/squid3
+rm -rf /etc/squid
+cp /etc/squid3/squidGuard.conf /etc/squid3/squidGuard.conf.bak

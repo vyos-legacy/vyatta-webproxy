@@ -1,0 +1,8 @@
+The Debian Package vyatta-webproxy
+---------------------------------
+
+This package has the Vyatta configuration/operational templates and scripts
+for the webproxy (squid and squid guard).
+
+ -- Stig Thormodsrud <stig@vyatta.com> Mon, 25 Aug 2008
+

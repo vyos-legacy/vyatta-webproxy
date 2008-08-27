@@ -1,0 +1,10 @@
+help: Configure webproxy services
+
+delete: touch /tmp/webproxy.$PPID
+
+end:    if [ -f "/tmp/webproxy.$PPID" ]; then
+          sudo /opt/vyatta/sbin/vyatta-update-webproxy.pl --stop;
+          rm /tmp/webproxy.$PPID;
+        else
+          sudo /opt/vyatta/sbin/vyatta-update-webproxy.pl --update;
+        fi;
