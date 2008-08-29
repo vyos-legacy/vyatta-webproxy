@@ -3,4 +3,5 @@ default: 100
 help: Set cache size in MB
 comp_help: possible completions:
   <int>    Set size of disk cache in MB (default 100)
+  0        Disable caching
 

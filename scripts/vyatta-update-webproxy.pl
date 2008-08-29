@@ -129,7 +129,13 @@ sub webproxy_get_values {
 
     my $cache_size = $config->returnValue("cache-size");
     $cache_size = 100 if ! defined $cache_size;
-    $output = "cache_dir $squid_def_fs $squid_cache_dir $cache_size 16 256\n\n";
+    if ($cache_size > 0) {
+	$output  = "cache_dir $squid_def_fs $squid_cache_dir ";
+        $output .= "$cache_size 16 256\n\n";
+    } else {
+	# disable caching
+	$output  = "cache_dir null /null\n\n";
+    }
 
     $config->setLevel("service webproxy listening-address");
     my %ipaddrs_status = $config->listNodeStatus();
