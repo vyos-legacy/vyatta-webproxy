@@ -1,0 +1,4 @@
+help: Show contents of webproxy access log
+run: sudo less $_vyatta_less_options    \
+	--prompt=".log, page %dt of %D" \
+	-- /var/log/squid3/access.log
