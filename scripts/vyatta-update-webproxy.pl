@@ -40,6 +40,11 @@ my $squid_init      = '/etc/init.d/squid3';
 my $squid_def_fs    = 'ufs';
 my $squid_def_port  = 3128;
 
+my %config_ipaddrs = ();
+
+
+sub numerically { $a <=> $b; }
+
 sub webproxy_restart {
     system("$squid_init restart");
 }
@@ -85,6 +90,35 @@ sub webproxy_get_constants {
     return $output;
 }
 
+sub webproxy_validate_conf {
+    my $config = new VyattaConfig;
+
+    #
+    # Need to validate the config before issuing any iptables 
+    # commands.
+    #
+    $config->setLevel("service webproxy");
+    my $cache_size = $config->returnValue("cache-size");
+    if (! defined $cache_size) {
+	print "Must define cache-size\n";
+	exit 1;
+    }
+
+    $config->setLevel("service webproxy listening-address");
+    my @ipaddrs = $config->listNodes();
+    if (scalar(@ipaddrs) <= 0) {
+	print "Must define at least 1 listening-address\n";
+	exit 1;
+    }
+
+    foreach my $ipaddr (@ipaddrs) {
+	if (!defined $config_ipaddrs{$ipaddr}) {
+	    print "listing-address [$ipaddr] is not a configured address\n";
+	    exit 1;
+	}
+    }
+}
+
 sub webproxy_get_values {
     my $output = '';
     my $config = new VyattaConfig;
@@ -94,26 +128,74 @@ sub webproxy_get_values {
     $def_port = $squid_def_port if ! defined $def_port;
 
     my $cache_size = $config->returnValue("cache-size");
-    if (! defined $cache_size) {
-	print "Must define cache-size\n";
-	exit 1;
-    }
+    $cache_size = 100 if ! defined $cache_size;
     $output = "cache_dir $squid_def_fs $squid_cache_dir $cache_size 16 256\n\n";
 
     $config->setLevel("service webproxy listening-address");
-    my @ipaddrs = $config->listNodes();
-    if (scalar(@ipaddrs) <= 0) {
-	print "Must define at least 1 listening-address\n";
-	exit 1;
-    }
+    my %ipaddrs_status = $config->listNodeStatus();
+    my @ipaddrs = sort numerically keys %ipaddrs_status;
     foreach my $ipaddr (@ipaddrs) {
-	my $port = $config->returnValue("$ipaddr port");	
-	$port = $def_port if ! defined $port;	
+	my $status = $ipaddrs_status{$ipaddr};
+	#print "$ipaddr = [$status]\n";
+
+	my $o_port = $config->returnOrigValue("$ipaddr port");	
+	my $n_port = $config->returnValue("$ipaddr port");	
+	$o_port = $def_port if ! defined $o_port;	
+	$n_port = $def_port if ! defined $n_port;	
+
+	my $o_dt = $config->existsOrig("$ipaddr disable-transparent");
+	my $n_dt = $config->exists("$ipaddr disable-transparent");
 	my $transparent = "transparent";
-	if ($config->exists("$ipaddr disable-transparent")) {
-	    $transparent = "";
+	$transparent = "" if $n_dt;
+	$output .= "http_port $ipaddr:$n_port $transparent\n";
+
+	my $intf = $config_ipaddrs{$ipaddr};
+
+	#
+	# handle NAT rule for transparent
+	#
+        my $A_or_D = undef;
+	if ($status eq "added" and !defined $n_dt) {
+	    $A_or_D = 'A';
+	} elsif ($status eq "deleted") {
+	    $A_or_D = 'D';
+	} elsif ($status eq "changed") {
+	    $o_dt = 0 if !defined $o_dt;
+	    $n_dt = 0 if !defined $n_dt;
+	    if ($o_dt ne $n_dt) {
+		if ($n_dt) {
+		    $A_or_D = 'D';
+		} else {
+		    $A_or_D = 'A';
+		}
+	    }
+	    #
+	    #handle port # change
+	    #
+	    if ($o_port ne $n_port and !$o_dt) {
+		my $cmd = "sudo iptables -t nat -D PREROUTING -i $intf ";
+		$cmd   .= "-p tcp --dport 80 -j REDIRECT --to-port $o_port";
+		#print "[$cmd]\n";
+		my $rc = system($cmd);
+		if ($rc) {
+		    print "Error adding port redirect [$!]\n";
+		}		
+		if (!$n_dt) {
+		    $A_or_D = 'A';		    
+	        } else {
+		    $A_or_D = undef;
+		}
+	    }
 	}
-	$output .= "http_port $ipaddr:$port $transparent\n";
+	if (defined $A_or_D) {
+	    my $cmd = "sudo iptables -t nat -$A_or_D PREROUTING -i $intf ";
+	    $cmd   .= "-p tcp --dport 80 -j REDIRECT --to-port $n_port";
+	    #print "[$cmd]\n";
+	    my $rc = system($cmd);
+	    if ($rc) {
+		print "Error adding port redirect [$!]\n";
+	    }
+	} 
     }
 
     return $output;
@@ -128,7 +210,6 @@ sub webproxy_write_file {
 }
 
 
-
 #
 # main
 #
@@ -138,9 +219,21 @@ my $stop_webproxy;
 GetOptions("update!" => \$update_webproxy,
            "stop!"   => \$stop_webproxy);
 
+#
+# make a hash of ipaddrs => interface
+#
+my @lines = `ip addr show | grep 'inet '`;
+chomp @lines;
+foreach my $line (@lines) {
+    if ($line =~ /inet\s+([0-9.]+)\/.*\s(\w+)$/) {
+	$config_ipaddrs{$1} = $2;
+    }
+}
+
 if (defined $update_webproxy) { 
     my $config;
 
+    webproxy_validate_conf();
     $config  = webproxy_get_constants();
     $config .= webproxy_get_values();
     webproxy_write_file($config);
@@ -148,6 +241,7 @@ if (defined $update_webproxy) {
 }
 
 if (defined $stop_webproxy) {
+    webproxy_get_values();
     webproxy_stop();
 }
 
