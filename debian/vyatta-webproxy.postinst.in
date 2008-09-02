@@ -11,6 +11,10 @@ update-rc.d -f squid3 remove >/dev/null
 
 # save a copy of default config files
 cp /etc/squid3/squid.conf /etc/squid3/squid.conf.bak
-mv /etc/squid/squidGuard.conf /etc/squid3
-rm -rf /etc/squid
-cp /etc/squid3/squidGuard.conf /etc/squid3/squidGuard.conf.bak
+cp /etc/squid/squidGuard.conf /etc/squid/squidGuard.conf.bak
+sed -i 's/etc\/init.d\/squid/etc\/init.d\/squid3/' /usr/sbin/update-squidguard 
+sed -i 's/reload/restart/' /usr/sbin/update-squidguard
+chown proxy:proxy /var/log/squid
+gunzip /usr/share/doc/squidguard/examples/squidGuard.cgi.gz
+mv /usr/share/doc/squidguard/examples/squidGuard.cgi /usr/lib/cgi-bin
+chmod 755 /usr/lib/cgi-bin/squidGuard.cgi

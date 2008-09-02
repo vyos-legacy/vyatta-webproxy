@@ -1,0 +1,18 @@
+#!/bin/bash
+if [ "$(id -u)" != "0" ]; then
+   echo "This script must be run as root" 1>&2
+   exit 1
+fi
+
+cd /var/lib/squidguard/
+echo Downloading blacklists
+wget http://squidguard.mesd.k12.or.us/blacklists.tgz
+echo Uncompressing blacklists
+tar -zxvf blacklists.tgz 
+mv blacklists/* db
+rm -rf blacklists.tgz
+rm -rf blacklists
+cd -
+/usr/sbin/update-squidguard
+exit 0
+

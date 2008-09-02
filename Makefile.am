@@ -4,6 +4,7 @@ share_perl5dir	 = $(datarootdir)/perl5
 #cron_hourlydir = /etc/cron.hourly
 
 sbin_SCRIPTS  = scripts/vyatta-update-webproxy.pl
+sbin_SCRIPTS += scripts/install-blacklist
 
 
 #cron_hourly_SCRIPTS = scripts/vyatta-webproxy-update
