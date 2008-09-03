@@ -212,7 +212,7 @@ sub squid_get_values {
     #
     # check if squidguard is configured
     #
-    $config->setLevel("service webproxy");
+    $config->setLevel("service webproxy url-filtering");
     if ($config->exists("squidguard")) {
 	$squidguard_enabled = 1;
 	$output .= "redirect_program /usr/bin/squidGuard -c $squidguard_conf\n";
@@ -251,20 +251,22 @@ sub squidguard_get_blacklists {
     return @blacklists;
 }
 
-sub squidguard_get_blacklist_domains_urls {
+sub squidguard_get_blacklist_domains_urls_exps {
     my ($list) = shift;
-    
-    my ($domains, $urls) = undef;
-    $domains = "$list/domains" if -f "$squidguard_blacklist_db/$list/domains";
-    $urls    = "$list/urls"    if -f "$squidguard_blacklist_db/$list/urls";
-    return ($domains, $urls);
+
+    my $dir = $squidguard_blacklist_db;
+    my ($domains, $urls, $exps) = undef;
+    $domains = "$list/domains"     if -f "$dir/$list/domains";
+    $urls    = "$list/urls"        if -f "$dir/$list/urls";
+    $exps    = "$list/expressions" if -f "$dir/$list/expressions";
+    return ($domains, $urls, $exps);
 }
 
 sub squidguard_get_values {
     my $output = "";
     my $config = new VyattaConfig;
 
-    $config->setLevel("service webproxy squidguard block-site");
+    $config->setLevel("service webproxy url-filtering squidguard block-site");
     my @block_sites = $config->returnValues();
 
     my @blacklists   = squidguard_get_blacklists($squidguard_blacklist_db);
@@ -287,7 +289,8 @@ sub squidguard_get_values {
 	    print "Unknown blacklist category [$site]\n";
 	    exit 1;
 	}
-	my ($domains, $urls) = squidguard_get_blacklist_domains_urls($site);
+	my ($domains, $urls, $exps) = 
+	    squidguard_get_blacklist_domains_urls_exps($site);
 	$output    .= "dest $site {\n";
 	$output    .= "\tdomainlist $domains\n" if defined $domains;
 	$output    .= "\turllist    $urls\n"    if defined $urls;
@@ -299,7 +302,7 @@ sub squidguard_get_values {
     $output .= "\tdefault {\n";
     $output .= "\t\tpass !in-addr $acl_block all\n";
 
-    $config->setLevel("service webproxy squidguard");
+    $config->setLevel("service webproxy url-filtering squidguard");
     my $redirect_url = $config->returnValue("redirect-url");
     $redirect_url = $squidguard_redirect_def if ! defined $redirect_url;
 
