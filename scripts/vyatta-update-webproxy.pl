@@ -39,11 +39,12 @@ my $squid_init      = '/etc/init.d/squid3';
 my $squid_def_fs    = 'ufs';
 my $squid_def_port  = 3128;
 
-my $squidguard_conf         = '/etc/squid/squidGuard.conf';
-my $squidguard_log          = '/var/log/squid';
-my $squidguard_blacklist_db = '/var/lib/squidguard/db';
-my $squidguard_redirect_def = "http://www.google.com";
-my $squidguard_enabled      = 0;
+my $squidguard_conf          = '/etc/squid/squidGuard.conf';
+my $squidguard_log           = '/var/log/squid';
+my $squidguard_blacklist_log = "$squidguard_log/blacklist.log";
+my $squidguard_blacklist_db  = '/var/lib/squidguard/db';
+my $squidguard_redirect_def  = "http://www.google.com";
+my $squidguard_enabled       = 0;
 
 my %config_ipaddrs = ();
 
@@ -269,6 +270,10 @@ sub squidguard_get_values {
     $config->setLevel("service webproxy url-filtering squidguard block-site");
     my @block_sites = $config->returnValues();
 
+    $config->setLevel("service webproxy url-filtering squidguard log");
+    my @log_category = $config->returnValues();
+    my %is_logged = map { $_ => 1 } @log_category;    
+
     my @blacklists   = squidguard_get_blacklists($squidguard_blacklist_db);
     my %is_blacklist = map { $_ => 1 } @blacklists;
 
@@ -292,9 +297,13 @@ sub squidguard_get_values {
 	my ($domains, $urls, $exps) = 
 	    squidguard_get_blacklist_domains_urls_exps($site);
 	$output    .= "dest $site {\n";
-	$output    .= "\tdomainlist $domains\n" if defined $domains;
-	$output    .= "\turllist    $urls\n"    if defined $urls;
-	$output    .= "\tlog        $site.log\n}\n\n";
+	$output    .= "\tdomainlist     $domains\n" if defined $domains;
+	$output    .= "\turllist        $urls\n"    if defined $urls;
+	$output    .= "\texpressionlist $exps\n"    if defined $exps;
+	if (defined $is_logged{all} or defined $is_logged{$site}) {
+	    $output    .= "\tlog            $squidguard_blacklist_log\n";
+	}
+	$output    .= "}\n\n";
 	$acl_block .= "!$site ";
     }
 
