@@ -1,0 +1,3 @@
+multi:
+type: txt
+help: Set a blacklist category to allow

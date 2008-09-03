@@ -267,10 +267,15 @@ sub squidguard_get_values {
     my $output = "";
     my $config = new VyattaConfig;
 
-    $config->setLevel("service webproxy url-filtering squidguard block-site");
+    my $path = "service webproxy url-filtering squidguard";
+ 
+   $config->setLevel("$path block-site");
     my @block_sites = $config->returnValues();
 
-    $config->setLevel("service webproxy url-filtering squidguard log");
+    $config->setLevel("$path allow-category");
+    my @allow_category = $config->returnValues();
+
+    $config->setLevel("$path log");
     my @log_category = $config->returnValues();
     my %is_logged = map { $_ => 1 } @log_category;    
 
@@ -288,6 +293,24 @@ sub squidguard_get_values {
 	@block_sites = @blacklists;
     }
 
+    my $ok = "";
+    if (scalar(@allow_category > 0)) {
+	$output .= "dest ok {\n";
+	foreach my $allow (@allow_category) {
+	    if (! defined $is_blacklist{$allow}) {
+		print "Unknown blacklist category [$allow]\n";
+		exit 1;
+	    }
+	    my ($domains, $urls, $exps) = 
+		squidguard_get_blacklist_domains_urls_exps($allow);
+	    $output    .= "\tdomainlist     $domains\n" if defined $domains;
+	    $output    .= "\turllist        $urls\n"    if defined $urls;
+	    $output    .= "\texpressionlist $exps\n"    if defined $exps;
+	}
+	$output .= "}\n\n";
+	$ok = "ok";
+    }
+    
     my $acl_block = "";
     foreach my $site (@block_sites) {
 	if (! defined $is_blacklist{$site}) {
@@ -309,9 +332,9 @@ sub squidguard_get_values {
 
     $output .= "acl {\n";
     $output .= "\tdefault {\n";
-    $output .= "\t\tpass !in-addr $acl_block all\n";
+    $output .= "\t\tpass $ok !in-addr $acl_block all\n";
 
-    $config->setLevel("service webproxy url-filtering squidguard");
+    $config->setLevel($path);
     my $redirect_url = $config->returnValue("redirect-url");
     $redirect_url = $squidguard_redirect_def if ! defined $redirect_url;
 
