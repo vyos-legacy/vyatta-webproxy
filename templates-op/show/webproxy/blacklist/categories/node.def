@@ -1,0 +1,3 @@
+help: Show webproxy blacklist categories
+run:  sudo /opt/vyatta/bin/sudo-users/vyatta-show-webproxy.pl --action="show-blacklists" | less
+

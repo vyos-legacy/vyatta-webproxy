@@ -28,6 +28,7 @@ use POSIX;
 
 use lib "/opt/vyatta/share/perl5/";
 use VyattaConfig;
+use VyattaWebproxy;
 
 use warnings;
 use strict;
@@ -42,7 +43,7 @@ my $squid_def_port  = 3128;
 my $squidguard_conf          = '/etc/squid/squidGuard.conf';
 my $squidguard_log           = '/var/log/squid';
 my $squidguard_blacklist_log = "$squidguard_log/blacklist.log";
-my $squidguard_blacklist_db  = '/var/lib/squidguard/db';
+
 my $squidguard_redirect_def  = "http://www.google.com";
 my $squidguard_enabled       = 0;
 
@@ -234,34 +235,6 @@ sub squidguard_get_constants {
     return $output;
 }
 
-sub squidguard_get_blacklists {
-    my ($dir) = shift;
-
-    my @blacklists = ();
-    opendir(DIR, $dir) || die "can't opendir $dir: $!";
-    my @dirs = readdir(DIR);
-    closedir DIR;
-
-    foreach my $file (@dirs) {
-	next if $file eq '.';
-	next if $file eq '..';
-	if (-d "$dir/$file") {
-	    push @blacklists, $file;
-	}
-    }
-    return @blacklists;
-}
-
-sub squidguard_get_blacklist_domains_urls_exps {
-    my ($list) = shift;
-
-    my $dir = $squidguard_blacklist_db;
-    my ($domains, $urls, $exps) = undef;
-    $domains = "$list/domains"     if -f "$dir/$list/domains";
-    $urls    = "$list/urls"        if -f "$dir/$list/urls";
-    $exps    = "$list/expressions" if -f "$dir/$list/expressions";
-    return ($domains, $urls, $exps);
-}
 
 sub squidguard_get_values {
     my $output = "";
@@ -277,9 +250,9 @@ sub squidguard_get_values {
 
     $config->setLevel("$path log");
     my @log_category = $config->returnValues();
-    my %is_logged = map { $_ => 1 } @log_category;    
+    my %is_logged    = map { $_ => 1 } @log_category;    
 
-    my @blacklists   = squidguard_get_blacklists($squidguard_blacklist_db);
+    my @blacklists   = VyattaWebproxy::squidguard_get_blacklists();
     my %is_blacklist = map { $_ => 1 } @blacklists;
 
     if (scalar(@block_sites) <= 0) {
@@ -302,7 +275,8 @@ sub squidguard_get_values {
 		exit 1;
 	    }
 	    my ($domains, $urls, $exps) = 
-		squidguard_get_blacklist_domains_urls_exps($allow);
+		VyattaWebproxy::squidguard_get_blacklist_domains_urls_exps(
+		    $allow);
 	    $output    .= "\tdomainlist     $domains\n" if defined $domains;
 	    $output    .= "\turllist        $urls\n"    if defined $urls;
 	    $output    .= "\texpressionlist $exps\n"    if defined $exps;
@@ -318,7 +292,7 @@ sub squidguard_get_values {
 	    exit 1;
 	}
 	my ($domains, $urls, $exps) = 
-	    squidguard_get_blacklist_domains_urls_exps($site);
+	    VyattaWebproxy::squidguard_get_blacklist_domains_urls_exps($site);
 	$output    .= "dest $site {\n";
 	$output    .= "\tdomainlist     $domains\n" if defined $domains;
 	$output    .= "\turllist        $urls\n"    if defined $urls;

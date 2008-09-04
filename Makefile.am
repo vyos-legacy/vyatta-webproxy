@@ -1,15 +1,14 @@
-cfgdir		 = $(datadir)/vyatta-cfg/templates
-opdir		 = $(datadir)/vyatta-op/templates
-share_perl5dir	 = $(datarootdir)/perl5
-#cron_hourlydir = /etc/cron.hourly
+cfgdir		  = $(datadir)/vyatta-cfg/templates
+opdir		  = $(datadir)/vyatta-op/templates
+share_perl5dir	  = $(datarootdir)/perl5
+bin_sudo_usersdir = $(bindir)/sudo-users
 
 sbin_SCRIPTS  = scripts/vyatta-update-webproxy.pl
 sbin_SCRIPTS += scripts/install-blacklist
 
+bin_sudo_users_SCRIPTS = scripts/vyatta-show-webproxy.pl
 
-#cron_hourly_SCRIPTS = scripts/vyatta-webproxy-update
-
-#share_perl5_DATA  = scripts/VyattaWebproxyConfig.pm
+share_perl5_DATA  = scripts/VyattaWebproxy.pm
 
 cpiop = find  . ! -regex '\(.*~\|.*\.bak\|.*\.swp\|.*\#.*\#\)' -print0 | \
   cpio -0pd
