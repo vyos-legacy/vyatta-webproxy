@@ -1,0 +1,4 @@
+help: Show webproxy blacklist urls for a given category
+run:  sudo /opt/vyatta/bin/sudo-users/vyatta-show-webproxy.pl --action="show-blacklist-urls" --category="$5" | less
+allowed: sudo /opt/vyatta/bin/sudo-users/vyatta-show-webproxy.pl --action="show-blacklists"
+

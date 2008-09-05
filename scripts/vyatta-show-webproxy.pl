@@ -44,16 +44,48 @@ sub squidguard_show_blacklists {
     foreach my $list (@lists) {
 	print "$list\n";
     }
-    exit 0;
+}
+
+sub squidguard_show_blacklist_domains_urls {
+    my ($type, $category, $searchtext) = @_;
+
+    my @files = VyattaWebproxy::squidguard_get_blacklist_files($type, 
+							       $category);
+    foreach my $file (@files) {
+	if (-r $file) {
+	    open(my $FILE, "<", $file) or die "Error: read $!";
+	    my @lines = <$FILE>;
+	    close($FILE);
+	    @lines = sort(@lines);
+	    if (defined $searchtext) {
+		@lines = grep /$searchtext/i, @lines;
+		foreach my $line (@lines) {
+		    $file =~ /^\/var\/lib\/squidguard\/db\/(.*)$/;
+		    print "$1     $line";
+		}
+	    } else {
+		print @lines;
+	    }
+	}
+    }
+}
+
+sub squidguard_search_blacklist {
+    my $searchtext = shift;
+
+    squidguard_show_blacklist_domains_urls('domains', undef, $searchtext);
+    squidguard_show_blacklist_domains_urls('urls',    undef, $searchtext);
 }
 
 
 #
 # main
 #
-my $action;
+my ($action, $category, $searchtext) = undef;
 
-GetOptions("action=s" => \$action,
+GetOptions("action=s"     => \$action,
+	   "category=s"   => \$category,
+	   "searchtext=s" => \$searchtext,
 );
 
 if (! defined $action) {
@@ -63,6 +95,26 @@ if (! defined $action) {
 
 if ($action eq "show-blacklists") {
     squidguard_show_blacklists();
+    exit 0;
 }
+
+if ($action eq "show-blacklist-domains") {
+    squidguard_show_blacklist_domains_urls('domains', $category);
+    exit 0;
+}
+
+if ($action eq "show-blacklist-urls") {
+    squidguard_show_blacklist_domains_urls('urls', $category);
+    exit 0;
+}
+
+if ($action eq "search-blacklist") {
+    squidguard_search_blacklist($searchtext);
+    exit 0;
+}
+
+
+print "Unknown action [$action]\n";
+exit 1;
 
 # end of file

@@ -55,4 +55,33 @@ sub squidguard_get_blacklist_domains_urls_exps {
     return ($domains, $urls, $exps);
 }
 
+sub squidguard_get_blacklist_files {
+    my ($type, $category) = @_;
+
+    my @lists = squidguard_get_blacklists();
+    
+    my @files = ();
+    foreach my $list (@lists) {
+	my ($domain, $url, $exp) = squidguard_get_blacklist_domains_urls_exps(
+	    $list);
+	if ($type eq "domains") {
+	    if (defined $category) {
+		next if $domain ne "$category/domains";
+	    }
+	    $domain = "$squidguard_blacklist_db/$domain";
+	    push @files, $domain if defined $domain;	    
+	}
+	if ($type eq "urls") {
+	    if (defined $category) {
+		next if $url ne "$category/urls";
+	    }
+	    $url = "$squidguard_blacklist_db/$url";
+	    push @files, $url if defined $url;	    
+	}
+
+    }
+    @files = sort(@files);
+    return @files;
+}
+
 1;
