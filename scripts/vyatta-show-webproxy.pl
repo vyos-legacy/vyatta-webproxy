@@ -113,7 +113,6 @@ if ($action eq "search-blacklist") {
     exit 0;
 }
 
-
 print "Unknown action [$action]\n";
 exit 1;
 

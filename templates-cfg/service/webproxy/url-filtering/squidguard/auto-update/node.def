@@ -1,2 +1,5 @@
 type: u32
 help: Set the update interval
+syntax:expression: ($VAR(@) >= 0 && $VAR(@) <= 100) ; "must between 0-100 days"
+comp_help: possible completions:
+   <0-100>    Set the update interval in days

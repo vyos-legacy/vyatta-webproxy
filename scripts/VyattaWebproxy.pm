@@ -25,6 +25,10 @@ package VyattaWebproxy;
 
 my $squidguard_blacklist_db  = '/var/lib/squidguard/db';
 
+sub squidguard_get_blacklist_dir {
+    return $squidguard_blacklist_db;
+}
+
 sub squidguard_get_blacklists {
     my $dir = $squidguard_blacklist_db;
 

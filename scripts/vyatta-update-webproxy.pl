@@ -235,6 +235,25 @@ sub squidguard_get_constants {
     return $output;
 }
 
+sub squidguard_generate_block_site {
+    my @block_sites = @_;
+
+    my $db_dir = VyattaWebproxy::squidguard_get_blacklist_dir();
+    my $block_site = 'block-site';
+    my $dir = "$db_dir/$block_site";
+
+    if (scalar(@block_sites) <= 0) {
+	system("rm -rf $dir") if -d $dir;
+	return undef;
+    }
+
+    system("mkdir $dir") if ! -d $dir;
+    my $file = "$dir/domains";
+    open(my $FD, ">", $file) or die "unable to open $file $!";
+    print $FD join("\n", @block_sites), "\n";
+    close $FD;
+    return $block_site;
+}
 
 sub squidguard_get_values {
     my $output = "";
@@ -242,8 +261,9 @@ sub squidguard_get_values {
 
     my $path = "service webproxy url-filtering squidguard";
  
-   $config->setLevel("$path block-site");
+    $config->setLevel("$path block-site");
     my @block_sites = $config->returnValues();
+    squidguard_generate_block_site(@block_sites);
 
     $config->setLevel("$path allow-category");
     my @allow_category = $config->returnValues();
@@ -252,18 +272,10 @@ sub squidguard_get_values {
     my @log_category = $config->returnValues();
     my %is_logged    = map { $_ => 1 } @log_category;    
 
-    my @blacklists   = VyattaWebproxy::squidguard_get_blacklists();
+    my @blacklists = VyattaWebproxy::squidguard_get_blacklists();
     my %is_blacklist = map { $_ => 1 } @blacklists;
-
-    if (scalar(@block_sites) <= 0) {
-	#
-	# add all blacklist categories
-	#
-	if (scalar(@blacklists) <= 0) {
-	    print "No blacklists found\n";
-	    exit 1;
-	}
-	@block_sites = @blacklists;
+    if (scalar(@blacklists) <= 0) {
+	print "Warning: no blacklists installed\n";
     }
 
     my $ok = "";
@@ -286,22 +298,23 @@ sub squidguard_get_values {
     }
     
     my $acl_block = "";
-    foreach my $site (@block_sites) {
-	if (! defined $is_blacklist{$site}) {
-	    print "Unknown blacklist category [$site]\n";
+    foreach my $category (@blacklists) {
+	if (! defined $is_blacklist{$category}) {
+	    print "Unknown blacklist category [$category]\n";
 	    exit 1;
 	}
-	my ($domains, $urls, $exps) = 
-	    VyattaWebproxy::squidguard_get_blacklist_domains_urls_exps($site);
-	$output    .= "dest $site {\n";
+	my ($domains, $urls, $exps) =
+	    VyattaWebproxy::squidguard_get_blacklist_domains_urls_exps(
+		$category);
+	$output    .= "dest $category {\n";
 	$output    .= "\tdomainlist     $domains\n" if defined $domains;
 	$output    .= "\turllist        $urls\n"    if defined $urls;
 	$output    .= "\texpressionlist $exps\n"    if defined $exps;
-	if (defined $is_logged{all} or defined $is_logged{$site}) {
+	if (defined $is_logged{all} or defined $is_logged{$category}) {
 	    $output    .= "\tlog            $squidguard_blacklist_log\n";
 	}
 	$output    .= "}\n\n";
-	$acl_block .= "!$site ";
+	$acl_block .= "!$category ";
     }
 
     $output .= "acl {\n";
