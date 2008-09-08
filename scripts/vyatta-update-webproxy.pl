@@ -330,6 +330,58 @@ sub squidguard_get_values {
     return $output;
 }
 
+sub squidguard_update_blacklist {
+    my @blacklists = VyattaWebproxy::squidguard_get_blacklists();
+
+    if (scalar(@blacklists) <= 0) {
+	print "No blacklists installed\n";
+	exit 1;
+    }
+    my $db_dir = VyattaWebproxy::squidguard_get_blacklist_dir();
+    system("chown -R proxy.proxy $db_dir > /dev/null 2>&1");
+    system("chmod 2770 $db_dir >/dev/null 2>&1");
+
+    #
+    # generate temporary config
+    #
+    my $tmp_conf = "/tmp/sg.conf.$$";
+    foreach my $category (@blacklists) {
+	my $output;
+	$output  = "dbhome $db_dir\n";
+	$output .= "dest block {\n";
+	my ($domains, $urls, $exps) =
+	    VyattaWebproxy::squidguard_get_blacklist_domains_urls_exps(
+		$category);
+	$output .= "\tdomainlist     $domains\n" if defined $domains;
+	$output .= "\turllist        $urls\n"    if defined $urls;
+	$output .= "\texpressionlist $exps\n"    if defined $exps;
+	$output .= "}\n\n";
+	webproxy_write_file($tmp_conf, $output);
+    
+	foreach my $type ("domains", "urls") {
+	    my $path = "$category/$type";
+	    my $file = "$db_dir/$path";
+	    if (-e $file) {
+		my $file_db = "$file.db";
+		if (! -e $file_db) {
+		    #
+		    # it appears that there is a bug in squidGuard that if
+		    # the db file doesn't exist then running with -C leaves
+		    # huge tmp files in /var/tmp.
+		    #
+		    system("touch $file.db");
+		    system("chown -R proxy.proxy $file.db > /dev/null 2>&1");
+		}
+		my $wc = `cat $file| wc -l`; chomp $wc;
+		print "Building DB for [$path] - $wc entries\n";
+		my $cmd = "\"squidGuard -c $tmp_conf -C $path\"";
+		system("su - proxy -c $cmd > /dev/null 2>&1");
+	    }
+	}
+	system("rm $tmp_conf");
+    }
+}
+
 sub webproxy_write_file {
     my ($file, $config) = @_;
 
@@ -344,9 +396,12 @@ sub webproxy_write_file {
 #
 my $update_webproxy;
 my $stop_webproxy;
+my $update_blacklist;
 
-GetOptions("update!" => \$update_webproxy,
-           "stop!"   => \$stop_webproxy);
+GetOptions("update!"           => \$update_webproxy,
+           "stop!"             => \$stop_webproxy,
+	   "update-blacklist!" => \$update_blacklist,
+);
 
 #
 # make a hash of ipaddrs => interface
@@ -381,6 +436,11 @@ if (defined $stop_webproxy) {
     #
     squid_get_values();
     squid_stop();
+}
+
+if (defined $update_blacklist) {
+    squidguard_update_blacklist();
+    squid_restart();
 }
 
 exit 0;

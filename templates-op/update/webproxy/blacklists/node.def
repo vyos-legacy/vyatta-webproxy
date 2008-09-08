@@ -1,0 +1,2 @@
+help: Update the webproxy blacklist database
+run: sudo /opt/vyatta/sbin/vyatta-update-webproxy.pl --update-blacklist

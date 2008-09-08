@@ -44,7 +44,7 @@ sub squidguard_get_blacklists {
 	    push @blacklists, $file;
 	}
     }
-    return @blacklists;
+    return sort(@blacklists);
 }
 
 sub squidguard_get_blacklist_domains_urls_exps {
