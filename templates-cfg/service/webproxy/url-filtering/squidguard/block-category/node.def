@@ -2,3 +2,4 @@ multi:
 type: txt
 help: Set a blacklist category to allow
 allowed: sudo /opt/vyatta/bin/sudo-users/vyatta-show-webproxy.pl --action="show-blacklists"
+         echo all
