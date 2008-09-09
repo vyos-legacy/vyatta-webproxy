@@ -25,6 +25,7 @@
 
 use Getopt::Long;
 use POSIX;
+use IO::Prompt;
 
 use lib "/opt/vyatta/share/perl5/";
 use VyattaConfig;
@@ -43,9 +44,13 @@ my $squid_def_port  = 3128;
 my $squidguard_conf          = '/etc/squid/squidGuard.conf';
 my $squidguard_log           = '/var/log/squid';
 my $squidguard_blacklist_log = "$squidguard_log/blacklist.log";
-
 my $squidguard_redirect_def  = "http://www.google.com";
 my $squidguard_enabled       = 0;
+
+#
+# Default blacklist
+#
+my $blacklist_def = 'http://squidguard.mesd.k12.or.us/blacklists.tgz';
 
 my %config_ipaddrs = ();
 
@@ -330,13 +335,45 @@ sub squidguard_get_values {
     return $output;
 }
 
-sub squidguard_update_blacklist {
-    my @blacklists = VyattaWebproxy::squidguard_get_blacklists();
+sub squidguard_install_blacklist_def {
 
+    my $db_dir         = VyattaWebproxy::squidguard_get_blacklist_dir();
+    my $tmp_blacklists = '/tmp/blacklists.gz';
+    my $rc;
+    $rc = system("wget -O $tmp_blacklists $blacklist_def");
+    if ($rc) {
+	print "Unable to download [$blacklist_def] $!\n";
+	return 1;
+    }
+    print "Uncompressing blacklist...\n";
+    $rc = system("tar --directory /tmp -zxvf $tmp_blacklists > /dev/null");
+    if ($rc) {
+	print "Unable to uncompress [$blacklist_def] $!\n";
+	return 1;
+    }
+    $rc = system("mv /tmp/blacklists/* $db_dir");
+    if ($rc) {
+	print "Unable to install [$blacklist_def] $!\n";
+	return 1;
+    }
+    system("rm -fr $tmp_blacklists /tmp/blacklists");
+    return 0;
+}
+
+sub squidguard_update_blacklist {
+
+    my @blacklists = VyattaWebproxy::squidguard_get_blacklists();
     if (scalar(@blacklists) <= 0) {
 	print "No blacklists installed\n";
-	exit 1;
+	if (prompt("Would you like to download a blacklist? [confirm]", 
+		   -y1d=>"y")) {
+	    exit 1 if squidguard_install_blacklist_def();
+	    @blacklists = VyattaWebproxy::squidguard_get_blacklists();
+	} else {
+	    exit 1;
+	}
     }
+    print "Checking permissions...\n";
     my $db_dir = VyattaWebproxy::squidguard_get_blacklist_dir();
     system("chown -R proxy.proxy $db_dir > /dev/null 2>&1");
     system("chmod 2770 $db_dir >/dev/null 2>&1");
