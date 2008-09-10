@@ -115,18 +115,19 @@ sub squid_validate_conf {
 	exit 1;
     }
 
-    $config->setLevel("service webproxy listening-address");
+    $config->setLevel("service webproxy listen-address");
     my @ipaddrs = $config->listNodes();
     if (scalar(@ipaddrs) <= 0) {
-	print "Must define at least 1 listening-address\n";
+	print "Must define at least 1 listen-address\n";
 	exit 1;
     }
 
     foreach my $ipaddr (@ipaddrs) {
 	if (!defined $config_ipaddrs{$ipaddr}) {
-	    print "listing-address [$ipaddr] is not a configured address\n";
+	    print "listen-address [$ipaddr] is not a configured address\n";
 	    exit 1;
 	}
+	# does it need to be primary ???
     }
 }
 
@@ -148,7 +149,7 @@ sub squid_get_values {
 	$output  = "cache_dir null /null\n\n";
     }
 
-    $config->setLevel("service webproxy listening-address");
+    $config->setLevel("service webproxy listen-address");
     my %ipaddrs_status = $config->listNodeStatus();
     my @ipaddrs = sort numerically keys %ipaddrs_status;
     foreach my $ipaddr (@ipaddrs) {
@@ -319,9 +320,8 @@ sub squidguard_get_values {
 	}
     }
 
-    foreach my $category ($local_ok) {
-	next if $category eq "";
-	$output .= squidguard_build_dest($category, 0);
+    if ($local_ok ne "") {
+	$output .= squidguard_build_dest($local_ok, 0);
     }
 
     my $acl_block = "";
@@ -345,8 +345,8 @@ sub squidguard_get_values {
 
     $config->setLevel($path);
     my $redirect_url = $config->returnValue("redirect-url");
-    $redirect_url = $squidguard_redirect_def if ! defined $redirect_url;
-    $output .= "\t\tredirect 302:$redirect_url\n\t}\n}\n";
+    $redirect_url    = $squidguard_redirect_def if ! defined $redirect_url;
+    $output         .= "\t\tredirect 302:$redirect_url\n\t}\n}\n";
 
     return $output;
 }
@@ -410,17 +410,17 @@ sub squidguard_generate_db {
 
 sub squidguard_update_blacklist {
 
-    my @blacklists = VyattaWebproxy::squidguard_get_blacklists();
-    if (scalar(@blacklists) <= 0) {
-	print "No blacklists installed\n";
+    if (!VyattaWebproxy::squidguard_is_blacklist_installed()) {
+	print "No url-filtering blacklist installed\n";
 	if (prompt("Would you like to download a blacklist? [confirm]", 
 		   -y1d=>"y")) {
 	    exit 1 if squidguard_install_blacklist_def();
-	    @blacklists = VyattaWebproxy::squidguard_get_blacklists();
 	} else {
 	    exit 1;
 	}
     }
+
+    my @blacklists = VyattaWebproxy::squidguard_get_blacklists();
     print "Checking permissions...\n";
     my $db_dir = VyattaWebproxy::squidguard_get_blacklist_dir();
     system("chown -R proxy.proxy $db_dir > /dev/null 2>&1");
