@@ -43,7 +43,7 @@ my $squid_def_port  = 3128;
 
 my $squidguard_conf          = '/etc/squid/squidGuard.conf';
 my $squidguard_log           = '/var/log/squid';
-my $squidguard_blacklist_log = "$squidguard_log/blacklist.log";
+my $squidguard_blacklist_log = 'blacklist.log';
 my $squidguard_redirect_def  = "http://www.google.com";
 my $squidguard_enabled       = 0;
 
@@ -97,6 +97,9 @@ sub squid_get_constants {
     $output .= "http_access allow localhost\n";
     $output .= "http_access allow net\n";
     $output .= "http_access deny all\n\n";
+
+    system("touch $squid_log");
+    system("chown proxy.adm $squid_log");
 
     return $output;
 }
@@ -387,6 +390,10 @@ sub squidguard_get_values {
 
     $config->setLevel("$path log");
     my @log_category = $config->returnValues();
+    if (scalar(@log_category) > 0) {
+	system("touch $squidguard_log/$squidguard_blacklist_log");
+	system("chown proxy.adm $squidguard_log/$squidguard_blacklist_log");
+    }
     my %is_logged    = map { $_ => 1 } @log_category;    
 
     my @blacklists   = VyattaWebproxy::squidguard_get_blacklists();
