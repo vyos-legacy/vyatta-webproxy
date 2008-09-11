@@ -49,10 +49,9 @@ sub squidguard_get_blacklists {
 
 sub squidguard_is_blacklist_installed {
     my @blacklists = squidguard_get_blacklists();
-    my @no_local = ();
     foreach my $category (@blacklists) {
-	next if $category eq "local-ok";
-	next if $category eq "local-block";
+	next if $category eq 'local-ok';
+	next if $category eq 'local-block';
 	return 1;
     }
     return 0;
@@ -79,21 +78,20 @@ sub squidguard_get_blacklist_files {
     foreach my $list (@lists) {
 	my ($domain, $url, $exp) = squidguard_get_blacklist_domains_urls_exps(
 	    $list);
-	if ($type eq "domains") {
+	if ($type eq 'domains') {
 	    if (defined $category) {
 		next if $domain ne "$category/domains";
 	    }
 	    $domain = "$squidguard_blacklist_db/$domain";
 	    push @files, $domain if defined $domain;	    
 	}
-	if ($type eq "urls") {
+	if ($type eq 'urls') {
 	    if (defined $category) {
 		next if $url ne "$category/urls";
 	    }
 	    $url = "$squidguard_blacklist_db/$url";
 	    push @files, $url if defined $url;	    
 	}
-
     }
     @files = sort(@files);
     return @files;

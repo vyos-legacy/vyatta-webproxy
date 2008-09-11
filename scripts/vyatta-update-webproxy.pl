@@ -129,6 +129,7 @@ sub squid_validate_conf {
 	}
 	# does it need to be primary ???
     }
+    return 0;
 }
 
 sub squid_get_values {
@@ -230,6 +231,88 @@ sub squid_get_values {
     return $output;
 }
 
+sub squidguard_validate_conf {
+    my $config = new VyattaConfig;
+    my $path = "service webproxy url-filtering squidguard";
+
+    my $blacklist_installed = 1;
+    if (!VyattaWebproxy::squidguard_is_blacklist_installed()) {
+	print "Warning: no blacklists installed\n";
+	$blacklist_installed = 0;
+    }
+    my @blacklists   = VyattaWebproxy::squidguard_get_blacklists();
+    my %is_blacklist = map { $_ => 1 } @blacklists;
+
+    $config->setLevel("$path block-category");
+    my @block_category = $config->returnValues();
+    my %is_block       = map { $_ => 1 } @block_category; 
+    foreach my $category (@block_category) {
+	if (! defined $is_blacklist{$category} and $category ne 'all') {
+	    print "Unknown blacklist category [$category]\n";
+	    exit 1;
+	}
+    }
+    if (defined $is_block{all}) {
+	if (!$blacklist_installed) {
+	    print "Can't use block-category [all] without an installed ";
+	    print "blacklist\n";
+	    exit 1;
+	}
+	@block_category = ();
+	foreach my $category (@blacklists) {
+	    push @block_category, $category;
+	}
+    }
+
+    my $db_dir = VyattaWebproxy::squidguard_get_blacklist_dir();
+    foreach my $category (@block_category) {
+	if (! defined $is_blacklist{$category}) {
+	    print "Unknown blacklist category [$category]\n";
+	    exit 1;
+	}
+	my ($domains, $urls, $exps) =
+	    VyattaWebproxy::squidguard_get_blacklist_domains_urls_exps(
+		$category);
+	my $db_file = '';
+	if (defined $domains) {
+	    $db_file = "$db_dir/$domains.db";
+	    if (! -e $db_file) {
+		print "Missing DB for [$domains].\n";
+		print "Try running \"update webproxy blacklists\"\n";
+		exit 1;
+	    }
+	}
+	if (defined $urls) {
+	    $db_file = "$db_dir/$urls.db";
+	    if (! -e $db_file) {
+		print "Missing DB for [$urls].\n";
+		print "Try running \"update webproxy blacklists\"\n";
+		exit 1;
+	    }
+	}
+	# is it needed for exps?
+    }
+
+    $config->setLevel("$path log");
+    my @log_category = $config->returnValues();
+    foreach my $log (@log_category) {
+	if (! defined $is_blacklist{$log} and $log ne "all") {
+	    print "Log [$log] is not a valid blacklist category\n";
+	    exit 1;
+	}
+    }
+
+    $config->setLevel($path);
+    my $redirect_url = $config->returnValue("redirect-url");
+    $redirect_url    = $squidguard_redirect_def if ! defined $redirect_url;
+    if ($redirect_url !~ /^http:\/\/.*/) {
+	print "Invalid redirect-url [$redirect_url]. ";
+        print "Should start with \"http://\"\n";
+	exit 1;
+    }
+    return 0;
+}
+
 sub squidguard_get_constants {
     my $output;
     my $date = `date`; chomp $date;
@@ -308,9 +391,6 @@ sub squidguard_get_values {
 
     my @blacklists   = VyattaWebproxy::squidguard_get_blacklists();
     my %is_blacklist = map { $_ => 1 } @blacklists;
-    if (scalar(@blacklists) <= 0) {
-	print "Warning: no blacklists installed\n";
-    }
     if (defined $is_block{all}) {
 	@block_category = ();
 	foreach my $category (@blacklists) {
@@ -327,10 +407,6 @@ sub squidguard_get_values {
     my $acl_block = "";
     foreach my $category ($local_block, @block_category) {
 	next if $category eq "";
-	if (! defined $is_blacklist{$category}) {
-	    print "Unknown blacklist category [$category]\n";
-	    exit 1;
-	}
 	my $logging = 0;
 	if (defined $is_logged{all} or defined $is_logged{$category}) {
 	    $logging = 1;
@@ -475,6 +551,7 @@ if (defined $update_webproxy) {
     webproxy_write_file($squid_conf, $config);
     if ($squidguard_enabled) {
 	my $config2;
+	squidguard_validate_conf();
 	$config2  = squidguard_get_constants();
 	$config2 .= squidguard_get_values();
 	webproxy_write_file($squidguard_conf, $config2);

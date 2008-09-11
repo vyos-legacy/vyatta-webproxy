@@ -1,3 +1,4 @@
-multi:
 type: txt
-help: Set the allow-catagory
+help: Set the redirect url for filtered websites
+comp_help: possible completions:
+  <txt>    Set url (example http://www.mysite.com)
