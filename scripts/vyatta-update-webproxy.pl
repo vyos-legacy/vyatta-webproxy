@@ -55,8 +55,6 @@ my $blacklist_def = 'http://squidguard.mesd.k12.or.us/blacklists.tgz';
 my %config_ipaddrs = ();
 
 
-sub numerically { $a <=> $b; }
-
 sub squid_restart {
     system("$squid_init restart");
 }
@@ -155,7 +153,7 @@ sub squid_get_values {
 
     $config->setLevel("service webproxy listen-address");
     my %ipaddrs_status = $config->listNodeStatus();
-    my @ipaddrs = sort numerically keys %ipaddrs_status;
+    my @ipaddrs = sort keys %ipaddrs_status;
     foreach my $ipaddr (@ipaddrs) {
 	my $status = $ipaddrs_status{$ipaddr};
 	#print "$ipaddr = [$status]\n";
