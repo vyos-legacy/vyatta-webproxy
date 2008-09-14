@@ -15,9 +15,6 @@ cp /etc/squid/squidGuard.conf /etc/squid/squidGuard.conf.bak
 sed -i 's/etc\/init.d\/squid/etc\/init.d\/squid3/' /usr/sbin/update-squidguard 
 sed -i 's/reload/restart/' /usr/sbin/update-squidguard
 chown proxy:proxy /var/log/squid
-gunzip /usr/share/doc/squidguard/examples/squidGuard.cgi.gz
-mv /usr/share/doc/squidguard/examples/squidGuard.cgi /usr/lib/cgi-bin
-chmod 755 /usr/lib/cgi-bin/squidGuard.cgi
 
 # add symlinks for operator to run "update webproxy blacklists
 ln -sf /opt/vyatta/sbin/vyatta-update-webproxy.pl ${bindir}/sudo-users/vyatta-update-webproxy.pl
