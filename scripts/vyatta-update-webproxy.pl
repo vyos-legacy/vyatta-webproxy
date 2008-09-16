@@ -236,6 +236,9 @@ sub squidguard_validate_conf {
     my $config = new VyattaConfig;
     my $path = "service webproxy url-filtering squidguard";
 
+    $config->setLevel("service webproxy url-filtering");
+    return 0 if ! $config->exists("squidguard");
+
     my $blacklist_installed = 1;
     if (!VyattaWebproxy::squidguard_is_blacklist_installed()) {
 	print "Warning: no blacklists installed\n";
@@ -551,12 +554,12 @@ if (defined $update_webproxy) {
     my $config;
 
     squid_validate_conf();
+    squidguard_validate_conf();
     $config  = squid_get_constants();
     $config .= squid_get_values();
     webproxy_write_file($squid_conf, $config);
     if ($squidguard_enabled) {
 	my $config2;
-	squidguard_validate_conf();
 	$config2  = squidguard_get_constants();
 	$config2 .= squidguard_get_values();
 	webproxy_write_file($squidguard_conf, $config2);
