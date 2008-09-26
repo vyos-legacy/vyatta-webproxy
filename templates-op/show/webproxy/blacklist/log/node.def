@@ -1,8 +1,9 @@
 help: Show contents of webproxy blacklist log
-run:  if [ -e /var/log/squid/blacklist.log ]; then
+run:  LESSOPEN=less
+      if [ -e /var/log/squid/blacklist.log ]; then
         less $_vyatta_less_options    \
-	  --prompt=".log?m, file %i of %m., page %dt of %D" \
-	  -- `printf "%s\n" /var/log/squid/blacklist.log | sort -nr`
+	  --prompt="file %i of %m, page %dt of %D" \
+	  -- `printf "%s\n" /var/log/squid/blacklist.log* | sort -nr`
       else
         echo No blacklist log
       fi
