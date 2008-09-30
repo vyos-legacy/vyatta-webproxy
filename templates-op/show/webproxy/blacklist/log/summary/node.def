@@ -1,0 +1,2 @@
+help: Show summary of webproxy blacklist log
+run:  sudo /opt/vyatta/bin/sudo-users/vyatta-sg-summary.pl

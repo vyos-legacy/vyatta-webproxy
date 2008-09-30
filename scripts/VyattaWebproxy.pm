@@ -24,6 +24,8 @@
 package VyattaWebproxy;
 
 my $squidguard_blacklist_db  = '/var/lib/squidguard/db';
+my $squidguard_log_dir       = '/var/log/squid';
+
 
 sub squidguard_get_blacklist_dir {
     return $squidguard_blacklist_db;
@@ -95,6 +97,14 @@ sub squidguard_get_blacklist_files {
     }
     @files = sort(@files);
     return @files;
+}
+
+sub squidguard_get_log_files {
+    open(my $LS, "ls $squidguard_log_dir/bl*.log* 2> /dev/null | sort -nr |");
+    my @log_files = <$LS>;
+    close $LS;
+    chomp @log_files;
+    return @log_files;
 }
 
 1;
