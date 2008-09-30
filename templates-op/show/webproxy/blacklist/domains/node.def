@@ -1,3 +1,3 @@
 help: Show webproxy blacklist domains
-run:  sudo /opt/vyatta/bin/sudo-users/vyatta-show-webproxy.pl --action="show-blacklist-domains" | less
+run:  sudo /opt/vyatta/bin/sudo-users/vyatta-show-webproxy.pl --action="show-blacklist-domains"
 

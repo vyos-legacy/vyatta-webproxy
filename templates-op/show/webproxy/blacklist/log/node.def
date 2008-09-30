@@ -5,5 +5,5 @@ run:  LESSOPEN=less
 	  --prompt="file %i of %m, page %dt of %D" \
 	  -- `printf "%s\n" /var/log/squid/blacklist.log* | sort -nr`
       else
-        echo No blacklist log
+        echo No webproxy blacklist log
       fi

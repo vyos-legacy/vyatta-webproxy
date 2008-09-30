@@ -1,4 +1,4 @@
 help: Show webproxy blacklist domains for a given category
-run:  sudo /opt/vyatta/bin/sudo-users/vyatta-show-webproxy.pl --action="show-blacklist-domains" --category="$5" | less
+run:  sudo /opt/vyatta/bin/sudo-users/vyatta-show-webproxy.pl --action="show-blacklist-domains" --category="$5"
 allowed: sudo /opt/vyatta/bin/sudo-users/vyatta-show-webproxy.pl --action="show-blacklists"
 
