@@ -23,12 +23,35 @@
 #
 package VyattaWebproxy;
 
+use File::Basename;
+
+#squid globals
+my $squid_init      = '/etc/init.d/squid3';
+
+#squidGuard globals
 my $squidguard_blacklist_db  = '/var/lib/squidguard/db';
 my $squidguard_log_dir       = '/var/log/squid';
+my $squidguard_blacklist_log = "$squidguard_log_dir/blacklist.log";
 
+
+sub squid_restart {
+    my $interactive = shift;
+
+    my $opt = '';
+    $opt = "> /dev/null 2>&1" if ! $interactive;
+    system("$squid_init restart $opt");
+}
+
+sub squid_stop {
+    system("$squid_init stop");
+}
 
 sub squidguard_get_blacklist_dir {
     return $squidguard_blacklist_db;
+}
+
+sub squidguard_get_blacklist_log {
+    return $squidguard_blacklist_log;
 }
 
 sub squidguard_get_blacklists {
@@ -47,6 +70,38 @@ sub squidguard_get_blacklists {
 	}
     }
     return sort(@blacklists);
+}
+
+sub squidguard_generate_db {
+    my ($interactive, $category) = @_;
+
+    my $db_dir   = squidguard_get_blacklist_dir();
+    my $tmp_conf = "/tmp/sg.conf.$$";
+    my $output   = "dbhome $db_dir\n";
+    $output     .= squidguard_build_dest($category, 0);
+    webproxy_write_file($tmp_conf, $output);
+
+    foreach my $type ('domains', 'urls') {
+	my $path = "$category/$type";
+	my $file = "$db_dir/$path";
+	if (-e $file) {
+	    my $file_db = "$file.db";
+	    if (! -e $file_db) {
+		#
+		# it appears that there is a bug in squidGuard that if
+		# the db file doesn't exist then running with -C leaves
+		# huge tmp files in /var/tmp.
+		#
+		system("touch $file.db");
+		system("chown -R proxy.proxy $file.db > /dev/null 2>&1");
+	    }
+	    my $wc = `cat $file| wc -l`; chomp $wc;
+	    print "Building DB for [$path] - $wc entries\n" if $interactive;
+	    my $cmd = "\"squidGuard -c $tmp_conf -C $path\"";
+	    system("su - proxy -c $cmd > /dev/null 2>&1");
+	}
+    }
+    system("rm $tmp_conf");
 }
 
 sub squidguard_is_blacklist_installed {
@@ -105,6 +160,35 @@ sub squidguard_get_log_files {
     close $LS;
     chomp @log_files;
     return @log_files;
+}
+
+sub squidguard_build_dest {
+    my ($category, $logging) = @_;
+
+    my $output = "";
+    my ($domains, $urls, $exps) =
+	VyattaWebproxy::squidguard_get_blacklist_domains_urls_exps($category);
+    if (!defined $domains and !defined $urls and !defined $exps) {
+	return "";
+    }
+    $output  = "dest $category {\n";
+    $output .= "\tdomainlist     $domains\n" if defined $domains;
+    $output .= "\turllist        $urls\n"    if defined $urls;
+    $output .= "\texpressionlist $exps\n"    if defined $exps;
+    if ($logging) {
+	$log = basename($squidguard_blacklist_log);
+	$output .= "\tlog            $log\n";
+    }
+    $output .= "}\n\n";
+    return $output;
+}
+
+sub webproxy_write_file {
+    my ($file, $config) = @_;
+
+    open(my $fh, '>', $file) || die "Couldn't open $file - $!";
+    print $fh $config;
+    close $fh;
 }
 
 1;

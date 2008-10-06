@@ -25,7 +25,6 @@
 
 use Getopt::Long;
 use POSIX;
-use IO::Prompt;
 
 use lib "/opt/vyatta/share/perl5/";
 use VyattaConfig;
@@ -34,34 +33,21 @@ use VyattaWebproxy;
 use warnings;
 use strict;
 
+# squid globals
 my $squid_conf      = '/etc/squid3/squid.conf';
 my $squid_log       = '/var/log/squid3/access.log';
 my $squid_cache_dir = '/var/spool/squid3';
-my $squid_init      = '/etc/init.d/squid3';
 my $squid_def_fs    = 'ufs';
 my $squid_def_port  = 3128;
 
+# squidGuard globals
 my $squidguard_conf          = '/etc/squid/squidGuard.conf';
-my $squidguard_log           = '/var/log/squid';
-my $squidguard_blacklist_log = 'blacklist.log';
 my $squidguard_redirect_def  = "http://www.google.com";
 my $squidguard_enabled       = 0;
 
-#
-# Default blacklist
-#
-my $blacklist_def = 'http://squidguard.mesd.k12.or.us/blacklists.tgz';
-
+# global hash of ipv4 addresses on the system
 my %config_ipaddrs = ();
 
-
-sub squid_restart {
-    system("$squid_init restart");
-}
-
-sub squid_stop {
-    system("$squid_init stop");
-}
 
 sub squid_get_constants {
     my $output;
@@ -148,7 +134,7 @@ sub squid_get_values {
         $output .= "$cache_size 16 256\n\n";
     } else {
 	# disable caching
-	$output  = "cache_dir null /null\n\n";
+	$output  = "cache_dir null $squid_cache_dir\n\n";
     }
 
     $config->setLevel("service webproxy listen-address");
@@ -346,29 +332,10 @@ sub squidguard_generate_local {
     print $FD join("\n", @local_sites), "\n";
     close $FD;
     system("chown -R proxy.proxy $dir > /dev/null 2>&1");
-    squidguard_generate_db($local_action);
+    VyattaWebproxy::squidguard_generate_db(0, $local_action);
     return $local_action;
 }
 
-sub squidguard_build_dest {
-    my ($category, $logging) = @_;
-
-    my $output = "";
-    my ($domains, $urls, $exps) =
-	VyattaWebproxy::squidguard_get_blacklist_domains_urls_exps($category);
-    if (!defined $domains and !defined $urls and !defined $exps) {
-	return "";
-    }
-    $output  = "dest $category {\n";
-    $output .= "\tdomainlist     $domains\n" if defined $domains;
-    $output .= "\turllist        $urls\n"    if defined $urls;
-    $output .= "\texpressionlist $exps\n"    if defined $exps;
-    if ($logging) {
-	$output .= "\tlog            $squidguard_blacklist_log\n";
-    }
-    $output .= "}\n\n";
-    return $output;
-}
 
 sub squidguard_get_values {
     my $output = "";
@@ -392,8 +359,9 @@ sub squidguard_get_values {
     $config->setLevel("$path log");
     my @log_category = $config->returnValues();
     if (scalar(@log_category) > 0) {
-	system("touch $squidguard_log/$squidguard_blacklist_log");
-	system("chown proxy.adm $squidguard_log/$squidguard_blacklist_log");
+	my $log_file = VyattaWebproxy::squidguard_get_blacklist_log();
+	system("touch $log_file");
+	system("chown proxy.adm $log_file");
     }
     my %is_logged    = map { $_ => 1 } @log_category;    
 
@@ -409,7 +377,7 @@ sub squidguard_get_values {
     }
 
     if ($local_ok ne "") {
-	$output .= squidguard_build_dest($local_ok, 0);
+	$output .= VyattaWebproxy::squidguard_build_dest($local_ok, 0);
     }
 
     my $acl_block = "";
@@ -419,7 +387,7 @@ sub squidguard_get_values {
 	if (defined $is_logged{all} or defined $is_logged{$category}) {
 	    $logging = 1;
 	}
-	$output .= squidguard_build_dest($category, $logging);
+	$output .= VyattaWebproxy::squidguard_build_dest($category, $logging);
 	$acl_block .= "!$category ";
     }
 
@@ -435,108 +403,15 @@ sub squidguard_get_values {
     return $output;
 }
 
-sub squidguard_install_blacklist_def {
-
-    my $db_dir         = VyattaWebproxy::squidguard_get_blacklist_dir();
-    my $tmp_blacklists = '/tmp/blacklists.gz';
-    my $rc;
-    $rc = system("wget -O $tmp_blacklists $blacklist_def");
-    if ($rc) {
-	print "Unable to download [$blacklist_def] $!\n";
-	return 1;
-    }
-    print "Uncompressing blacklist...\n";
-    $rc = system("tar --directory /tmp -zxvf $tmp_blacklists > /dev/null");
-    if ($rc) {
-	print "Unable to uncompress [$blacklist_def] $!\n";
-	return 1;
-    }
-    $rc = system("mv /tmp/blacklists/* $db_dir");
-    if ($rc) {
-	print "Unable to install [$blacklist_def] $!\n";
-	return 1;
-    }
-    system("rm -fr $tmp_blacklists /tmp/blacklists");
-    return 0;
-}
-
-sub squidguard_generate_db {
-    my $category = shift;
-
-    my $db_dir   = VyattaWebproxy::squidguard_get_blacklist_dir();
-    my $tmp_conf = "/tmp/sg.conf.$$";
-    my $output   = "dbhome $db_dir\n";
-    $output     .= squidguard_build_dest($category, 0);
-    webproxy_write_file($tmp_conf, $output);
-
-    foreach my $type ('domains', 'urls') {
-	my $path = "$category/$type";
-	my $file = "$db_dir/$path";
-	if (-e $file) {
-	    my $file_db = "$file.db";
-	    if (! -e $file_db) {
-		#
-		# it appears that there is a bug in squidGuard that if
-		# the db file doesn't exist then running with -C leaves
-		# huge tmp files in /var/tmp.
-		#
-		system("touch $file.db");
-		system("chown -R proxy.proxy $file.db > /dev/null 2>&1");
-	    }
-	    my $wc = `cat $file| wc -l`; chomp $wc;
-	    print "Building DB for [$path] - $wc entries\n";
-	    my $cmd = "\"squidGuard -c $tmp_conf -C $path\"";
-	    system("su - proxy -c $cmd > /dev/null 2>&1");
-	}
-    }
-    system("rm $tmp_conf");
-}
-
-sub squidguard_update_blacklist {
-
-    if (!VyattaWebproxy::squidguard_is_blacklist_installed()) {
-	print "No url-filtering blacklist installed\n";
-	if (prompt("Would you like to download a blacklist? [confirm]", 
-		   -y1d=>"y")) {
-	    exit 1 if squidguard_install_blacklist_def();
-	} else {
-	    exit 1;
-	}
-    }
-
-    my @blacklists = VyattaWebproxy::squidguard_get_blacklists();
-    print "Checking permissions...\n";
-    my $db_dir = VyattaWebproxy::squidguard_get_blacklist_dir();
-    system("chown -R proxy.proxy $db_dir > /dev/null 2>&1");
-    system("chmod 2770 $db_dir >/dev/null 2>&1");
-
-    #
-    # generate temporary config for each category & generate DB
-    #
-    foreach my $category (@blacklists) {
-	squidguard_generate_db($category);
-    }
-}
-
-sub webproxy_write_file {
-    my ($file, $config) = @_;
-
-    open(my $fh, '>', $file) || die "Couldn't open $file - $!";
-    print $fh $config;
-    close $fh;
-}
-
 
 #
 # main
 #
 my $update_webproxy;
 my $stop_webproxy;
-my $update_blacklist;
 
 GetOptions("update!"           => \$update_webproxy,
            "stop!"             => \$stop_webproxy,
-	   "update-blacklist!" => \$update_blacklist,
 );
 
 #
@@ -557,14 +432,14 @@ if (defined $update_webproxy) {
     squidguard_validate_conf();
     $config  = squid_get_constants();
     $config .= squid_get_values();
-    webproxy_write_file($squid_conf, $config);
+    VyattaWebproxy::webproxy_write_file($squid_conf, $config);
     if ($squidguard_enabled) {
 	my $config2;
 	$config2  = squidguard_get_constants();
 	$config2 .= squidguard_get_values();
-	webproxy_write_file($squidguard_conf, $config2);
+	VyattaWebproxy::webproxy_write_file($squidguard_conf, $config2);
     }
-    squid_restart();
+    VyattaWebproxy::squid_restart(1);
 }
 
 if (defined $stop_webproxy) {
@@ -572,12 +447,7 @@ if (defined $stop_webproxy) {
     # Need to call squid_get_values() to delete the NAT rules
     #
     squid_get_values();
-    squid_stop();
-}
-
-if (defined $update_blacklist) {
-    squidguard_update_blacklist();
-    squid_restart();
+    VyattaWebproxy::squid_stop();
 }
 
 exit 0;

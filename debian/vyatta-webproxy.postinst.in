@@ -19,5 +19,3 @@ sed -i 's/etc\/init.d\/squid/etc\/init.d\/squid3/' /usr/sbin/update-squidguard
 sed -i 's/reload/restart/' /usr/sbin/update-squidguard
 chown proxy:adm /var/log/squid
 
-# add symlinks for operator to run "update webproxy blacklists
-ln -sf /opt/vyatta/sbin/vyatta-update-webproxy.pl ${bindir}/sudo-users/vyatta-update-webproxy.pl
