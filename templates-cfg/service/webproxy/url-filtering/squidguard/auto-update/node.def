@@ -1,5 +1,8 @@
-type: u32
+type: txt
 help: Set the update interval
-syntax:expression: ($VAR(@) >= 0 && $VAR(@) <= 100) ; "must between 0-100 days"
+syntax:expression: $VAR(@) in "daily", "weekly", "monthly" ; "must be 'daily', 'weekly' or 'monthly'"
 comp_help: possible completions:
-   <0-100>    Set the update interval in days
+   daily    Update blacklist daily
+   weekly   Update blacklist weekly
+   monthly  Update blacklist monthly
+

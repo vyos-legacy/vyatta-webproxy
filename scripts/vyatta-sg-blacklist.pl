@@ -60,6 +60,24 @@ sub print_err {
     }    
 }
 
+sub squidguard_count_blacklist_entries {
+    my $db_dir = VyattaWebproxy::squidguard_get_blacklist_dir();
+
+    my $total = 0;
+    my @categories = VyattaWebproxy::squidguard_get_blacklists();
+    foreach my $category (@categories) {
+	foreach my $type ('domains', 'urls') {
+	    my $path = "$category/$type";
+	    my $file = "$db_dir/$path";
+	    if (-e $file) {
+		my $wc = `cat $file| wc -l`; chomp $wc;
+		$total += $wc;
+	    }
+	}
+    }
+    return $total;
+}
+
 sub squidguard_auto_update {
     my $interactive = shift;
 
@@ -79,6 +97,7 @@ sub squidguard_auto_update {
 	print_err($interactive, "Unable to uncompress [$blacklist_url] $!");
 	return 1;
     }
+    my $b4_entries = squidguard_count_blacklist_entries();
     my $archive = '/var/lib/squidguard/archive';
     system("mkdir -p $archive") if ! -d $archive;
     system("rm -rf $archive/*");
@@ -90,7 +109,9 @@ sub squidguard_auto_update {
     }
     system("mv $archive/local-* $db_dir 2> /dev/null");
     system("rm -fr $tmp_blacklists /tmp/blacklists");
-    syslog("warning", "blacklist entries updated");
+
+    my $after_entries = squidguard_count_blacklist_entries();
+    syslog("warning", "blacklist entries updated ($b4_entries/$after_entries)");
     return 0;
 }
 
