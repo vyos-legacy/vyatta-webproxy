@@ -51,6 +51,7 @@ use strict;
 #
 my $blacklist_url = 'http://squidguard.mesd.k12.or.us/blacklists.tgz';
 
+
 sub print_err {
     my ($interactive, $msg) = @_;
     if ($interactive) {
@@ -111,7 +112,10 @@ sub squidguard_auto_update {
     system("rm -fr $tmp_blacklists /tmp/blacklists");
 
     my $after_entries = squidguard_count_blacklist_entries();
-    syslog("warning", "blacklist entries updated ($b4_entries/$after_entries)");
+    my $mode = "auto-update";
+    $mode = "manual" if $interactive;
+    syslog("warning", 
+	   "blacklist entries updated($mode) ($b4_entries/$after_entries)");
     return 0;
 }
 
@@ -121,17 +125,6 @@ sub squidguard_install_blacklist_def {
 
 sub squidguard_update_blacklist {
     my $interactive = shift;
-
-    if (!VyattaWebproxy::squidguard_is_blacklist_installed()) {
-	print_err($interactive, "No url-filtering blacklist installed");
-	exit 1 if ! $interactive;
-	if (prompt("Would you like to download a blacklist? [confirm]", 
-		   -y1d=>"y")) {
-	    exit 1 if squidguard_install_blacklist_def();
-	} else {
-	    exit 1;
-	}
-    }
 
     my @blacklists = VyattaWebproxy::squidguard_get_blacklists();
     print "Checking permissions...\n" if $interactive;
@@ -151,24 +144,56 @@ sub squidguard_update_blacklist {
 #
 # main
 #
-my $update_blacklist;
-my $auto_update;
+my ($update_bl, $auto_update_bl);
 
-GetOptions("update-blacklist!" => \$update_blacklist,
-	   "auto-update!"      => \$auto_update,
+GetOptions("update-blacklist!"      => \$update_bl,
+	   "auto-update-blacklist!" => \$auto_update_bl,
 );
 
-if (defined $update_blacklist) {
+if (defined $update_bl) {
+    my $updated = 0;
+    if (!VyattaWebproxy::squidguard_is_blacklist_installed()) {
+	print "Warning: No url-filtering blacklist installed\n";
+	if (prompt("Would you like to download a default blacklist? [confirm]", 
+		   -y1d=>"y")) {
+	    exit 1 if squidguard_install_blacklist_def();
+	    $updated = 1;
+	} else {
+	    exit 1;
+	}
+    } else {
+	if (prompt("Would you like to re-download the blacklist? [confirm]", 
+		   -y1d=>"y")) {
+	    my $rc = squidguard_auto_update(1);
+	    $updated = 1 if ! $rc;
+	}
+    }
+    if (! $updated) {
+	print "No blacklist updated\n";
+	if (!prompt("Do you still want to generate binary DB? [confirm]", 
+		   -y1d=>"y")) {
+	    exit 1;
+	}
+    }
+    # if there was an update we need to re-gen the binary DBs 
+    # and restart the daemon
     squidguard_update_blacklist(1);
     VyattaWebproxy::squid_restart(1);
     exit 0;
 }
 
-if (defined $auto_update) {
-    squidguard_auto_update(0);
+if (defined $auto_update_bl) {
+    if (!VyattaWebproxy::squidguard_is_blacklist_installed()) {
+	syslog("error", "No url-filtering blacklist installed");
+	exit 1;
+    }
+    my $rc = squidguard_auto_update(0);
+    exit 1 if $rc;
     squidguard_update_blacklist(0);
     VyattaWebproxy::squid_restart(0);
     exit 0;
 }
 
 exit 1;
+
+#end of file
