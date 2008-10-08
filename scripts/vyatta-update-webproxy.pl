@@ -234,6 +234,7 @@ sub squidguard_gen_cron {
     $output .= " --auto-update-blacklist\n";
 
     VyattaWebproxy::webproxy_write_file($file, $output); 
+    system("chmod 755 $file");
 }
 
 sub squidguard_validate_conf {
