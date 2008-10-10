@@ -175,7 +175,8 @@ sub squid_get_values {
     foreach my $ipaddr (@ipaddrs) {
 	my $status = $ipaddrs_status{$ipaddr};
 	#print "$ipaddr = [$status]\n";
-	$status = "changed" if $n_def_port != $o_def_port;
+	$status = "changed" if $n_def_port != $o_def_port and 
+	                       $status eq "static";
 
 	my $o_port = $config->returnOrigValue("$ipaddr port");	
 	my $n_port = $config->returnValue("$ipaddr port");	
