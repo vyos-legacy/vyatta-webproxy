@@ -39,7 +39,7 @@ my $squid_log       = '/var/log/squid3/access.log';
 my $squid_cache_dir = '/var/spool/squid3';
 my $squid_def_fs    = 'ufs';
 my $squid_def_port  = 3128;
-my $squid_chain = 'WEBPROXY_CONNTRACK';
+my $squid_chain     = 'WEBPROXY_CONNTRACK';
 
 # squidGuard globals
 my $squidguard_conf          = '/etc/squid/squidGuard.conf';
@@ -153,8 +153,10 @@ sub squid_get_values {
     my $config = new VyattaConfig;
 
     $config->setLevel("service webproxy");
-    my $def_port = $config->returnValue("default-port");
-    $def_port = $squid_def_port if ! defined $def_port;
+    my $o_def_port = $config->returnOrigValue("default-port");
+    my $n_def_port = $config->returnValue("default-port");
+    $o_def_port = $squid_def_port if ! defined $o_def_port;
+    $n_def_port = $squid_def_port if ! defined $n_def_port;
 
     my $cache_size = $config->returnValue("cache-size");
     $cache_size = 100 if ! defined $cache_size;
@@ -173,11 +175,12 @@ sub squid_get_values {
     foreach my $ipaddr (@ipaddrs) {
 	my $status = $ipaddrs_status{$ipaddr};
 	#print "$ipaddr = [$status]\n";
+	$status = "changed" if $n_def_port != $o_def_port;
 
 	my $o_port = $config->returnOrigValue("$ipaddr port");	
 	my $n_port = $config->returnValue("$ipaddr port");	
-	$o_port = $def_port if ! defined $o_port;	
-	$n_port = $def_port if ! defined $n_port;	
+	$o_port = $o_def_port if ! defined $o_port;	
+	$n_port = $n_def_port if ! defined $n_port;	
 
 	my $o_dt = $config->existsOrig("$ipaddr disable-transparent");
 	my $n_dt = $config->exists("$ipaddr disable-transparent");
