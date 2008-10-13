@@ -187,8 +187,10 @@ sub squid_get_values {
 	my $n_dt = $config->exists("$ipaddr disable-transparent");
 	my $transparent = "transparent";
 	$transparent = "" if $n_dt;
-	$num_nats++ if $transparent eq "transparent" and $status ne "deleted";
-	$output .= "http_port $ipaddr:$n_port $transparent\n";
+	if ($status ne "deleted") {
+	    $num_nats++ if $transparent eq "transparent";
+	    $output .= "http_port $ipaddr:$n_port $transparent\n";
+	}
 
 	my $intf = $config_ipaddrs{$ipaddr};
 
@@ -512,6 +514,7 @@ if (defined $stop_webproxy) {
     # Need to call squid_get_values() to delete the NAT rules
     #
     squid_get_values();
+    system("rm -f $squid_conf $squidguard_conf");
     VyattaWebproxy::squid_stop();
 }
 
