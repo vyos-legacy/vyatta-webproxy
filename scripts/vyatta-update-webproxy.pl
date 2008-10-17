@@ -165,7 +165,8 @@ sub squid_get_values {
         $output .= "$cache_size 16 256\n\n";
     } else {
 	# disable caching
-	$output  = "cache_dir null $squid_cache_dir\n\n";
+	$output  = "cache_dir null $squid_cache_dir\n";
+	$output .= "cache_store_log none\n\n";
     }
 
     my $num_nats = 0;
