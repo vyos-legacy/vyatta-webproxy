@@ -24,6 +24,7 @@
 package VyattaWebproxy;
 
 use File::Basename;
+use VyattaConfig;
 
 #squid globals
 my $squid_init      = '/etc/init.d/squid3';
@@ -44,6 +45,17 @@ sub squid_restart {
 
 sub squid_stop {
     system("$squid_init stop");
+}
+
+sub squidguard_is_configured {
+    my $config = new VyattaConfig;
+    my $path = "service webproxy url-filtering squidguard";
+
+    $config->setLevel("service webproxy url-filtering");
+    # This checks the running config, so it is assumed 
+    # to be called from op mode.
+    return 1 if $config->existsOrig("squidguard");
+    return 0;
 }
 
 sub squidguard_get_blacklist_dir {

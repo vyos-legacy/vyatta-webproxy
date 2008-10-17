@@ -178,7 +178,12 @@ if (defined $update_bl) {
     # if there was an update we need to re-gen the binary DBs 
     # and restart the daemon
     squidguard_update_blacklist(1);
-    VyattaWebproxy::squid_restart(1);
+    if (VyattaWebproxy::squidguard_is_configured()) {
+	print "\nThe webproxy daemon must be restarted\n";
+	if (prompt("Would you like to restart it now? [confirm]",-y1d=>"y")) {
+	    VyattaWebproxy::squid_restart(1);
+	}
+    }
     exit 0;
 }
 
@@ -190,7 +195,9 @@ if (defined $auto_update_bl) {
     my $rc = squidguard_auto_update(0);
     exit 1 if $rc;
     squidguard_update_blacklist(0);
-    VyattaWebproxy::squid_restart(0);
+    if (VyattaWebproxy::squidguard_is_configured()) {
+	VyattaWebproxy::squid_restart(0);
+    }
     exit 0;
 }
 
