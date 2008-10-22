@@ -49,7 +49,7 @@ use strict;
 #       those blacklists will need a different install/update script.  Of 
 #       course they can be manually installed/updated. 
 #
-my $blacklist_url = 'http://squidguard.mesd.k12.or.us/blacklists.tgz';
+my $blacklist_url = 'ftp://ftp.univ-tlse1.fr/pub/reseau/cache/squidguard_contrib/blacklists.tar.gz';
 
 
 sub print_err {
