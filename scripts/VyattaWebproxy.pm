@@ -91,6 +91,10 @@ sub squidguard_generate_db {
     my $tmp_conf = "/tmp/sg.conf.$$";
     my $output   = "dbhome $db_dir\n";
     $output     .= squidguard_build_dest($category, 0);
+    $output     .= "\nacl {\n";
+    $output     .= "\tdefault {\n";
+    $output     .= "\t\tpass all\n";
+    $output     .= "\t}\n}\n\n";
     webproxy_write_file($tmp_conf, $output);
 
     foreach my $type ('domains', 'urls') {
@@ -109,7 +113,7 @@ sub squidguard_generate_db {
 	    }
 	    my $wc = `cat $file| wc -l`; chomp $wc;
 	    print "Building DB for [$path] - $wc entries\n" if $interactive;
-	    my $cmd = "\"squidGuard -c $tmp_conf -C $path\"";
+	    my $cmd = "\"squidGuard -d -c $tmp_conf -C $path\"";
 	    system("su - proxy -c $cmd > /dev/null 2>&1");
 	}
     }
