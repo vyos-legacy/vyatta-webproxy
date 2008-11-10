@@ -143,6 +143,11 @@ sub squid_validate_conf {
 	}
 	# does it need to be primary ???
     }
+
+    #check for nameserver
+    if (system("grep -cq nameserver /etc/resolv.conf 2> /dev/null")) {
+	print "Warning: webproxy may not work properly without a namserver\n";
+    }
     return 0;
 }
 
