@@ -26,9 +26,9 @@
 use Getopt::Long;
 use POSIX;
 
-use lib "/opt/vyatta/share/perl5/";
+use lib "/opt/vyatta/share/perl5";
 use VyattaConfig;
-use VyattaWebproxy;
+use Vyatta::Webproxy;
 
 use warnings;
 use strict;
@@ -288,7 +288,7 @@ sub squidguard_gen_cron {
     $output .= "/opt/vyatta/bin/sudo-users/vyatta-sg-blacklist.pl ";
     $output .= " --auto-update-blacklist\n";
 
-    VyattaWebproxy::webproxy_write_file($file, $output); 
+    webproxy_write_file($file, $output); 
     system("chmod 755 $file");
 }
 
@@ -300,11 +300,11 @@ sub squidguard_validate_conf {
     return 0 if ! $config->exists("squidguard");
 
     my $blacklist_installed = 1;
-    if (!VyattaWebproxy::squidguard_is_blacklist_installed()) {
+    if (!squidguard_is_blacklist_installed()) {
 	print "Warning: no blacklists installed\n";
 	$blacklist_installed = 0;
     }
-    my @blacklists   = VyattaWebproxy::squidguard_get_blacklists();
+    my @blacklists   = squidguard_get_blacklists();
     my %is_blacklist = map { $_ => 1 } @blacklists;
 
     $config->setLevel("$path block-category");
@@ -328,14 +328,14 @@ sub squidguard_validate_conf {
 	}
     }
 
-    my $db_dir = VyattaWebproxy::squidguard_get_blacklist_dir();
+    my $db_dir = squidguard_get_blacklist_dir();
     foreach my $category (@block_category) {
 	if (! defined $is_blacklist{$category}) {
 	    print "Unknown blacklist category [$category]\n";
 	    exit 1;
 	}
 	my ($domains, $urls, $exps) =
-	    VyattaWebproxy::squidguard_get_blacklist_domains_urls_exps(
+	    squidguard_get_blacklist_domains_urls_exps(
 		$category);
 	my $db_file = '';
 	if (defined $domains) {
@@ -391,7 +391,7 @@ sub squidguard_get_constants {
 sub squidguard_generate_local {
     my ($action, @local_sites) = @_;
 
-    my $db_dir       = VyattaWebproxy::squidguard_get_blacklist_dir();
+    my $db_dir       = squidguard_get_blacklist_dir();
     my $local_action = "local-$action";
     my $dir          = "$db_dir/$local_action";
 
@@ -406,7 +406,7 @@ sub squidguard_generate_local {
     print $FD join("\n", @local_sites), "\n";
     close $FD;
     system("chown -R proxy.proxy $dir > /dev/null 2>&1");
-    VyattaWebproxy::squidguard_generate_db(0, $local_action);
+    squidguard_generate_db(0, $local_action);
     return $local_action;
 }
 
@@ -432,13 +432,13 @@ sub squidguard_get_values {
     $config->setLevel("$path log");
     my @log_category = $config->returnValues();
     if (scalar(@log_category) > 0) {
-	my $log_file = VyattaWebproxy::squidguard_get_blacklist_log();
+	my $log_file = squidguard_get_blacklist_log();
 	system("touch $log_file");
 	system("chown proxy.adm $log_file");
     }
     my %is_logged    = map { $_ => 1 } @log_category;    
 
-    my @blacklists   = VyattaWebproxy::squidguard_get_blacklists();
+    my @blacklists   = squidguard_get_blacklists();
     my %is_blacklist = map { $_ => 1 } @blacklists;
     if (defined $is_block{all}) {
 	@block_category = ();
@@ -450,7 +450,7 @@ sub squidguard_get_values {
     }
 
     if ($local_ok ne "") {
-	$output .= VyattaWebproxy::squidguard_build_dest($local_ok, 0);
+	$output .= squidguard_build_dest($local_ok, 0);
     }
 
     my $acl_block = "";
@@ -460,7 +460,7 @@ sub squidguard_get_values {
 	if (defined $is_logged{all} or defined $is_logged{$category}) {
 	    $logging = 1;
 	}
-	$output .= VyattaWebproxy::squidguard_build_dest($category, $logging);
+	$output .= squidguard_build_dest($category, $logging);
 	$acl_block .= "!$category ";
     }
 
@@ -511,14 +511,14 @@ if (defined $update_webproxy) {
     squidguard_validate_conf();
     $config  = squid_get_constants();
     $config .= squid_get_values();
-    VyattaWebproxy::webproxy_write_file($squid_conf, $config);
+    webproxy_write_file($squid_conf, $config);
     if ($squidguard_enabled) {
 	my $config2;
 	$config2  = squidguard_get_constants();
 	$config2 .= squidguard_get_values();
-	VyattaWebproxy::webproxy_write_file($squidguard_conf, $config2);
+	webproxy_write_file($squidguard_conf, $config2);
     }
-    VyattaWebproxy::squid_restart(1);
+    squid_restart(1);
 }
 
 if (defined $stop_webproxy) {
@@ -527,7 +527,7 @@ if (defined $stop_webproxy) {
     #
     squid_get_values();
     system("rm -f $squid_conf $squidguard_conf");
-    VyattaWebproxy::squid_stop();
+    squid_stop();
 }
 
 exit 0;

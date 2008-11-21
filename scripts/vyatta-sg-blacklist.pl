@@ -28,8 +28,8 @@ use POSIX;
 use IO::Prompt;
 use Sys::Syslog qw(:standard :macros);
 
-use lib "/opt/vyatta/share/perl5/";
-use VyattaWebproxy;
+use lib "/opt/vyatta/share/perl5";
+use Vyatta::Webproxy;
 
 use warnings;
 use strict;
@@ -62,10 +62,10 @@ sub print_err {
 }
 
 sub squidguard_count_blacklist_entries {
-    my $db_dir = VyattaWebproxy::squidguard_get_blacklist_dir();
+    my $db_dir = squidguard_get_blacklist_dir();
 
     my $total = 0;
-    my @categories = VyattaWebproxy::squidguard_get_blacklists();
+    my @categories = squidguard_get_blacklists();
     foreach my $category (@categories) {
 	foreach my $type ('domains', 'urls') {
 	    my $path = "$category/$type";
@@ -82,7 +82,7 @@ sub squidguard_count_blacklist_entries {
 sub squidguard_auto_update {
     my $interactive = shift;
 
-    my $db_dir = VyattaWebproxy::squidguard_get_blacklist_dir();
+    my $db_dir = squidguard_get_blacklist_dir();
     my $tmp_blacklists = '/tmp/blacklists.gz';
     my $opt = '';
     $opt = "-q" if ! $interactive;
@@ -126,9 +126,9 @@ sub squidguard_install_blacklist_def {
 sub squidguard_update_blacklist {
     my $interactive = shift;
 
-    my @blacklists = VyattaWebproxy::squidguard_get_blacklists();
+    my @blacklists = squidguard_get_blacklists();
     print "Checking permissions...\n" if $interactive;
-    my $db_dir = VyattaWebproxy::squidguard_get_blacklist_dir();
+    my $db_dir = squidguard_get_blacklist_dir();
     system("chown -R proxy.proxy $db_dir > /dev/null 2>&1");
     system("chmod 2770 $db_dir >/dev/null 2>&1");
 
@@ -136,7 +136,7 @@ sub squidguard_update_blacklist {
     # generate temporary config for each category & generate DB
     #
     foreach my $category (@blacklists) {
-	VyattaWebproxy::squidguard_generate_db($interactive, $category);
+	squidguard_generate_db($interactive, $category);
     }
 }
 
@@ -152,7 +152,7 @@ GetOptions("update-blacklist!"      => \$update_bl,
 
 if (defined $update_bl) {
     my $updated = 0;
-    if (!VyattaWebproxy::squidguard_is_blacklist_installed()) {
+    if (!squidguard_is_blacklist_installed()) {
 	print "Warning: No url-filtering blacklist installed\n";
 	if (prompt("Would you like to download a default blacklist? [confirm]", 
 		   -y1d=>"y")) {
@@ -178,25 +178,25 @@ if (defined $update_bl) {
     # if there was an update we need to re-gen the binary DBs 
     # and restart the daemon
     squidguard_update_blacklist(1);
-    if (VyattaWebproxy::squidguard_is_configured()) {
+    if (squidguard_is_configured()) {
 	print "\nThe webproxy daemon must be restarted\n";
 	if (prompt("Would you like to restart it now? [confirm]",-y1d=>"y")) {
-	    VyattaWebproxy::squid_restart(1);
+	    squid_restart(1);
 	}
     }
     exit 0;
 }
 
 if (defined $auto_update_bl) {
-    if (!VyattaWebproxy::squidguard_is_blacklist_installed()) {
+    if (!squidguard_is_blacklist_installed()) {
 	syslog("error", "No url-filtering blacklist installed");
 	exit 1;
     }
     my $rc = squidguard_auto_update(0);
     exit 1 if $rc;
     squidguard_update_blacklist(0);
-    if (VyattaWebproxy::squidguard_is_configured()) {
-	VyattaWebproxy::squid_restart(0);
+    if (squidguard_is_configured()) {
+	squid_restart(0);
     }
     exit 0;
 }

@@ -23,8 +23,8 @@
 # **** End License ****
 #
 
-use lib "/opt/vyatta/share/perl5/";
-use VyattaWebproxy;
+use lib "/opt/vyatta/share/perl5";
+use Vyatta::Webproxy qw(squidguard_get_log_files);
 
 use warnings;
 use strict;
@@ -40,7 +40,7 @@ my %users        = ();
 my %sites        = ();
 
 
-my @log_files = VyattaWebproxy::squidguard_get_log_files();
+my @log_files = squidguard_get_log_files();
 if (scalar(@log_files) < 1) {
     print "No webproxy blacklist log\n";
     exit 0;

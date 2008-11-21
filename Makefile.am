@@ -1,6 +1,6 @@
 cfgdir		  = $(datadir)/vyatta-cfg/templates
 opdir		  = $(datadir)/vyatta-op/templates
-share_perl5dir	  = $(datarootdir)/perl5
+share_perl5dir	  = $(datarootdir)/perl5/Vyatta
 bin_sudo_usersdir = $(bindir)/sudo-users
 cgidir            = /usr/lib/cgi-bin
 wwwdir            = /var/www/images
@@ -12,7 +12,7 @@ bin_sudo_users_SCRIPTS  = scripts/vyatta-show-webproxy.pl
 bin_sudo_users_SCRIPTS += scripts/vyatta-sg-summary.pl
 bin_sudo_users_SCRIPTS += scripts/vyatta-sg-blacklist.pl
 
-share_perl5_DATA  = scripts/VyattaWebproxy.pm
+share_perl5_DATA  = lib/Vyatta/Webproxy.pm
 
 cgi_SCRIPTS = cgi/squidGuard-simple.cgi
 

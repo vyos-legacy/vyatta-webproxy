@@ -21,7 +21,26 @@
 # 
 # **** End License ****
 #
-package VyattaWebproxy;
+package Vyatta::Webproxy;
+our @EXPORT = qw(
+	squidguard_build_dest
+	squidguard_generate_db
+	squidguard_get_blacklist_dir
+	squidguard_get_blacklist_domains_urls_exps
+	squidguard_get_blacklist_files
+	squidguard_get_blacklist_log
+	squidguard_get_blacklists
+	squidguard_get_log_files
+	squidguard_is_blacklist_installed
+	squidguard_is_configured
+	squid_restart
+	squid_stop
+	webproxy_write_file
+);
+use base qw(Exporter);
+
+use strict;
+use warnings;
 
 use File::Basename;
 use VyattaConfig;

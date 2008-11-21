@@ -26,15 +26,15 @@
 use Getopt::Long;
 use POSIX;
 
-use lib "/opt/vyatta/share/perl5/";
-use VyattaWebproxy;
+use lib "/opt/vyatta/share/perl5";
+use Vyatta::Webproxy;
 
 use warnings;
 use strict;
 
 
 sub squidguard_show_blacklists {
-    my @lists = VyattaWebproxy::squidguard_get_blacklists();
+    my @lists = squidguard_get_blacklists();
 
     if (scalar(@lists) < 1) {
 	exit 0;
@@ -49,8 +49,7 @@ sub squidguard_show_blacklists {
 sub squidguard_show_blacklist_domains_urls {
     my ($type, $category, $searchtext) = @_;
 
-    my @files = VyattaWebproxy::squidguard_get_blacklist_files($type, 
-							       $category);
+    my @files = squidguard_get_blacklist_files($type, $category);
     foreach my $file (@files) {
 	if (-r $file) {
 	    open(my $FILE, "<", $file) or die "Error: read $!";
