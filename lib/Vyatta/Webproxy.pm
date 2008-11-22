@@ -43,7 +43,7 @@ use strict;
 use warnings;
 
 use File::Basename;
-use VyattaConfig;
+use Vyatta::Config;
 
 #squid globals
 my $squid_init      = '/etc/init.d/squid3';
@@ -67,7 +67,7 @@ sub squid_stop {
 }
 
 sub squidguard_is_configured {
-    my $config = new VyattaConfig;
+    my $config = new Vyatta::Config;
     my $path = "service webproxy url-filtering squidguard";
 
     $config->setLevel("service webproxy url-filtering");

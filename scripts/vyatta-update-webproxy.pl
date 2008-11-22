@@ -27,7 +27,7 @@ use Getopt::Long;
 use POSIX;
 
 use lib "/opt/vyatta/share/perl5";
-use VyattaConfig;
+use Vyatta::Config;
 use Vyatta::Webproxy;
 
 use warnings;
@@ -116,7 +116,7 @@ sub squid_get_constants {
 }
 
 sub squid_validate_conf {
-    my $config = new VyattaConfig;
+    my $config = new Vyatta::Config;
 
     #
     # Need to validate the config before issuing any iptables 
@@ -153,7 +153,7 @@ sub squid_validate_conf {
 
 sub squid_get_values {
     my $output = '';
-    my $config = new VyattaConfig;
+    my $config = new Vyatta::Config;
 
     $config->setLevel("service webproxy");
     my $o_def_port = $config->returnOrigValue("default-port");
@@ -293,7 +293,7 @@ sub squidguard_gen_cron {
 }
 
 sub squidguard_validate_conf {
-    my $config = new VyattaConfig;
+    my $config = new Vyatta::Config;
     my $path = "service webproxy url-filtering squidguard";
 
     $config->setLevel("service webproxy url-filtering");
@@ -412,7 +412,7 @@ sub squidguard_generate_local {
 
 sub squidguard_get_values {
     my $output = "";
-    my $config = new VyattaConfig;
+    my $config = new Vyatta::Config;
 
     my $path = "service webproxy url-filtering squidguard";
 
