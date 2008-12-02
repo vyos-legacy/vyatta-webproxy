@@ -202,7 +202,7 @@ sub squidguard_build_dest {
 
     my $output = "";
     my ($domains, $urls, $exps) =
-	VyattaWebproxy::squidguard_get_blacklist_domains_urls_exps($category);
+	squidguard_get_blacklist_domains_urls_exps($category);
     if (!defined $domains and !defined $urls and !defined $exps) {
 	return "";
     }
@@ -211,7 +211,7 @@ sub squidguard_build_dest {
     $output .= "\turllist        $urls\n"    if defined $urls;
     $output .= "\texpressionlist $exps\n"    if defined $exps;
     if ($logging) {
-	$log = basename($squidguard_blacklist_log);
+	my $log = basename($squidguard_blacklist_log);
 	$output .= "\tlog            $log\n";
     }
     $output .= "}\n\n";
