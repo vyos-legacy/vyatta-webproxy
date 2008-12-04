@@ -1,3 +1,58 @@
+vyatta-webproxy (0.2) unstable; urgency=low
+
+	  3.2.0
+  [ Mark O'Brien ]
+
+
+  [ Stig Thormodsrud ]
+  * Fix 3900: Wrong license on vyatta-webproxy package.
+  * Add a warning if configuring webproxy with no nameserver.
+  * Fix "missing default acl" error message.
+  * Change webproxy default blacklist.
+  * Add config to disable access logs.
+  * Disable storage log if caching is disabled.
+  * Fix 3801: Updating blacklists starts webproxy when not configured
+  * Fix delete of a webproxy listen port.
+  * Limit global port change to listen addresses that have not changed.
+  * Changing default port requires delete of old nat rule and add with
+    new port.
+  * Add conntrack chain for webproxy.
+  * Fix execute permission on cron file.
+  * Allow blacklist to be updated from op mode or cron.
+  * Change auto-update interval to 'daily', 'weekly' or 'monthly'.
+  * - Rework webproxy to make auto update easier to support.
+  * Remove redundant call to pager.
+  * Add "show webproxy blacklist log summary" to summarize raw logs.
+  * Fix "show webproxy log" less prompt.
+  * Fix group ownership on squid/squidguard log file.
+  * Do squidGuard config validation before generating a squid NAT rules.
+  * Add simple cgi script that can be used as a redirector to indicate
+    why a
+  * Fix sort warning.
+  * Change squid logs to grp adm so that operator can view them.
+  * Add more error checking of squidguard config.
+  * - Change "listening-address" to "listen-address".
+  * - Change default to not block blacklists.
+  * Prompt the user to download a default blacklist if no blacklist
+    exists.
+  * Add "update webproxy blacklists".
+  * Fix "squidguard block-site" functionality to match PRD.
+  * Add "show webproxy blacklist domains|urls|search".
+  * Add "show webproxy blacklist category|log".
+  * Add squidguard allow-category.
+  * Change squidguard to use 1 blacklist log file.
+  * Change service/webproxy/squidguard to service/webproxy/url-
+    filtering/squidguard.
+  * Add 1st pass of squidguard support.
+  * Add "show webproxy log" command.
+  * Add ability to disable caching with cache-size = 0.
+  * Add nat redirect to make transparent proxy work.
+  * Fix webproxy debian until op commands are added.
+
+  [ Mark O'Brien ]
+
+ -- Mark O'Brien <mobrien@firebolt.vyatta.com>  Tue, 25 Nov 2008 19:11:16 -0800
+
 vyatta-webproxy (0.1) unstable; urgency=low
 
   * Initial Release.
