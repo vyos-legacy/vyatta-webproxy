@@ -499,7 +499,7 @@ GetOptions("update!"           => \$update_webproxy,
 my @lines = `ip addr show | grep 'inet '`;
 chomp @lines;
 foreach my $line (@lines) {
-    if ($line =~ /inet\s+([0-9.]+)\/.*\s(\w+)$/) {
+    if ($line =~ /inet\s+([0-9.]+)\/.*\s([\w.]+)$/) {
 	$config_ipaddrs{$1} = $2;
     }
 }
