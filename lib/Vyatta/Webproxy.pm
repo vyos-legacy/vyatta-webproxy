@@ -171,18 +171,20 @@ sub squidguard_get_blacklist_files {
 	my ($domain, $url, $exp) = squidguard_get_blacklist_domains_urls_exps(
 	    $list);
 	if ($type eq 'domains') {
+	    next if !defined $domain;
 	    if (defined $category) {
 		next if $domain ne "$category/domains";
 	    }
 	    $domain = "$squidguard_blacklist_db/$domain";
-	    push @files, $domain if defined $domain;	    
+	    push @files, $domain;
 	}
 	if ($type eq 'urls') {
+	    next if !defined $url;
 	    if (defined $category) {
 		next if $url ne "$category/urls";
 	    }
 	    $url = "$squidguard_blacklist_db/$url";
-	    push @files, $url if defined $url;	    
+	    push @files, $url;
 	}
     }
     @files = sort(@files);
