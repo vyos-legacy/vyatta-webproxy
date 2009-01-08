@@ -1,3 +1,28 @@
+vyatta-webproxy (0.2.1) unstable; urgency=low
+
+  [ An-Cheng Huang ]
+  * add support for development build
+
+  [ Stephen Hemminger ]
+  * Rename VyattaWebproxy to Vyatta::Webproxy
+  * Convert to Vyatta::
+
+  [ Stig Thormodsrud ]
+  * Fix Webproxy to work with new perl module hierarchy.
+  * Fix 3946: Cannot configure webproxy to listen to an address on a
+
+  [ An-Cheng Huang ]
+  * update maintainer information
+  * "files" file should be removed before package build
+
+  [ Stig Thormodsrud ]
+  * Fix 4012: Typo in web proxy validation
+  * Fix 4018: Internal errors searching webproxy blacklist
+
+  [ An-Cheng Huang ]
+
+ -- An-Cheng Huang <ancheng@vyatta.com>  Thu, 08 Jan 2009 12:20:20 -0800
+
 vyatta-webproxy (0.2) unstable; urgency=low
 
 	  3.2.0
