@@ -1,0 +1,3 @@
+help: Update a category of the webproxy blacklist database
+run: sudo /opt/vyatta/bin/sudo-users/vyatta-sg-blacklist.pl --update-blacklist-category="$5"
+allowed: sudo /opt/vyatta/bin/sudo-users/vyatta-show-webproxy.pl --action="show-blacklists"

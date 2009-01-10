@@ -124,7 +124,7 @@ sub squidguard_install_blacklist_def {
 }
 
 sub squidguard_update_blacklist {
-    my $interactive = shift;
+    my ($interactive, $update_category) = @_;
 
     my @blacklists = squidguard_get_blacklists();
     print "Checking permissions...\n" if $interactive;
@@ -136,6 +136,7 @@ sub squidguard_update_blacklist {
     # generate temporary config for each category & generate DB
     #
     foreach my $category (@blacklists) {
+	next if defined $update_category and $update_category ne $category;
 	squidguard_generate_db($interactive, $category);
     }
 }
@@ -144,11 +145,23 @@ sub squidguard_update_blacklist {
 #
 # main
 #
-my ($update_bl, $auto_update_bl);
+my ($update_bl, $update_bl_cat, $auto_update_bl);
 
-GetOptions("update-blacklist!"      => \$update_bl,
-	   "auto-update-blacklist!" => \$auto_update_bl,
+GetOptions("update-blacklist!"           => \$update_bl,
+	   "update-blacklist-category=s" => \$update_bl_cat,
+	   "auto-update-blacklist!"      => \$auto_update_bl,
 );
+
+if (defined $update_bl_cat) {
+    squidguard_update_blacklist(1, $update_bl_cat);
+    if (squidguard_is_configured()) {
+	print "\nThe webproxy daemon must be restarted\n";
+	if (prompt("Would you like to restart it now? [confirm]",-y1d=>"y")) {
+	    squid_restart(1);
+	}
+    }
+    exit 0;
+}
 
 if (defined $update_bl) {
     my $updated = 0;
