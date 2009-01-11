@@ -464,9 +464,13 @@ sub squidguard_get_values {
 	$acl_block .= "!$category ";
     }
 
+    $config->setLevel($path);
+    my $ipaddr_onoff = '!in-addr';
+    $ipaddr_onoff = '' if $config->exists('allow-ipaddr-url');
+
     $output .= "acl {\n";
     $output .= "\tdefault {\n";
-    $output .= "\t\tpass $local_ok !in-addr $acl_block all\n";
+    $output .= "\t\tpass $local_ok $ipaddr_onoff $acl_block all\n";
 
     $config->setLevel($path);
     my $redirect_url = $config->returnValue("redirect-url");

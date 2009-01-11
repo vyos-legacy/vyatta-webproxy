@@ -1,5 +1,5 @@
 multi:
 type: txt
-help: Enable logging for blacklist category
+help: Set logging for blacklist category
 allowed: sudo /opt/vyatta/bin/sudo-users/vyatta-show-webproxy.pl --action="show-blacklists"
          echo all
