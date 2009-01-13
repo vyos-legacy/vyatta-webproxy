@@ -1,3 +1,10 @@
+vyatta-webproxy (0.2.0+islavista1) unstable; urgency=low
+
+  [ Stig Thormodsrud ]
+  * Fix 3946: Cannot configure webproxy to listen to an address on a
+
+ -- An-Cheng Huang <ancheng@vyatta.com>  Mon, 12 Jan 2009 17:06:29 -0800
+
 vyatta-webproxy (0.2) unstable; urgency=low
 
 	  3.2.0
