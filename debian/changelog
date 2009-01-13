@@ -1,3 +1,11 @@
+vyatta-webproxy (0.2.2) unstable; urgency=low
+
+  * Fix 4028: Add the ability to update individual blacklist category
+  * Fix 4007: Add ability to allow direct IP requests when URL filtering
+    is
+
+ -- Stig Thormodsrud <stig@io.vyatta.com>  Mon, 12 Jan 2009 18:24:10 -0800
+
 vyatta-webproxy (0.2.1) unstable; urgency=low
 
   [ An-Cheng Huang ]
