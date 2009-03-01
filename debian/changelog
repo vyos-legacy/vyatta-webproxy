@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.3) unstable; urgency=low
+
+  * Fix 4151: ENH: Add command to restart the squid webproxy service.
+
+ -- Stig Thormodsrud <stig@io.vyatta.com>  Sun, 01 Mar 2009 12:18:10 -0800
+
 vyatta-webproxy (0.2.2) unstable; urgency=low
 
   * Fix 4028: Add the ability to update individual blacklist category
