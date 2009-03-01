@@ -1,0 +1,6 @@
+#!/bin/sh
+if [ -x  /opt/vyatta/config/active/service/webproxy ]; then 
+   /etc/init.d/squid3 restart
+else
+   echo "webproxy service is not running"
+fi
