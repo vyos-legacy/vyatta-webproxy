@@ -1,3 +1,10 @@
+vyatta-webproxy (0.2.4) unstable; urgency=low
+
+  * Fix 4174: Add the ability to configure the 'append_domain' option
+    for 'service webproxy' (squid.conf)
+
+ -- Stig Thormodsrud <stig@io.vyatta.com>  Sun, 08 Mar 2009 12:49:08 -0700
+
 vyatta-webproxy (0.2.3) unstable; urgency=low
 
   * Fix 4151: ENH: Add command to restart the squid webproxy service.
