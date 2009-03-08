@@ -129,6 +129,17 @@ sub squid_validate_conf {
 	exit 1;
     }
 
+    my $append_domain = $config->returnValue("append-domain");
+    if (defined $append_domain) {
+	if ($append_domain =~ /^\.(.*)$/) {
+	    my @addrs = gethostbyname($1) or 
+		print "Warning: can't resolve $1: $!\n";
+	} else {
+	    print "Domain [$append_domain] must begin with '.'\n";
+	    exit 1;
+	}
+    }
+
     $config->setLevel("service webproxy listen-address");
     my @ipaddrs = $config->listNodes();
     if (scalar(@ipaddrs) <= 0) {
@@ -148,6 +159,7 @@ sub squid_validate_conf {
     if (system("grep -cq nameserver /etc/resolv.conf 2> /dev/null")) {
 	print "Warning: webproxy may not work properly without a nameserver\n";
     }
+
     return 0;
 }
 
@@ -179,6 +191,11 @@ sub squid_get_values {
 
     # by default we'll disable the store log
     $output .= "cache_store_log none\n\n";
+
+    my $append_domain = $config->returnValue("append-domain");
+    if (defined $append_domain) {
+	$output .= "append_domain $append_domain\n\n";
+    }
 
     my $num_nats = 0;
     $config->setLevel("service webproxy listen-address");
