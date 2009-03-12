@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.5) unstable; urgency=low
+
+  * Fix append-domain help string.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Thu, 12 Mar 2009 09:00:24 -0700
+
 vyatta-webproxy (0.2.4) unstable; urgency=low
 
   * Fix 4174: Add the ability to configure the 'append_domain' option
