@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.6) unstable; urgency=low
+
+  * Add support for regex expressions in blacklists.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Tue, 17 Mar 2009 18:13:42 -0700
+
 vyatta-webproxy (0.2.5) unstable; urgency=low
 
   * Fix append-domain help string.
