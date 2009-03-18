@@ -22,6 +22,9 @@
 # **** End License ****
 #
 package Vyatta::Webproxy;
+use strict;
+use warnings;
+
 our @EXPORT = qw(
 	squidguard_build_dest
 	squidguard_generate_db
@@ -38,10 +41,6 @@ our @EXPORT = qw(
 	webproxy_write_file
 );
 use base qw(Exporter);
-
-use strict;
-use warnings;
-
 use File::Basename;
 use Vyatta::Config;
 
@@ -116,10 +115,16 @@ sub squidguard_generate_db {
     $output     .= "\t}\n}\n\n";
     webproxy_write_file($tmp_conf, $output);
 
-    foreach my $type ('domains', 'urls') {
+    my $dir = "$db_dir/$category";
+    if ( -l $dir) {
+	print "Skip link for   [$category] -> [", readlink($dir), "]\n" 
+	    if $interactive;
+	return;
+    }
+    foreach my $type ('domains', 'urls', 'expressions') {
 	my $path = "$category/$type";
 	my $file = "$db_dir/$path";
-	if (-e $file) {
+	if (-e $file and -s _) {  # check exists and non-zero
 	    my $file_db = "$file.db";
 	    if (! -e $file_db) {
 		#
@@ -155,9 +160,9 @@ sub squidguard_get_blacklist_domains_urls_exps {
     my $dir = $squidguard_blacklist_db;
 
     my ($domains, $urls, $exps) = undef;
-    $domains = "$list/domains"     if -f "$dir/$list/domains";
-    $urls    = "$list/urls"        if -f "$dir/$list/urls";
-    $exps    = "$list/expressions" if -f "$dir/$list/expressions";
+    $domains = "$list/domains"     if -f "$dir/$list/domains" && -s _;
+    $urls    = "$list/urls"        if -f "$dir/$list/urls" && -s _;
+    $exps    = "$list/expressions" if -f "$dir/$list/expressions" && -s _;
     return ($domains, $urls, $exps);
 }
 
@@ -186,6 +191,15 @@ sub squidguard_get_blacklist_files {
 	    $url = "$squidguard_blacklist_db/$url";
 	    push @files, $url;
 	}
+	if ($type eq 'expressions') {
+	    next if !defined $exp;
+	    if (defined $category) {
+		next if $url ne "$category/expressions";
+	    }
+	    $exp = "$squidguard_blacklist_db/$exp";
+	    push @files, $exp;
+	}
+
     }
     @files = sort(@files);
     return @files;
