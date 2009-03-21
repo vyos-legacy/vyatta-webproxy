@@ -26,7 +26,7 @@
 use Getopt::Long;
 use POSIX;
 
-use lib "/opt/vyatta/share/perl5";
+use lib '/opt/vyatta/share/perl5';
 use Vyatta::Config;
 use Vyatta::Webproxy;
 
@@ -43,7 +43,7 @@ my $squid_chain     = 'WEBPROXY_CONNTRACK';
 
 # squidGuard globals
 my $squidguard_conf          = '/etc/squid/squidGuard.conf';
-my $squidguard_redirect_def  = "http://www.google.com";
+my $squidguard_redirect_def  = 'http://www.google.com';
 my $squidguard_enabled       = 0;
 
 # global hash of ipv4 addresses on the system
@@ -122,14 +122,14 @@ sub squid_validate_conf {
     # Need to validate the config before issuing any iptables 
     # commands.
     #
-    $config->setLevel("service webproxy");
-    my $cache_size = $config->returnValue("cache-size");
+    $config->setLevel('service webproxy');
+    my $cache_size = $config->returnValue('cache-size');
     if (! defined $cache_size) {
 	print "Must define cache-size\n";
 	exit 1;
     }
 
-    my $append_domain = $config->returnValue("append-domain");
+    my $append_domain = $config->returnValue('append-domain');
     if (defined $append_domain) {
 	if ($append_domain =~ /^\.(.*)$/) {
 	    my @addrs = gethostbyname($1) or 
@@ -140,7 +140,7 @@ sub squid_validate_conf {
 	}
     }
 
-    $config->setLevel("service webproxy listen-address");
+    $config->setLevel('service webproxy listen-address');
     my @ipaddrs = $config->listNodes();
     if (scalar(@ipaddrs) <= 0) {
 	print "Must define at least 1 listen-address\n";
@@ -156,7 +156,7 @@ sub squid_validate_conf {
     }
 
     #check for nameserver
-    if (system("grep -cq nameserver /etc/resolv.conf 2> /dev/null")) {
+    if (system('grep -cq nameserver /etc/resolv.conf 2> /dev/null')) {
 	print "Warning: webproxy may not work properly without a nameserver\n";
     }
 
@@ -167,13 +167,13 @@ sub squid_get_values {
     my $output = '';
     my $config = new Vyatta::Config;
 
-    $config->setLevel("service webproxy");
-    my $o_def_port = $config->returnOrigValue("default-port");
-    my $n_def_port = $config->returnValue("default-port");
+    $config->setLevel('service webproxy');
+    my $o_def_port = $config->returnOrigValue('default-port');
+    my $n_def_port = $config->returnValue('default-port');
     $o_def_port = $squid_def_port if ! defined $o_def_port;
     $n_def_port = $squid_def_port if ! defined $n_def_port;
 
-    my $cache_size = $config->returnValue("cache-size");
+    my $cache_size = $config->returnValue('cache-size');
     $cache_size = 100 if ! defined $cache_size;
     if ($cache_size > 0) {
 	$output  = "cache_dir $squid_def_fs $squid_cache_dir ";
@@ -183,7 +183,7 @@ sub squid_get_values {
 	$output  = "cache_dir null $squid_cache_dir\n";
     }
 
-    if ($config->exists("disable-access-log")) {
+    if ($config->exists('disable-access-log')) {
 	$output .= "access_log none\n\n";
     } else {
 	$output .= "access_log $squid_log squid\n\n";
@@ -192,20 +192,20 @@ sub squid_get_values {
     # by default we'll disable the store log
     $output .= "cache_store_log none\n\n";
 
-    my $append_domain = $config->returnValue("append-domain");
+    my $append_domain = $config->returnValue('append-domain');
     if (defined $append_domain) {
 	$output .= "append_domain $append_domain\n\n";
     }
 
     my $num_nats = 0;
-    $config->setLevel("service webproxy listen-address");
+    $config->setLevel('service webproxy listen-address');
     my %ipaddrs_status = $config->listNodeStatus();
     my @ipaddrs = sort keys %ipaddrs_status;
     foreach my $ipaddr (@ipaddrs) {
 	my $status = $ipaddrs_status{$ipaddr};
 	#print "$ipaddr = [$status]\n";
-	$status = "changed" if $n_def_port != $o_def_port and 
-	                       $status eq "static";
+	$status = 'changed' if $n_def_port != $o_def_port and 
+	                       $status eq 'static';
 
 	my $o_port = $config->returnOrigValue("$ipaddr port");	
 	my $n_port = $config->returnValue("$ipaddr port");	
@@ -214,10 +214,10 @@ sub squid_get_values {
 
 	my $o_dt = $config->existsOrig("$ipaddr disable-transparent");
 	my $n_dt = $config->exists("$ipaddr disable-transparent");
-	my $transparent = "transparent";
-	$transparent = "" if $n_dt;
-	if ($status ne "deleted") {
-	    $num_nats++ if $transparent eq "transparent";
+	my $transparent = 'transparent';
+	$transparent = '' if $n_dt;
+	if ($status ne 'deleted') {
+	    $num_nats++ if $transparent eq 'transparent';
 	    $output .= "http_port $ipaddr:$n_port $transparent\n";
 	}
 
@@ -227,11 +227,11 @@ sub squid_get_values {
 	# handle NAT rule for transparent
 	#
         my $A_or_D = undef;
-	if ($status eq "added" and !defined $n_dt) {
+	if ($status eq 'added' and !defined $n_dt) {
 	    $A_or_D = 'A';
-	} elsif ($status eq "deleted" and !defined $o_dt) {
+	} elsif ($status eq 'deleted' and !defined $o_dt) {
 	    $A_or_D = 'D';
-	} elsif ($status eq "changed") {
+	} elsif ($status eq 'changed') {
 	    $o_dt = 0 if !defined $o_dt;
 	    $n_dt = 0 if !defined $n_dt;
 	    if ($o_dt ne $n_dt) {
@@ -266,8 +266,8 @@ sub squid_get_values {
 	    #print "[$cmd]\n";
 	    my $rc = system($cmd);
 	    if ($rc) {
-		my $action = "adding";
-		$action = "deleting" if $A_or_D eq 'D';
+		my $action = 'adding';
+		$action = 'deleting' if $A_or_D eq 'D';
 		print "Error $action port redirect [$!]\n";
 	    }
 	} 
@@ -279,8 +279,8 @@ sub squid_get_values {
     #
     # check if squidguard is configured
     #
-    $config->setLevel("service webproxy url-filtering");
-    if ($config->exists("squidguard")) {
+    $config->setLevel('service webproxy url-filtering');
+    if ($config->exists('squidguard')) {
 	$squidguard_enabled = 1;
 	$output .= "redirect_program /usr/bin/squidGuard -c $squidguard_conf\n";
 	$output .= "redirect_children 8\n";
@@ -311,10 +311,10 @@ sub squidguard_gen_cron {
 
 sub squidguard_validate_conf {
     my $config = new Vyatta::Config;
-    my $path = "service webproxy url-filtering squidguard";
+    my $path = 'service webproxy url-filtering squidguard';
 
-    $config->setLevel("service webproxy url-filtering");
-    return 0 if ! $config->exists("squidguard");
+    $config->setLevel('service webproxy url-filtering');
+    return 0 if ! $config->exists('squidguard');
 
     my $blacklist_installed = 1;
     if (!squidguard_is_blacklist_installed()) {
@@ -377,14 +377,14 @@ sub squidguard_validate_conf {
     $config->setLevel("$path log");
     my @log_category = $config->returnValues();
     foreach my $log (@log_category) {
-	if (! defined $is_blacklist{$log} and $log ne "all") {
+	if (! defined $is_blacklist{$log} and $log ne 'all') {
 	    print "Log [$log] is not a valid blacklist category\n";
 	    exit 1;
 	}
     }
 
     $config->setLevel($path);
-    my $redirect_url = $config->returnValue("redirect-url");
+    my $redirect_url = $config->returnValue('redirect-url');
     $redirect_url    = $squidguard_redirect_def if ! defined $redirect_url;
     if ($redirect_url !~ /^http:\/\/.*/) {
 	print "Invalid redirect-url [$redirect_url]. ";
@@ -406,21 +406,21 @@ sub squidguard_get_constants {
 }
 
 sub squidguard_generate_local {
-    my ($action, @local_sites) = @_;
+    my ($action, $type, @local_values) = @_;
 
     my $db_dir       = squidguard_get_blacklist_dir();
     my $local_action = "local-$action";
     my $dir          = "$db_dir/$local_action";
 
-    if (scalar(@local_sites) <= 0) {
+    if (scalar(@local_values) <= 0) {
 	system("rm -rf $dir") if -d $dir;
-	return "";
+	return;
     }
 
     system("mkdir $dir") if ! -d $dir;
-    my $file = "$dir/domains";
+    my $file = "$dir/$type";
     open(my $FD, ">", $file) or die "unable to open $file $!";
-    print $FD join("\n", @local_sites), "\n";
+    print $FD join("\n", @local_values), "\n";
     close $FD;
     system("chown -R proxy.proxy $dir > /dev/null 2>&1");
     squidguard_generate_db(0, $local_action);
@@ -431,16 +431,23 @@ sub squidguard_get_values {
     my $output = "";
     my $config = new Vyatta::Config;
 
-    my $path = "service webproxy url-filtering squidguard";
+    my $path = 'service webproxy url-filtering squidguard';
 
     $config->setLevel("$path local-ok");
     my @local_ok_sites = $config->returnValues();
-    my $local_ok = squidguard_generate_local('ok', @local_ok_sites);
+    my $local_ok       = squidguard_generate_local('ok', 'domains', 
+						   @local_ok_sites);
  
     $config->setLevel("$path local-block");
     my @local_block_sites = $config->returnValues();
-    my $local_block       = squidguard_generate_local('block', 
+    my $local_block       = squidguard_generate_local('block', 'domains',
 						      @local_block_sites);
+
+    $config->setLevel("$path local-block-keyword");
+    my @local_block_keywords = $config->returnValues();
+    my $local_block_keyword  = squidguard_generate_local('block-keyword', 
+							 'expressions',
+							 @local_block_keywords);
 
     $config->setLevel("$path block-category");
     my @block_category = $config->returnValues();
@@ -460,18 +467,21 @@ sub squidguard_get_values {
     if (defined $is_block{all}) {
 	@block_category = ();
 	foreach my $category (@blacklists) {
-	    next if $category eq "local-ok";
-	    next if $category eq "local-block";
+	    next if $category eq 'local-ok';
+	    next if $category eq 'local-block';
+	    next if $category eq 'local-block-keyword';
 	    push @block_category, $category;
 	}
     }
 
-    if ($local_ok ne "") {
+    if (defined $local_ok) {
 	$output .= squidguard_build_dest($local_ok, 0);
     }
 
-    my $acl_block = "";
-    foreach my $category ($local_block, @block_category) {
+    my $acl_block = '';
+    push @block_category, $local_block if defined $local_block;
+    push @block_category, $local_block_keyword if defined $local_block_keyword;
+    foreach my $category (@block_category) {
 	next if $category eq "";
 	my $logging = 0;
 	if (defined $is_logged{all} or defined $is_logged{$category}) {
@@ -484,6 +494,7 @@ sub squidguard_get_values {
     $config->setLevel($path);
     my $ipaddr_onoff = '!in-addr';
     $ipaddr_onoff = '' if $config->exists('allow-ipaddr-url');
+    $local_ok     = '' if ! defined $local_ok;
 
     $output .= "acl {\n";
     $output .= "\tdefault {\n";
@@ -496,8 +507,8 @@ sub squidguard_get_values {
 
     # auto update
     $config->setLevel($path);
-    my $old_auto_update = $config->returnOrigValue("auto-update");
-    my $auto_update     = $config->returnValue("auto-update");
+    my $old_auto_update = $config->returnOrigValue('auto-update');
+    my $auto_update     = $config->returnValue('auto-update');
     squidguard_gen_cron($old_auto_update, $auto_update);
 
     return $output;

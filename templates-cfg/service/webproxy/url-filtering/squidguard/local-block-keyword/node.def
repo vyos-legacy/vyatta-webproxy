@@ -1,0 +1,5 @@
+multi:
+type: txt
+help: Set keyword to block
+comp_help: possible completions:
+  <text>   Set keyword to block
