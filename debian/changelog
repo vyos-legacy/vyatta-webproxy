@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.7) unstable; urgency=low
+
+  * Add support for url-filtering by keyword/regex.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Sat, 21 Mar 2009 14:47:42 -0700
+
 vyatta-webproxy (0.2.6) unstable; urgency=low
 
   * Add support for regex expressions in blacklists.
