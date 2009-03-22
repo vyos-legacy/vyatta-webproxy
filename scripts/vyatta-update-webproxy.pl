@@ -286,6 +286,12 @@ sub squid_get_values {
 	$output .= "redirect_children 8\n";
 	$output .= "redirector_bypass on\n\n";
     }
+
+    #
+    # default to NOT insert the client address in X-Forwarded-For header
+    #
+    $output .= "forwarded_for off\n\n";
+
     return $output;
 }
 
