@@ -41,10 +41,7 @@ sub squid_show_mime {
 sub squidguard_show_blacklists {
     my @lists = squidguard_get_blacklists();
 
-    if (scalar(@lists) < 1) {
-	exit 0;
-    }
-
+    exit 0 if scalar(@lists) < 1;
     @lists = sort(@lists);
     foreach my $list (@lists) {
 	print "$list\n";
@@ -97,27 +94,27 @@ if (! defined $action) {
     exit 1;
 }
 
-if ($action eq "show-blacklists") {
+if ($action eq 'show-blacklists') {
     squidguard_show_blacklists();
     exit 0;
 }
 
-if ($action eq "show-blacklist-domains") {
+if ($action eq 'show-blacklist-domains') {
     squidguard_show_blacklist_domains_urls('domains', $category);
     exit 0;
 }
 
-if ($action eq "show-blacklist-urls") {
+if ($action eq 'show-blacklist-urls') {
     squidguard_show_blacklist_domains_urls('urls', $category);
     exit 0;
 }
 
-if ($action eq "show-mime") {
+if ($action eq 'show-mime') {
     squid_show_mime();
     exit 0;
 }
 
-if ($action eq "search-blacklist") {
+if ($action eq 'search-blacklist') {
     squidguard_search_blacklist($searchtext);
     exit 0;
 }

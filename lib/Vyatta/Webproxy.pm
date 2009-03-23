@@ -84,12 +84,10 @@ sub squid_get_mime {
 
 sub squidguard_is_configured {
     my $config = new Vyatta::Config;
-    my $path = "service webproxy url-filtering squidguard";
-
-    $config->setLevel("service webproxy url-filtering");
+    $config->setLevel('service webproxy url-filtering');
     # This checks the running config, so it is assumed 
     # to be called from op mode.
-    return 1 if $config->existsOrig("squidguard");
+    return 1 if $config->existsOrig('squidguard');
     return 0;
 }
 
@@ -175,7 +173,6 @@ sub squidguard_get_blacklist_domains_urls_exps {
     my ($list) = shift;
 
     my $dir = $squidguard_blacklist_db;
-
     my ($domains, $urls, $exps) = undef;
     $domains = "$list/domains"     if -f "$dir/$list/domains" && -s _;
     $urls    = "$list/urls"        if -f "$dir/$list/urls" && -s _;
@@ -187,7 +184,6 @@ sub squidguard_get_blacklist_files {
     my ($type, $category) = @_;
 
     my @lists = squidguard_get_blacklists();
-    
     my @files = ();
     foreach my $list (@lists) {
 	my ($domain, $url, $exp) = squidguard_get_blacklist_domains_urls_exps(
@@ -233,11 +229,11 @@ sub squidguard_get_log_files {
 sub squidguard_build_dest {
     my ($category, $logging) = @_;
 
-    my $output = "";
+    my $output = '';
     my ($domains, $urls, $exps) =
 	squidguard_get_blacklist_domains_urls_exps($category);
     if (!defined $domains and !defined $urls and !defined $exps) {
-	return "";
+	return '';
     }
     $output  = "dest $category {\n";
     $output .= "\tdomainlist     $domains\n" if defined $domains;
