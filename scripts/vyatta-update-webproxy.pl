@@ -173,14 +173,28 @@ sub squid_get_values {
     $o_def_port = $squid_def_port if ! defined $o_def_port;
     $n_def_port = $squid_def_port if ! defined $n_def_port;
 
+    my @block_mime_types = $config->returnValues('reply-block-mime');
+    foreach my $mime (@block_mime_types) {
+	my $acl_name = '';
+	if ($mime =~ /^(\S+)\/(\S+)$/ ) {
+	    $acl_name = "$1-$2";
+	    $acl_name = substr($acl_name, 0, 30) if length($acl_name) > 30;
+	} else {
+	    print "unexpected mime type [$mime]";
+	    next;
+	}
+	$output .= "acl $acl_name rep_mime_type $mime\n";
+	$output .= "http_reply_access deny $acl_name\n\n";
+    }
+
     my $cache_size = $config->returnValue('cache-size');
     $cache_size = 100 if ! defined $cache_size;
     if ($cache_size > 0) {
-	$output  = "cache_dir $squid_def_fs $squid_cache_dir ";
+	$output .= "cache_dir $squid_def_fs $squid_cache_dir ";
         $output .= "$cache_size 16 256\n";
     } else {
 	# disable caching
-	$output  = "cache_dir null $squid_cache_dir\n";
+	$output .= "cache_dir null $squid_cache_dir\n";
     }
 
     if ($config->exists('disable-access-log')) {

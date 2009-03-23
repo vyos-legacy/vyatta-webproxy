@@ -38,6 +38,7 @@ our @EXPORT = qw(
 	squidguard_is_configured
 	squid_restart
 	squid_stop
+        squid_get_mime
 	webproxy_write_file
 );
 use base qw(Exporter);
@@ -46,6 +47,7 @@ use Vyatta::Config;
 
 #squid globals
 my $squid_init      = '/etc/init.d/squid3';
+my $squid_mime_type = '/usr/share/squid3/mime.conf';
 
 #squidGuard globals
 my $squidguard_blacklist_db  = '/var/lib/squidguard/db';
@@ -63,6 +65,21 @@ sub squid_restart {
 
 sub squid_stop {
     system("$squid_init stop");
+}
+
+sub squid_get_mime {
+    my @mime_types = ();
+    open(my $FILE, "<", $squid_mime_type) or die "Error: read $!";
+    my @lines = <$FILE>;
+    close($FILE);
+    foreach my $line (@lines) {
+	next if $line =~ /^#/;         # skip comments
+	if ($line =~ /^([\S]+)[\s]+([\S]+)[\s]+([\S]+)[\s]+([\S]+).*$/) {
+	    my $type = $2;
+	    push @mime_types, $type if $type =~ /\//;
+	}
+    }
+    return @mime_types;
 }
 
 sub squidguard_is_configured {

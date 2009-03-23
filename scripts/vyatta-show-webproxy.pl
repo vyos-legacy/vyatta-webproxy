@@ -32,6 +32,11 @@ use Vyatta::Webproxy;
 use warnings;
 use strict;
 
+sub squid_show_mime {
+    my @mime = squid_get_mime();
+    exit 0 if scalar(@mime) < 1;
+    print join("\n", @mime);
+}
 
 sub squidguard_show_blacklists {
     my @lists = squidguard_get_blacklists();
@@ -104,6 +109,11 @@ if ($action eq "show-blacklist-domains") {
 
 if ($action eq "show-blacklist-urls") {
     squidguard_show_blacklist_domains_urls('urls', $category);
+    exit 0;
+}
+
+if ($action eq "show-mime") {
+    squid_show_mime();
     exit 0;
 }
 
