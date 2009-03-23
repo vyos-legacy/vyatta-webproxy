@@ -1,0 +1,5 @@
+multi:
+type: txt
+help: Set a mime-type to block
+allowed: sudo /opt/vyatta/bin/sudo-users/vyatta-show-webproxy.pl \
+                --action="show-mime"
