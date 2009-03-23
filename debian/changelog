@@ -1,3 +1,11 @@
+vyatta-webproxy (0.2.9) unstable; urgency=low
+
+  * Add support for blocking by reply mime-type.
+  * Add cli for webproxy to block based on mime-type.
+  * Minor cleanups.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Mon, 23 Mar 2009 16:25:28 -0700
+
 vyatta-webproxy (0.2.8) unstable; urgency=low
 
   * Disable X-Forwarded-for header.
