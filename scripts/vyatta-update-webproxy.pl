@@ -25,6 +25,7 @@
 
 use Getopt::Long;
 use POSIX;
+use File::Basename;
 
 use lib '/opt/vyatta/share/perl5';
 use Vyatta::Config;
@@ -475,8 +476,9 @@ sub squidguard_get_values {
 
     $config->setLevel("$path log");
     my @log_category = $config->returnValues();
+    my $log_file = undef;
     if (scalar(@log_category) > 0) {
-	my $log_file = squidguard_get_blacklist_log();
+	$log_file = squidguard_get_blacklist_log();
 	system("touch $log_file");
 	system("chown proxy.adm $log_file");
     }
@@ -511,6 +513,9 @@ sub squidguard_get_values {
 	$acl_block .= "!$category ";
     }
 
+    #
+    # define default acl
+    #
     $config->setLevel($path);
     my $ipaddr_onoff = '!in-addr';
     $ipaddr_onoff = '' if $config->exists('allow-ipaddr-url');
@@ -523,7 +528,12 @@ sub squidguard_get_values {
     $config->setLevel($path);
     my $redirect_url = $config->returnValue("redirect-url");
     $redirect_url    = $squidguard_redirect_def if ! defined $redirect_url;
-    $output         .= "\t\tredirect 302:$redirect_url\n\t}\n}\n";
+    $output         .= "\t\tredirect 302:$redirect_url\n";
+    if ($log_file) {
+	my $file = basename($log_file);
+	$output     .= "\t\tlog $file\n";
+    }
+    $output         .= "\t}\n}\n";
 
     # auto update
     $config->setLevel($path);
