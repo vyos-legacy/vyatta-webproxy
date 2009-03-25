@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.10) unstable; urgency=low
+
+  * Fix 4246: webproxy url-filter should log ip-address url drops.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Tue, 24 Mar 2009 17:12:29 -0700
+
 vyatta-webproxy (0.2.9) unstable; urgency=low
 
   * Add support for blocking by reply mime-type.
