@@ -1,0 +1,10 @@
+type: txt
+help: Set the default-policy
+default: "allow"
+
+syntax:expression: $VAR(@) in "allow", "block" ; \
+                   "must be 'allow' or 'block'"
+
+comp_help: possible completions:
+  allow    Set default filter policy to allow (default)
+  block    Set default filter policy to block 

@@ -520,10 +520,17 @@ sub squidguard_get_values {
     my $ipaddr_onoff = '!in-addr';
     $ipaddr_onoff = '' if $config->exists('allow-ipaddr-url');
     $local_ok     = '' if ! defined $local_ok;
+    
+    my $def_policy = $config->returnValue('default-policy');
+    if (! defined $def_policy or $def_policy eq 'allow') {
+	$def_policy = 'all';
+    } else {
+	$def_policy = 'none';
+    }
 
     $output .= "acl {\n";
     $output .= "\tdefault {\n";
-    $output .= "\t\tpass $local_ok $ipaddr_onoff $acl_block all\n";
+    $output .= "\t\tpass $local_ok $ipaddr_onoff $acl_block $def_policy\n";
 
     $config->setLevel($path);
     my $redirect_url = $config->returnValue("redirect-url");
