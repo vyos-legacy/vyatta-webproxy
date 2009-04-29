@@ -87,7 +87,7 @@ if ($url =~ /\.(gif|jpg|jpeg|mpg|mpeg|avi|mov)$/i) {
 	if (defined $admin) {
 	    print "<A HREF=mailto:$admin>$admin</A>\n";
 	} else {
-	    print "<A ALIGN=CENTER>contact your network administrator.<BR>\n";
+	    print "<A ALIGN=CENTER>your network administrator.<BR>\n";
 	}
 	print "</P>\n\n";
     } elsif ($targetclass eq "in-addr") {
