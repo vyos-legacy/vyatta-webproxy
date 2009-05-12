@@ -13,7 +13,7 @@
 # General Public License for more details.
 # 
 # This code was originally developed by Vyatta, Inc.
-# Portions created by Vyatta are Copyright (C) 2008 Vyatta, Inc.
+# Portions created by Vyatta are Copyright (C) 2008-2009 Vyatta, Inc.
 # All Rights Reserved.
 # 
 # Author: Stig Thormodsrud
@@ -29,6 +29,7 @@ use File::Basename;
 
 use lib '/opt/vyatta/share/perl5';
 use Vyatta::Config;
+use Vyatta::TypeChecker;
 use Vyatta::Webproxy;
 
 use warnings;
@@ -330,27 +331,24 @@ sub squidguard_gen_cron {
     system("chmod 755 $file");
 }
 
-sub squidguard_validate_conf {
-    my $config = new Vyatta::Config;
-    my $path = 'service webproxy url-filtering squidguard';
+sub squidguard_validate_filter {
+    my ($config, $path, $group, $blacklist_installed) = @_;
 
-    $config->setLevel('service webproxy url-filtering');
-    return 0 if ! $config->exists('squidguard');
-
-    my $blacklist_installed = 1;
-    if (!squidguard_is_blacklist_installed()) {
-	print "Warning: no blacklists installed\n";
-	$blacklist_installed = 0;
-    }
     my @blacklists   = squidguard_get_blacklists();
     my %is_blacklist = map { $_ => 1 } @blacklists;
+
+    if ($group ne 'default') {
+	$config->setLevel("$path source-group");
+	my $source = $config->returnValue();
+	die "Must set source-group for [$group]\n" if ! $source;
+    }
 
     $config->setLevel("$path block-category");
     my @block_category = $config->returnValues();
     my %is_block       = map { $_ => 1 } @block_category; 
     foreach my $category (@block_category) {
 	if (! defined $is_blacklist{$category} and $category ne 'all') {
-	    print "Unknown blacklist category [$category]\n";
+	    print "Unknown blacklist category [$category] for policy [$group]\n";
 	    exit 1;
 	}
     }
@@ -369,12 +367,11 @@ sub squidguard_validate_conf {
     my $db_dir = squidguard_get_blacklist_dir();
     foreach my $category (@block_category) {
 	if (! defined $is_blacklist{$category}) {
-	    print "Unknown blacklist category [$category]\n";
+	    print "Unknown blacklist category [$category] for policy [$group]\n";
 	    exit 1;
 	}
-	my ($domains, $urls, $exps) =
-	    squidguard_get_blacklist_domains_urls_exps(
-		$category);
+	my ($domains, $urls, $exps) = 
+	    squidguard_get_blacklist_domains_urls_exps($category);
 	my $db_file = '';
 	if (defined $domains) {
 	    $db_file = "$db_dir/$domains.db";
@@ -403,6 +400,21 @@ sub squidguard_validate_conf {
 	    exit 1;
 	}
     }
+    return;
+}
+
+sub squidguard_validate_conf {
+    my $config = new Vyatta::Config;
+    my $path = 'service webproxy url-filtering squidguard';
+
+    $config->setLevel('service webproxy url-filtering');
+    return 0 if ! $config->exists('squidguard');
+
+    my $blacklist_installed = 1;
+    if (!squidguard_is_blacklist_installed()) {
+	print "Warning: no blacklists installed\n";
+	$blacklist_installed = 0;
+    }
 
     $config->setLevel($path);
     my $redirect_url = $config->returnValue('redirect-url');
@@ -412,6 +424,20 @@ sub squidguard_validate_conf {
         print "Should start with \"http://\"\n";
 	exit 1;
     }
+
+    # validate default filtering
+    squidguard_validate_filter($config, $path, 'default', 
+			       $blacklist_installed);
+
+    # validate group filtering
+    $path = "$path group-policy";
+    $config->setLevel($path);    
+    my @groups = $config->listNodes();
+    foreach my $group (@groups) {
+	squidguard_validate_filter($config, "$path $group", 
+				   $group,$blacklist_installed);
+    }
+
     return 0;
 }
 
@@ -427,10 +453,11 @@ sub squidguard_get_constants {
 }
 
 sub squidguard_generate_local {
-    my ($action, $type, @local_values) = @_;
+    my ($action, $type, $group, @local_values) = @_;
 
     my $db_dir       = squidguard_get_blacklist_dir();
     my $local_action = "local-$action";
+    $local_action    = "$group-local-$action" if $group;
     my $dir          = "$db_dir/$local_action";
 
     if (scalar(@local_values) <= 0) {
@@ -444,30 +471,118 @@ sub squidguard_generate_local {
     print $FD join("\n", @local_values), "\n";
     close $FD;
     system("chown -R proxy.proxy $dir > /dev/null 2>&1");
-    squidguard_generate_db(0, $local_action);
+    squidguard_generate_db(0, $local_action, $group);
     return $local_action;
 }
 
-sub squidguard_get_values {
-    my $output = "";
-    my $config = new Vyatta::Config;
+sub get_time_segments {
+    my ($time_string) = @_;
+    
+    $time_string =~ s/\s//g;
+    my @segments = split ',', $time_string;
+    push @segments, $time_string if scalar(@segments) < 1;
+    return @segments;
+}
 
-    my $path = 'service webproxy url-filtering squidguard';
+my %days_hash = (
+    'Sun'      => 's',
+    'Mon'      => 'm',
+    'Tue'      => 't',
+    'Wed'      => 'w',
+    'Thu'      => 'h',
+    'Fri'      => 'f',
+    'Sat'      => 'a',
+    'weekdays' => 'mtwhf',
+    'weekend'  => 'sa',
+    'all'      => 'smtwhfa',
+);
 
+sub fix_time_segment {
+    my ($segment) = @_;
+
+    return $segment;
+}
+
+sub squidguard_get_times {
+    my ($config, $path) = @_;
+
+    my $output = '';
+    $config->setLevel("$path time-period");
+    my @time_periods = $config->listNodes();
+    return (undef, undef) if scalar(@time_periods) < 1;
+
+    foreach my $time_period (@time_periods) {
+	$output .= "time $time_period {\n";
+	$config->setLevel("$path time-period $time_period days");	
+	my @days = $config->listNodes();
+	foreach my $day (@days) {
+	    my $day_str = $days_hash{$day};
+	    $config->setLevel("$path time-period $time_period days $day");	
+	    my $times    = $config->returnValue('time');
+	    my @segments = get_time_segments($times);
+	    my $time_str;
+	    foreach my $segment (@segments) {
+		$segment = fix_time_segment($segment);
+		$time_str .= "$segment ";
+	    }
+	    $output .= "\tweekly $day_str\t$time_str\n";
+	}
+	$output .= "}\n";
+    }
+    $output .= "\n";
+    return ($output, @time_periods);
+}
+
+sub squidguard_get_sources {
+    my ($config, $path) = @_;
+
+    my $output = '';
+    $config->setLevel("$path source-group");
+    my @sources = $config->listNodes();
+    return (undef, undef) if scalar(@sources) < 1;
+
+    foreach my $source (@sources) {
+	$output .= "src $source {\n";
+	$config->setLevel("$path source-group $source address");	
+	my @addrs = $config->returnValues();
+	if (scalar(@addrs) > 0) {
+	    foreach my $addr (@addrs) {
+		$output .= "\tip $addr\n";
+	    }
+	}
+	$config->setLevel("$path source-group $source domain");	
+	my @domains = $config->returnValues();
+	if (scalar(@domains) > 0) {
+	    foreach my $domain (@domains) {
+		$output .= "\tdomain $domain\n";
+	    }
+	}
+	$output .= "}\n";
+    }
+    $output .= "\n";
+    return ($output, @sources);
+}
+
+sub squidguard_get_dests {
+    my ($config, $path, $group) = @_;
+
+    my $output = '';
     $config->setLevel("$path local-ok");
     my @local_ok_sites = $config->returnValues();
-    my $local_ok       = squidguard_generate_local('ok', 'domains', 
+    my $local_ok       = squidguard_generate_local('ok', 'domains', $group,
 						   @local_ok_sites);
  
     $config->setLevel("$path local-block");
     my @local_block_sites = $config->returnValues();
     my $local_block       = squidguard_generate_local('block', 'domains',
+						      $group,
 						      @local_block_sites);
 
     $config->setLevel("$path local-block-keyword");
     my @local_block_keywords = $config->returnValues();
     my $local_block_keyword  = squidguard_generate_local('block-keyword', 
 							 'expressions',
+							 $group,
 							 @local_block_keywords);
 
     $config->setLevel("$path block-category");
@@ -489,65 +604,171 @@ sub squidguard_get_values {
     if (defined $is_block{all}) {
 	@block_category = ();
 	foreach my $category (@blacklists) {
-	    next if $category eq 'local-ok';
-	    next if $category eq 'local-block';
-	    next if $category eq 'local-block-keyword';
+	    next if $category =~ /-local-/;
+	    print "adding [$category]\n";
 	    push @block_category, $category;
 	}
     }
 
     if (defined $local_ok) {
-	$output .= squidguard_build_dest($local_ok, 0);
+	$output .= squidguard_build_dest('local-ok', 0, $group);
+    }
+    my $log = 0;
+    if (defined $local_block) {
+	$log = 1 if $is_logged{all} or $is_logged{"$group-local-block"};
+	$output .= squidguard_build_dest('local-block', $log, $group);
+    }
+    $log = 0;
+    if (defined $local_block_keyword) {
+	$log = 1 if $is_logged{all} or $is_logged{"$group-local-block-keywork"};
+	$output .= squidguard_build_dest('local-block-keyword', $log, $group);
     }
 
-    my $acl_block = '';
-    push @block_category, $local_block if defined $local_block;
-    push @block_category, $local_block_keyword if defined $local_block_keyword;
     foreach my $category (@block_category) {
-	next if $category eq "";
-	my $logging = 0;
-	if (defined $is_logged{all} or defined $is_logged{$category}) {
-	    $logging = 1;
-	}
-	$output .= squidguard_build_dest($category, $logging);
-	$acl_block .= "!$category ";
+	next if $category eq '';
+	$log = 0;
+	$log = 1 if $is_logged{all} or $is_logged{$category};
+	$output .= squidguard_build_dest($category, $log, $group);
     }
 
-    #
-    # define default acl
-    #
+    return $output;
+}
+
+sub squidguard_get_acls {
+    my ($config, $path, $policy, $time_periods, $sources) = @_;
+
+    my $output = "";
     $config->setLevel($path);
-    my $ipaddr_onoff = '!in-addr';
-    $ipaddr_onoff = '' if $config->exists('allow-ipaddr-url');
-    $local_ok     = '' if ! defined $local_ok;
-    
-    my $def_policy = $config->returnValue('default-policy');
-    if (! defined $def_policy or $def_policy eq 'allow') {
-	$def_policy = 'all';
+    my $source;
+    if ($policy eq 'default') {
+	$source = $policy;
     } else {
-	$def_policy = 'none';
+	$source = $config->returnValue('source-group');
+	my %source_hash = map { $_ => 1} @$sources;
+	if (! $source_hash{$source} ) {
+	    die "Error: group-source [$source] for policy [$policy] is not "
+		. "a defined group-source\n";
+	}
+    } 
+
+    my $time_period = $config->returnValue('time-period');
+    if ($time_period) {
+	print "[$policy] time [$time_period]\n";
+	$time_period =~ s/\s//g;
+	my $neg_time = 0;
+	if ($time_period =~ /^\!/) {
+	    $neg_time = 1;
+	    $time_period =~ s/!//;
+	}
+	my %time_hash = map { $_ => 1 } @$time_periods;
+	if (! $time_hash{$time_period}) {
+	    die "Error: unknown time-period [$time_period] for [$policy]\n";
+	}
+	if ($neg_time) {
+	    $output .= "\t$source outside $time_period {\n";
+	} else {
+	    $output .= "\t$source within $time_period {\n";
+	}
+    } else {
+	$output .= "\t$source {\n";
     }
+    
+    # order of evaluation
+    # 1) local-ok     (local override, whitelist)
+    # 2) local-block  (local override, blacklist)
+    # 3) in-addr      (allow-ipaddr-url or not)
+    # 4) block-categories     (blacklist category)
+    # 5) local-block-keywords (local regex blacklist)
+    # 6) default-policy (allow|drop = all|none)
 
-    $output .= "acl {\n";
-    $output .= "\tdefault {\n";
-    $output .= "\t\tpass $local_ok $ipaddr_onoff $acl_block $def_policy\n";
-
+    my $acl = "\t\tpass ";
     $config->setLevel($path);
+    # 1)
+    $acl .= "$source-local-ok "     if $config->exists('local-ok');
+    # 2)
+    $acl .= "!$source-local-block " if $config->exists('local-block');
+    # 3)
+    $acl .= "!in-addr "             if ! $config->exists('allow-ipaddr-url');
+    # 4)
+    my @block_cats = $config->returnValues('block-category');
+    if (scalar(@block_cats) > 0) {
+	my $block_conf = '';
+	foreach my $cat (@block_cats) {
+	    $block_conf .= "!$source-$cat ";
+	}
+	$acl .= $block_conf;
+    }
+    # 5)
+    $acl .= "!$source-local-block-keyword " if 
+	$config->exists('local-block-keyword');
+    # 6)
+    my $def_pol = $config->returnValue('default-policy');
+    if ($def_pol eq 'allow') {
+	$acl .= 'all';
+    } else {
+	$acl .= 'none';
+    }
+    $output .= "$acl\n";
+
+    # add redirect url
     my $redirect_url = $config->returnValue("redirect-url");
-    $redirect_url    = $squidguard_redirect_def if ! defined $redirect_url;
-    $output         .= "\t\tredirect 302:$redirect_url\n";
-    if ($log_file) {
-	my $file = basename($log_file);
-	$output     .= "\t\tlog $file\n";
+    if ($policy eq 'default') {
+	# Only the default policy needs to have some redirect url.  If
+        # the redirect url is not defined for a group-policy, then it
+	# will use the default.
+	$redirect_url = $squidguard_redirect_def if ! defined $redirect_url;
     }
-    $output         .= "\t}\n}\n";
+    $output .= "\t\tredirect 302:$redirect_url\n" if $redirect_url;
 
-    # auto update
-    $config->setLevel($path);
-    my $old_auto_update = $config->returnOrigValue('auto-update');
-    my $auto_update     = $config->returnValue('auto-update');
-    squidguard_gen_cron($old_auto_update, $auto_update);
+    # check if log all is defined
+    $config->setLevel("$path log");
+    my @log_category = $config->returnValues();
+    my %is_logged    = map { $_ => 1 } @log_category;  
+    if ($is_logged{'all'}) {
+	my $log_file = squidguard_get_blacklist_log();
+	my $log = basename($log_file);
+	$output .= "\t\tlog $log\n";
+    }
+    $output .= "\t}\n\n";
 
+    return $output;
+}
+
+sub squidguard_get_values {
+    my $output = "";
+    my $config = new Vyatta::Config;
+
+    my $path = 'service webproxy url-filtering squidguard';
+
+    # generate time conf
+    my ($time_conf, @time_periods) = squidguard_get_times($config, $path);
+    $output .= $time_conf if $time_conf;
+
+    # generate source conf
+    my ($source_conf, @sources) = squidguard_get_sources($config, $path);
+    $output .= $source_conf if $source_conf;
+
+    $config->setLevel("$path group-policy");
+    my @policys = $config->listNodes();
+ 
+    # generate dest conf (for all default & group-policy)
+    foreach my $policy ('default', @policys) {
+	my $tmp_path = $path;
+	$tmp_path .= " group-policy $policy" if $policy ne 'default';
+	my $dests_conf = squidguard_get_dests($config, $tmp_path, $policy);
+	$output .= $dests_conf if $dests_conf;  
+    }
+    
+    # generate acl conf (for all group-policy & default)
+    $output .= "acl {\n"; 
+    foreach my $policy (@policys, 'default') {
+	my $tmp_path = $path;
+	$tmp_path .= " group-policy $policy" if $policy ne 'default';
+	my $acl_conf = squidguard_get_acls($config, $tmp_path, $policy
+					   , \@time_periods, \@sources);
+	$output .= $acl_conf if $acl_conf;
+    }
+    $output .= "}\n"; 
     return $output;
 }
 
@@ -555,11 +776,12 @@ sub squidguard_get_values {
 #
 # main
 #
-my $update_webproxy;
-my $stop_webproxy;
+my ($update_webproxy, $stop_webproxy, $check_time, $check_source_group);
 
-GetOptions("update!"           => \$update_webproxy,
-           "stop!"             => \$stop_webproxy,
+GetOptions("update!"               => \$update_webproxy,
+           "stop!"                 => \$stop_webproxy,
+	   "check-time=s"          => \$check_time,
+	   "check-source-group=s"  => \$check_source_group,
 );
 
 #
@@ -588,6 +810,7 @@ if (defined $update_webproxy) {
 	webproxy_write_file($squidguard_conf, $config2);
     }
     squid_restart(1);
+    exit 0;
 }
 
 if (defined $stop_webproxy) {
@@ -597,8 +820,61 @@ if (defined $stop_webproxy) {
     squid_get_values();
     system("rm -f $squid_conf $squidguard_conf");
     squid_stop();
+    exit 0;
 }
 
-exit 0;
+sub validate_time {
+    my ($value) = @_;
+
+    my ($hour, $minute);
+    if ($value =~ /:/) {
+	if ($value =~ /([\d]+):([\d]+)/) {
+	    ($hour, $minute) = ($1, $2);
+	    if ($minute < 0 or $minute > 59) {
+		print "[$value] = [$minute] must between 0-59\n";
+		exit 1;
+	    }
+	} else {
+	    print "invalid time format [$value]\n";
+	    exit 1;
+	}
+    } else {
+	exit 1;
+    }
+    if ($hour < 0 or $hour > 24) {
+	print "[$value] = [$hour] must between 0-24\n";
+	exit 1;
+    }
+    return;
+}
+
+if (defined $check_time) {
+    my @segments = get_time_segments($check_time);
+    foreach my $segment (@segments) {
+	if ($segment =~ /(\d\d:\d\d)-(\d\d:\d\d)/) {
+	    my ($start, $stop) = ($1, $2);
+	    validate_time($start);
+	    validate_time($stop);
+	} else {
+	    print "invalid time format [$segment]\n";
+	    exit 1;
+	}
+    }
+    exit 0;
+}
+
+if (defined $check_source_group) {
+    if (!Vyatta::TypeChecker::validate_iptables4_addr($check_source_group)) {
+	print "ipvalid source group address [$check_source_group]\n";
+	exit 1;
+    }
+    if ($check_source_group =~ /\!/) {
+	print "ipvalid source group address [$check_source_group]\n";
+	exit 1;
+    }
+    exit 0;
+}
+
+exit 1;
 
 # end of file

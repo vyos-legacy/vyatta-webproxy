@@ -137,7 +137,7 @@ sub squidguard_update_blacklist {
     #
     foreach my $category (@blacklists) {
 	next if defined $update_category and $update_category ne $category;
-	squidguard_generate_db($interactive, $category);
+	squidguard_generate_db($interactive, $category, 'default');
     }
 }
 

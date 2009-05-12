@@ -12,7 +12,7 @@
 # General Public License for more details.
 #
 # This code was originally developed by Vyatta, Inc.
-# Portions created by Vyatta are Copyright (C) 2008 Vyatta, Inc.
+# Portions created by Vyatta are Copyright (C) 2008-2009 Vyatta, Inc.
 # All Rights Reserved.
 # 
 # Author: Stig Thormodsrud
@@ -118,12 +118,12 @@ sub squidguard_get_blacklists {
 }
 
 sub squidguard_generate_db {
-    my ($interactive, $category) = @_;
+    my ($interactive, $category, $group) = @_;
 
     my $db_dir   = squidguard_get_blacklist_dir();
     my $tmp_conf = "/tmp/sg.conf.$$";
     my $output   = "dbhome $db_dir\n";
-    $output     .= squidguard_build_dest($category, 0);
+    $output     .= squidguard_build_dest($category, 0, $group);
     $output     .= "\nacl {\n";
     $output     .= "\tdefault {\n";
     $output     .= "\t\tpass all\n";
@@ -227,15 +227,19 @@ sub squidguard_get_log_files {
 }
 
 sub squidguard_build_dest {
-    my ($category, $logging) = @_;
+    my ($category, $logging, $group) = @_;
 
     my $output = '';
-    my ($domains, $urls, $exps) =
-	squidguard_get_blacklist_domains_urls_exps($category);
-    if (!defined $domains and !defined $urls and !defined $exps) {
-	return '';
+    my ($domains, $urls, $exps);
+    if ($category =~ /^local-/) {
+	($domains, $urls, $exps) = squidguard_get_blacklist_domains_urls_exps(
+	    "$group-$category");
+    } else {
+	($domains, $urls, $exps) = squidguard_get_blacklist_domains_urls_exps(
+	    $category);
     }
-    $output  = "dest $category {\n";
+
+    $output  = "dest $group-$category {\n";
     $output .= "\tdomainlist     $domains\n" if defined $domains;
     $output .= "\turllist        $urls\n"    if defined $urls;
     $output .= "\texpressionlist $exps\n"    if defined $exps;

@@ -1,0 +1,12 @@
+multi:
+type:txt
+help: Set address for source-group
+
+syntax:expression: exec "${vyatta_sbindir}/vyatta-update-webproxy.pl \
+                             --check-source-group \"$VAR(@)\" "
+
+comp_help: possible completions:
+  <x.x.x.x>            Set IPv4 address 
+  <x.x.x.x>-<x.x.x.x>  Set IPv4 address range
+  <x.x.x.x/x>          Set Ipv4 network
+

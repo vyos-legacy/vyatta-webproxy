@@ -1,0 +1,12 @@
+type: txt
+help: Set the time for time-period
+
+syntax:expression: exec "${vyatta_sbindir}/vyatta-update-webproxy.pl\
+                             --check-time \"$VAR(@)\""; "expected format hh:mm - hh:mm in 24hr time"
+
+comp_help: possible completions:
+  <txt>   Set time range (hh:mm - hh:mm) in 24hr time
+ 
+          examples: "09:00 - 17:00"
+                    "09:00 - 12:00, 13:00 - 17:00"
+

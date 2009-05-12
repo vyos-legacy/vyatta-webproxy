@@ -1,0 +1,7 @@
+multi:
+type:txt
+help: Set domain for source-group
+
+comp_help: possible completions:
+  <txt>    Set the domain name for the source-group
+

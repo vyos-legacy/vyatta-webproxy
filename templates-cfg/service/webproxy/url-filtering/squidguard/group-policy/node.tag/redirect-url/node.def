@@ -1,0 +1,4 @@
+type: txt
+help: Set the redirect url for filtered websites
+comp_help: possible completions:
+  <txt>    Set url (example http://www.mysite.com)
