@@ -1,3 +1,11 @@
+vyatta-webproxy (0.2.13) unstable; urgency=low
+
+  * Remove duplicate "contact".
+  * Remove duplicate "contact".
+  * Add source-based and time-based URL filtering.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Tue, 12 May 2009 16:45:12 -0700
+
 vyatta-webproxy (0.2.12) unstable; urgency=low
 
   * Add configurable default-policy for webproxy url-filter.
