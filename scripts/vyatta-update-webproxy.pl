@@ -679,7 +679,7 @@ sub squidguard_get_acls {
     # 3) in-addr      (allow-ipaddr-url or not)
     # 4) block-categories     (blacklist category)
     # 5) local-block-keywords (local regex blacklist)
-    # 6) default-policy (allow|drop = all|none)
+    # 6) default-action (allow|block = all|none)
 
     my $acl = "\t\tpass ";
     $config->setLevel($path);
@@ -702,8 +702,8 @@ sub squidguard_get_acls {
     $acl .= "!$source-local-block-keyword " if 
 	$config->exists('local-block-keyword');
     # 6)
-    my $def_pol = $config->returnValue('default-policy');
-    if ($def_pol eq 'allow') {
+    my $def_action = $config->returnValue('default-action');
+    if ($def_action eq 'allow') {
 	$acl .= 'all';
     } else {
 	$acl .= 'none';
