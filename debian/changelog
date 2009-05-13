@@ -1,3 +1,11 @@
+vyatta-webproxy (0.2.14) unstable; urgency=low
+
+  * Change url-filter "default-policy" to "default-action".
+  * Forgot to delete default-policy nodes.
+  * Use policy group rather than source group for acl.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Tue, 12 May 2009 20:02:34 -0700
+
 vyatta-webproxy (0.2.13) unstable; urgency=low
 
   * Remove duplicate "contact".
