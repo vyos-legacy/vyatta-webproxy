@@ -653,7 +653,6 @@ sub squidguard_get_acls {
 
     my $time_period = $config->returnValue('time-period');
     if ($time_period) {
-	print "[$policy] time [$time_period]\n";
 	$time_period =~ s/\s//g;
 	my $neg_time = 0;
 	if ($time_period =~ /^\!/) {
@@ -684,9 +683,9 @@ sub squidguard_get_acls {
     my $acl = "\t\tpass ";
     $config->setLevel($path);
     # 1)
-    $acl .= "$source-local-ok "     if $config->exists('local-ok');
+    $acl .= "$policy-local-ok "     if $config->exists('local-ok');
     # 2)
-    $acl .= "!$source-local-block " if $config->exists('local-block');
+    $acl .= "!$policy-local-block " if $config->exists('local-block');
     # 3)
     $acl .= "!in-addr "             if ! $config->exists('allow-ipaddr-url');
     # 4)
@@ -694,12 +693,12 @@ sub squidguard_get_acls {
     if (scalar(@block_cats) > 0) {
 	my $block_conf = '';
 	foreach my $cat (@block_cats) {
-	    $block_conf .= "!$source-$cat ";
+	    $block_conf .= "!$policy-$cat ";
 	}
 	$acl .= $block_conf;
     }
     # 5)
-    $acl .= "!$source-local-block-keyword " if 
+    $acl .= "!$policy-local-block-keyword " if 
 	$config->exists('local-block-keyword');
     # 6)
     my $def_action = $config->returnValue('default-action');
@@ -711,7 +710,7 @@ sub squidguard_get_acls {
     $output .= "$acl\n";
 
     # add redirect url
-    my $redirect_url = $config->returnValue("redirect-url");
+    my $redirect_url = $config->returnValue('redirect-url');
     if ($policy eq 'default') {
 	# Only the default policy needs to have some redirect url.  If
         # the redirect url is not defined for a group-policy, then it
