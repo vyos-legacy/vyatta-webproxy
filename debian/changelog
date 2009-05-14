@@ -1,3 +1,10 @@
+vyatta-webproxy (0.2.15) unstable; urgency=low
+
+  * Fix 4406: webproxy daemon failed to be restarted after " update
+    webproxy
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Thu, 14 May 2009 15:46:55 -0700
+
 vyatta-webproxy (0.2.14) unstable; urgency=low
 
   * Change url-filter "default-policy" to "default-action".
