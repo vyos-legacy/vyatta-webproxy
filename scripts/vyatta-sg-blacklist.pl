@@ -13,7 +13,7 @@
 # General Public License for more details.
 # 
 # This code was originally developed by Vyatta, Inc.
-# Portions created by Vyatta are Copyright (C) 2008 Vyatta, Inc.
+# Portions created by Vyatta are Copyright (C) 2008-2009 Vyatta, Inc.
 # All Rights Reserved.
 # 
 # Author: Stig Thormodsrud
