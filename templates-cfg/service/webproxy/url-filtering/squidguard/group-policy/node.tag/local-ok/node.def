@@ -3,3 +3,6 @@ type: txt
 help: Set site to ok
 comp_help: possible completions:
   <text>   Set IP address or name of site to allow as ok
+
+delete: sudo /opt/vyatta/sbin/vyatta-update-webproxy.pl \
+                --delete-local "$VAR(../@)" local-ok "$VAR(@)";

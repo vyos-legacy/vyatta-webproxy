@@ -457,7 +457,7 @@ sub squidguard_generate_local {
 
     my $db_dir       = squidguard_get_blacklist_dir();
     my $local_action = "local-$action";
-    $local_action    = "$group-local-$action" if $group;
+    $local_action    = "$group-local-$action";
     my $dir          = "$db_dir/$local_action";
 
     if (scalar(@local_values) <= 0) {
@@ -471,7 +471,8 @@ sub squidguard_generate_local {
     print $FD join("\n", @local_values), "\n";
     close $FD;
     system("chown -R proxy.proxy $dir > /dev/null 2>&1");
-    squidguard_generate_db(0, $local_action, $group);
+    system("touch $dir/local");
+    squidguard_generate_db(0, "local-$action", $group);
     return $local_action;
 }
 
@@ -601,20 +602,19 @@ sub squidguard_get_dests {
 
     my @blacklists   = squidguard_get_blacklists();
     my %is_blacklist = map { $_ => 1 } @blacklists;
-    if (defined $is_block{all}) {
+    if ($is_block{all}) {
 	@block_category = ();
 	foreach my $category (@blacklists) {
-	    next if $category =~ /-local-/;
-	    print "adding [$category]\n";
+	    next if squidguard_is_category_local("$group-$category");
 	    push @block_category, $category;
 	}
     }
 
-    if (defined $local_ok) {
+    if ($local_ok) {
 	$output .= squidguard_build_dest('local-ok', 0, $group);
     }
     my $log = 0;
-    if (defined $local_block) {
+    if ($local_block) {
 	$log = 1 if $is_logged{all} or $is_logged{"$group-local-block"};
 	$output .= squidguard_build_dest('local-block', $log, $group);
     }
@@ -775,12 +775,14 @@ sub squidguard_get_values {
 #
 # main
 #
-my ($update_webproxy, $stop_webproxy, $check_time, $check_source_group);
+my ($update_webproxy, $stop_webproxy, $check_time, 
+    $check_source_group, @delete_local);
 
 GetOptions("update!"               => \$update_webproxy,
            "stop!"                 => \$stop_webproxy,
 	   "check-time=s"          => \$check_time,
 	   "check-source-group=s"  => \$check_source_group,
+	   "delete-local=s{3}"     => \@delete_local,
 );
 
 #
@@ -794,7 +796,7 @@ foreach my $line (@lines) {
     }
 }
 
-if (defined $update_webproxy) { 
+if ($update_webproxy) { 
     my $config;
 
     squid_validate_conf();
@@ -812,13 +814,20 @@ if (defined $update_webproxy) {
     exit 0;
 }
 
-if (defined $stop_webproxy) {
+if ($stop_webproxy) {
     #
     # Need to call squid_get_values() to delete the NAT rules
     #
     squid_get_values();
+    webproxy_delete_all_local();
     system("rm -f $squid_conf $squidguard_conf");
     squid_stop();
+    exit 0;
+}
+
+if (scalar(@delete_local) == 3) {
+    my ($policy, $category, $value) = @delete_local;
+    webproxy_delete_local_entry("$policy-$category", $value);
     exit 0;
 }
 
@@ -847,7 +856,7 @@ sub validate_time {
     return;
 }
 
-if (defined $check_time) {
+if ($check_time) {
     my @segments = get_time_segments($check_time);
     foreach my $segment (@segments) {
 	if ($segment =~ /(\d\d:\d\d)-(\d\d:\d\d)/) {
@@ -862,7 +871,7 @@ if (defined $check_time) {
     exit 0;
 }
 
-if (defined $check_source_group) {
+if ($check_source_group) {
     if (!Vyatta::TypeChecker::validate_iptables4_addr($check_source_group)) {
 	print "ipvalid source group address [$check_source_group]\n";
 	exit 1;

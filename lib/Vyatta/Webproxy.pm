@@ -24,6 +24,7 @@
 package Vyatta::Webproxy;
 use strict;
 use warnings;
+use File::Compare;
 
 our @EXPORT = qw(
 	squidguard_build_dest
@@ -36,10 +37,13 @@ our @EXPORT = qw(
 	squidguard_get_log_files
 	squidguard_is_blacklist_installed
 	squidguard_is_configured
+        squidguard_is_category_local
 	squid_restart
 	squid_stop
         squid_get_mime
 	webproxy_write_file
+        webproxy_delete_local_entry
+        webproxy_delete_all_local
 );
 use base qw(Exporter);
 use File::Basename;
@@ -159,11 +163,19 @@ sub squidguard_generate_db {
     system("rm $tmp_conf");
 }
 
+sub squidguard_is_category_local {
+    my ($category) = @_;
+
+    my $db_dir = squidguard_get_blacklist_dir();
+    my $local_file = "$db_dir/$category/local";
+    return 1 if -e $local_file;
+    return 0;
+}
+
 sub squidguard_is_blacklist_installed {
     my @blacklists = squidguard_get_blacklists();
     foreach my $category (@blacklists) {
-	next if $category eq 'local-ok';
-	next if $category eq 'local-block';
+	next if squidguard_is_category_local($category);
 	return 1;
     }
     return 0;
@@ -231,7 +243,7 @@ sub squidguard_build_dest {
 
     my $output = '';
     my ($domains, $urls, $exps);
-    if ($category =~ /^local-/) {
+    if (squidguard_is_category_local("$group-$category")) {
 	($domains, $urls, $exps) = squidguard_get_blacklist_domains_urls_exps(
 	    "$group-$category");
     } else {
@@ -251,12 +263,71 @@ sub squidguard_build_dest {
     return $output;
 }
 
+sub webproxy_read_file {
+    my ($file) = @_;
+    my @lines;
+    if ( -e $file) {
+	open(my $FILE, '<', $file) or die "Error: read $!";
+	@lines = <$FILE>;
+	close($FILE);
+	chomp @lines;
+    }
+    return @lines;
+}
+
+sub is_same_as_file {
+    my ($file, $value) = @_;
+
+    return if ! -e $file;
+
+    my $mem_file;
+    open my $MF, '+<', \$mem_file or die "couldn't open memfile $!\n";
+    print $MF $value;
+    seek($MF, 0, 0);
+    
+    my $rc = compare($file, $MF);
+    return 1 if $rc == 0;
+    return;
+}
+
 sub webproxy_write_file {
     my ($file, $config) = @_;
+
+    # Avoid unnecessary writes.  At boot the file will be the
+    # regenerated with the same content.
+    return if is_same_as_file($file, $config);
 
     open(my $fh, '>', $file) || die "Couldn't open $file - $!";
     print $fh $config;
     close $fh;
+}
+
+sub webproxy_delete_local_entry {
+    my ($file, $value) = @_;
+
+    my $db_dir = squidguard_get_blacklist_dir();
+    $file = "$db_dir/$file";
+    my @lines = webproxy_read_file($file);
+    my $config = '';
+    foreach my $line (@lines) {
+	$config .= "$line\n" if $line ne $value;
+    }
+    if ($config eq '') {
+	unlink($file);
+    } else {
+	webproxy_write_file($file, $config);
+    }
+    return;
+}
+
+sub webproxy_delete_all_local {
+    my $db_dir = squidguard_get_blacklist_dir();
+    my @categorys = squidguard_get_blacklists();
+    foreach my $category (@categorys) {
+	if (squidguard_is_category_local($category)) {
+	    system("rm -rf $db_dir/$category");
+	}
+    }
 }
 
 1;
