@@ -24,7 +24,6 @@
 package Vyatta::Webproxy;
 use strict;
 use warnings;
-use File::Compare;
 
 our @EXPORT = qw(
 	squidguard_build_dest
@@ -47,6 +46,7 @@ our @EXPORT = qw(
 );
 use base qw(Exporter);
 use File::Basename;
+use File::Compare;
 use Vyatta::Config;
 
 #squid globals
@@ -280,7 +280,7 @@ sub is_same_as_file {
 
     return if ! -e $file;
 
-    my $mem_file;
+    my $mem_file = '';
     open my $MF, '+<', \$mem_file or die "couldn't open memfile $!\n";
     print $MF $value;
     seek($MF, 0, 0);
@@ -300,6 +300,7 @@ sub webproxy_write_file {
     open(my $fh, '>', $file) || die "Couldn't open $file - $!";
     print $fh $config;
     close $fh;
+    return 1;
 }
 
 sub webproxy_delete_local_entry {
@@ -328,6 +329,7 @@ sub webproxy_delete_all_local {
 	    system("rm -rf $db_dir/$category");
 	}
     }
+    return;
 }
 
 1;
