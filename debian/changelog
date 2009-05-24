@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.18) unstable; urgency=low
+
+  * Add listen-address to local-ok.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Sun, 24 May 2009 14:11:58 -0700
+
 vyatta-webproxy (0.2.17) unstable; urgency=low
 
   * Minor format cleanup.
