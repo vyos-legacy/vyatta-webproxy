@@ -430,7 +430,7 @@ sub squidguard_validate_conf {
 			       $blacklist_installed);
 
     # validate group filtering
-    $path = "$path group-policy";
+    $path = "$path policy-rule";
     $config->setLevel($path);    
     my @groups = $config->listNodes();
     foreach my $group (@groups) {
@@ -457,7 +457,7 @@ sub squidguard_generate_local {
 
     my $db_dir       = squidguard_get_blacklist_dir();
     my $local_action = "local-$action";
-    $local_action    = "$group-local-$action";
+    $local_action    = "local-$action-$group";
     my $dir          = "$db_dir/$local_action";
 
     if (scalar(@local_values) <= 0) {
@@ -534,34 +534,31 @@ sub squidguard_get_times {
     return ($output, @time_periods);
 }
 
-sub squidguard_get_sources {
-    my ($config, $path) = @_;
+sub squidguard_get_source {
+    my ($config, $path, $policy) = @_;
 
     my $output = '';
-    $config->setLevel("$path source-group");
-    my @sources = $config->listNodes();
-    return (undef, undef) if scalar(@sources) < 1;
+    $config->setLevel("$path policy-rule $policy");
+    my $source = $config->returnValue('source-group');
 
-    foreach my $source (@sources) {
-	$output .= "src $source {\n";
-	$config->setLevel("$path source-group $source address");	
-	my @addrs = $config->returnValues();
-	if (scalar(@addrs) > 0) {
-	    foreach my $addr (@addrs) {
-		$output .= "\tip $addr\n";
-	    }
+    $output .= "src $source-$policy {\n";
+    $config->setLevel("$path source-group $source address");	
+    my @addrs = $config->returnValues();
+    if (scalar(@addrs) > 0) {
+	foreach my $addr (@addrs) {
+	    $output .= "\tip $addr\n";
 	}
-	$config->setLevel("$path source-group $source domain");	
-	my @domains = $config->returnValues();
-	if (scalar(@domains) > 0) {
-	    foreach my $domain (@domains) {
-		$output .= "\tdomain $domain\n";
-	    }
-	}
-	$output .= "}\n";
     }
-    $output .= "\n";
-    return ($output, @sources);
+
+    $config->setLevel("$path source-group $source domain");	
+    my @domains = $config->returnValues();
+    if (scalar(@domains) > 0) {
+	foreach my $domain (@domains) {
+	    $output .= "\tdomain $domain\n";
+	}
+    }
+    $output .= "}\n";
+    return $output;
 }
 
 sub squidguard_get_dests {
@@ -605,7 +602,7 @@ sub squidguard_get_dests {
     if ($is_block{all}) {
 	@block_category = ();
 	foreach my $category (@blacklists) {
-	    next if squidguard_is_category_local("$group-$category");
+	    next if squidguard_is_category_local("$category-$group");
 	    push @block_category, $category;
 	}
     }
@@ -615,12 +612,12 @@ sub squidguard_get_dests {
     }
     my $log = 0;
     if ($local_block) {
-	$log = 1 if $is_logged{all} or $is_logged{"$group-local-block"};
+	$log = 1 if $is_logged{all} or $is_logged{"local-block-$group"};
 	$output .= squidguard_build_dest('local-block', $log, $group);
     }
     $log = 0;
     if (defined $local_block_keyword) {
-	$log = 1 if $is_logged{all} or $is_logged{"$group-local-block-keywork"};
+	$log = 1 if $is_logged{all} or $is_logged{"local-block-keywork-$group"};
 	$output .= squidguard_build_dest('local-block-keyword', $log, $group);
     }
 
@@ -635,7 +632,7 @@ sub squidguard_get_dests {
 }
 
 sub squidguard_get_acls {
-    my ($config, $path, $policy, $time_periods, $sources) = @_;
+    my ($config, $path, $policy, $time_periods) = @_;
 
     my $output = "";
     $config->setLevel($path);
@@ -644,11 +641,7 @@ sub squidguard_get_acls {
 	$source = $policy;
     } else {
 	$source = $config->returnValue('source-group');
-	my %source_hash = map { $_ => 1} @$sources;
-	if (! $source_hash{$source} ) {
-	    die "Error: group-source [$source] for policy [$policy] is not "
-		. "a defined group-source\n";
-	}
+	$source = "$source-$policy";
     } 
 
     my $time_period = $config->returnValue('time-period');
@@ -683,9 +676,9 @@ sub squidguard_get_acls {
     my $acl = "\t\tpass ";
     $config->setLevel($path);
     # 1)
-    $acl .= "$policy-local-ok "     if $config->exists('local-ok');
+    $acl .= "local-ok-$policy "     if $config->exists('local-ok');
     # 2)
-    $acl .= "!$policy-local-block " if $config->exists('local-block');
+    $acl .= "!local-block-$policy " if $config->exists('local-block');
     # 3)
     $acl .= "!in-addr "             if ! $config->exists('allow-ipaddr-url');
     # 4)
@@ -693,12 +686,12 @@ sub squidguard_get_acls {
     if (scalar(@block_cats) > 0) {
 	my $block_conf = '';
 	foreach my $cat (@block_cats) {
-	    $block_conf .= "!$policy-$cat ";
+	    $block_conf .= "!$cat-$policy ";
 	}
 	$acl .= $block_conf;
     }
     # 5)
-    $acl .= "!$policy-local-block-keyword " if 
+    $acl .= "!local-block-keyword-$policy " if 
 	$config->exists('local-block-keyword');
     # 6)
     my $def_action = $config->returnValue('default-action');
@@ -713,7 +706,7 @@ sub squidguard_get_acls {
     my $redirect_url = $config->returnValue('redirect-url');
     if ($policy eq 'default') {
 	# Only the default policy needs to have some redirect url.  If
-        # the redirect url is not defined for a group-policy, then it
+        # the redirect url is not defined for a policy-rule, then it
 	# will use the default.
 	$redirect_url = $squidguard_redirect_def if ! defined $redirect_url;
     }
@@ -743,26 +736,30 @@ sub squidguard_get_values {
     my ($time_conf, @time_periods) = squidguard_get_times($config, $path);
     $output .= $time_conf if $time_conf;
 
-    # generate source conf
-    my ($source_conf, @sources) = squidguard_get_sources($config, $path);
-    $output .= $source_conf if $source_conf;
-
-    $config->setLevel("$path group-policy");
+    $config->setLevel("$path policy-rule");
     my @policys = $config->listNodes();
+    @policys = sort @policys;
+
+    # generate source conf for all policy-rule
+    my @sources = ();
+    foreach my $policy (@policys) {
+	my $source_conf  = squidguard_get_source($config, $path, $policy);
+	$output .= $source_conf if $source_conf;
+    }
  
-    # generate dest conf (for all default & group-policy)
+    # generate dest conf (for all default & policy-rule)
     foreach my $policy ('default', @policys) {
 	my $tmp_path = $path;
-	$tmp_path .= " group-policy $policy" if $policy ne 'default';
+	$tmp_path .= " policy-rule $policy" if $policy ne 'default';
 	my $dests_conf = squidguard_get_dests($config, $tmp_path, $policy);
 	$output .= $dests_conf if $dests_conf;  
     }
     
-    # generate acl conf (for all group-policy & default)
+    # generate acl conf (for all policy-rule & default)
     $output .= "acl {\n"; 
     foreach my $policy (@policys, 'default') {
 	my $tmp_path = $path;
-	$tmp_path .= " group-policy $policy" if $policy ne 'default';
+	$tmp_path .= " policy-rule $policy" if $policy ne 'default';
 	my $acl_conf = squidguard_get_acls($config, $tmp_path, $policy
 					   , \@time_periods, \@sources);
 	$output .= $acl_conf if $acl_conf;

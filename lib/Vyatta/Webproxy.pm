@@ -243,15 +243,15 @@ sub squidguard_build_dest {
 
     my $output = '';
     my ($domains, $urls, $exps);
-    if (squidguard_is_category_local("$group-$category")) {
+    if (squidguard_is_category_local("$category-$group")) {
 	($domains, $urls, $exps) = squidguard_get_blacklist_domains_urls_exps(
-	    "$group-$category");
+	    "$category-$group");
     } else {
 	($domains, $urls, $exps) = squidguard_get_blacklist_domains_urls_exps(
 	    $category);
     }
 
-    $output  = "dest $group-$category {\n";
+    $output  = "dest $category-$group {\n";
     $output .= "\tdomainlist     $domains\n" if defined $domains;
     $output .= "\turllist        $urls\n"    if defined $urls;
     $output .= "\texpressionlist $exps\n"    if defined $exps;
