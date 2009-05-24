@@ -565,17 +565,24 @@ sub squidguard_get_dests {
     my ($config, $path, $group) = @_;
 
     my $output = '';
+
+    # get local-ok
+    $config->setLevel('service webproxy listen-address');
+    my @listen_addrs = $config->listNodes();
     $config->setLevel("$path local-ok");
     my @local_ok_sites = $config->returnValues();
+    push @local_ok_sites, @listen_addrs;
     my $local_ok       = squidguard_generate_local('ok', 'domains', $group,
 						   @local_ok_sites);
  
+    # get local-block
     $config->setLevel("$path local-block");
     my @local_block_sites = $config->returnValues();
     my $local_block       = squidguard_generate_local('block', 'domains',
 						      $group,
 						      @local_block_sites);
 
+    # get local-block-keyword
     $config->setLevel("$path local-block-keyword");
     my @local_block_keywords = $config->returnValues();
     my $local_block_keyword  = squidguard_generate_local('block-keyword', 
@@ -583,6 +590,7 @@ sub squidguard_get_dests {
 							 $group,
 							 @local_block_keywords);
 
+    # get block-category
     $config->setLevel("$path block-category");
     my @block_category = $config->returnValues();
     my %is_block       = map { $_ => 1 } @block_category;    
