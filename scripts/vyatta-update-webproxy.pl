@@ -103,7 +103,16 @@ sub squid_get_constants {
     $output .= "acl Safe_ports port 777         # multiling http\n";
     $output .= "acl CONNECT method CONNECT\n\n";
     
-    $output .= "http_access allow manager localhost\n";
+    system("touch $squid_log");
+    system("chown proxy.adm $squid_log");
+
+    return $output;
+}
+
+sub squid_get_http_access_constants {
+    my $output;
+
+    $output  = "http_access allow manager localhost\n";
     $output .= "http_access deny manager\n";
     $output .= "http_access deny !Safe_ports\n";
     $output .= "http_access deny CONNECT !SSL_ports\n";
@@ -111,9 +120,33 @@ sub squid_get_constants {
     $output .= "http_access allow net\n";
     $output .= "http_access deny all\n\n";
 
-    system("touch $squid_log");
-    system("chown proxy.adm $squid_log");
+    return $output
+}
 
+sub squid_get_config_acls {
+    my $config = new Vyatta::Config;
+    my $output;
+
+    # add domain-block
+    $config->setLevel('service webproxy domain-block'); 
+    my @domains_block = $config->returnValues();
+    if (scalar(@domains_block) > 0) {
+	foreach my $domain (@domains_block) {
+	    $output .= "acl BLOCKDOMAIN dstdomain $domain\n";
+	}
+	$output .= "http_access deny BLOCKDOMAIN\n\n";
+    }
+
+    # add domain-noncache
+    $config->setLevel('service webproxy domain-noncache'); 
+    my @domains_noncache = $config->returnValues();
+    if (scalar(@domains_noncache) > 0) {
+	foreach my $domain (@domains_noncache) {
+	    $output .= "acl NOCACHE dstdomain $domain\n";
+	}
+	$output .= "no_cache deny NOCACHE\n\n";
+    }
+    
     return $output;
 }
 
@@ -684,7 +717,7 @@ sub squidguard_get_acls {
     my $acl = "\t\tpass ";
     $config->setLevel($path);
     # 1)
-    $acl .= "local-ok-$policy "     if $config->exists('local-ok');
+    $acl .= "local-ok-$policy ";
     # 2)
     $acl .= "!local-block-$policy " if $config->exists('local-block');
     # 3)
@@ -807,6 +840,8 @@ if ($update_webproxy) {
     squid_validate_conf();
     squidguard_validate_conf();
     $config  = squid_get_constants();
+    $config .= squid_get_config_acls();
+    $config .= squid_get_http_access_constants();
     $config .= squid_get_values();
     webproxy_write_file($squid_conf, $config);
     if ($squidguard_enabled) {

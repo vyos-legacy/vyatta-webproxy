@@ -1,0 +1,6 @@
+multi:
+type: txt
+help: Set domain to access without caching
+comp_help: possible completions:
+  <text>   Set domain to access without caching
+
