@@ -125,7 +125,7 @@ sub squid_get_http_access_constants {
 
 sub squid_get_config_acls {
     my $config = new Vyatta::Config;
-    my $output;
+    my $output = '';
 
     # add domain-block
     $config->setLevel('service webproxy domain-block'); 
