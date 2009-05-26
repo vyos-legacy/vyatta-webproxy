@@ -1,3 +1,10 @@
+vyatta-webproxy (0.2.19) unstable; urgency=low
+
+  * Add support for webproxy "domain-block" and "domain-noncache".
+  * Initialize $output.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Tue, 26 May 2009 11:42:53 -0700
+
 vyatta-webproxy (0.2.18) unstable; urgency=low
 
   * Add listen-address to local-ok.
