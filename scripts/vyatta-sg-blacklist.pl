@@ -79,6 +79,20 @@ sub squidguard_count_blacklist_entries {
     return $total;
 }
 
+sub squidguard_clean_tmpfiles {
+    #
+    # workaround for squidguard 
+    # bug http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=494281
+    #
+    my @tmpfiles = </var/tmp/*>; 
+    foreach my $file (@tmpfiles) {
+	my ($dev, $ino, $mode, $nlink, $uid, $gid, $rdev, $size, $atime, 
+	    $mtime, $ctime, $blksize, $blocks) = stat($file);
+	my $name = (getpwuid($uid))[0] if $uid;
+	unlink($file) if $name and $name eq 'proxy';
+    }
+}
+
 sub squidguard_auto_update {
     my $interactive = shift;
 
@@ -160,6 +174,7 @@ if (defined $update_bl_cat) {
 	    squid_restart(1);
 	}
     }
+    squidguard_clean_tmpfiles();
     exit 0;
 }
 
@@ -197,6 +212,7 @@ if (defined $update_bl) {
 	    squid_restart(1);
 	}
     }
+    squidguard_clean_tmpfiles();
     exit 0;
 }
 
@@ -211,6 +227,7 @@ if (defined $auto_update_bl) {
     if (squidguard_is_configured()) {
 	squid_restart(0);
     }
+    squidguard_clean_tmpfiles();
     exit 0;
 }
 
