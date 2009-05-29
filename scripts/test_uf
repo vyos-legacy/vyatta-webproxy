@@ -39,7 +39,7 @@ sub usage {
     print "$0 <client ip> <url> (<time>)\n";
     print "\nexamples:\n";
     print "\t$0 1.1.1.1 http://google.com\n";
-    print "\t$0 2.2.2.2 http://googole.com 2009-05-13T10:00:00\n";
+    print "\t$0 2.2.2.2 http://google.com 2009-05-13T10:00:00\n";
     exit 1;
 }
 
