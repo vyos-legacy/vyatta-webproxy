@@ -1,3 +1,10 @@
+vyatta-webproxy (0.2.23) unstable; urgency=low
+
+  * Fix spelling error in comment.
+  * Fix generation of local-* squidguard db's.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Thu, 28 May 2009 18:15:59 -0700
+
 vyatta-webproxy (0.2.22) unstable; urgency=low
 
   * Add utility to test url filter.
