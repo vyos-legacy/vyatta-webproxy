@@ -504,7 +504,7 @@ sub squidguard_generate_local {
     if (webproxy_write_file($file, $value)) {
 	system("chown -R proxy.proxy $dir > /dev/null 2>&1");
 	system("touch $dir/local") if ! -e "$dir/local";
-	squidguard_generate_db(0, "local-$action", $group);
+	squidguard_generate_db(0, "local-$action-$group", $group);
     }
     return $local_action;
 }
