@@ -7,6 +7,7 @@ wwwdir            = /var/www/images
 
 sbin_SCRIPTS  = scripts/vyatta-update-webproxy.pl
 sbin_SCRIPTS += scripts/install-blacklist
+sbin_SCRIPTS += scripts/test_uf
 
 bin_sudo_users_SCRIPTS  = scripts/vyatta-show-webproxy.pl
 bin_sudo_users_SCRIPTS += scripts/vyatta-sg-summary.pl

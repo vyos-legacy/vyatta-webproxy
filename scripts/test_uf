@@ -1,0 +1,77 @@
+#!/usr/bin/perl
+#
+# Module: test_uf
+#
+# **** License ****
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# This code was originally developed by Vyatta, Inc.
+# Portions created by Vyatta are Copyright (C) 2009 Vyatta, Inc.
+# All Rights Reserved.
+#
+# Author: Stig Thormodsrud
+# Date: May 2009
+# Description: Utility to check if a url would be blocked/allowed after
+#              squid/squidguard is configured.
+#
+# **** End License ****
+#
+
+use warnings;
+use strict;
+use Getopt::Long;
+use POSIX;
+
+my $ipaddr = $ARGV[0];
+my $url    = $ARGV[1];
+my $time   = $ARGV[2];
+
+my $squidguard = '/usr/bin/squidGuard';
+
+sub usage {
+    print "$0 <client ip> <url> (<time>)\n";
+    print "\nexamples:\n";
+    print "\t$0 1.1.1.1 http://google.com\n";
+    print "\t$0 2.2.2.2 http://googole.com 2009-05-13T10:00:00\n";
+    exit 1;
+}
+
+usage() if ! $ipaddr;
+usage() if ! $url;
+
+if ($time) {
+    $time = " -t $time ";
+} else {
+    $time = '';
+}
+
+my $cmd  = "echo \"$url $ipaddr/ - - GET\" ";
+   $cmd .= " | sudo $squidguard -d $time 2> /dev/null ";
+
+my $out = `$cmd`;
+chomp $out;
+
+if ($out =~ /302/) {
+    if ($out =~ /squidGuard-simple/) {
+        my ($tclass, $turl, $src) = ('','','');
+        $tclass = $1 if $out =~ /targetclass=([^\&]+)/;
+        $turl   = $1 if $out =~ /url=([^\&]+)/;
+        $src    = $1 if $out =~ /srcclass=([^\s]+)/;
+        print "Blocked:\n";
+        print "\tsrc class: [$src]\n";
+        print "\ttgt class: [$tclass]\n";
+    } else {
+        print "Blocked\n";
+    }
+    exit 1;
+} else {
+    print "Allowed\n";
+    exit 0;
+}
