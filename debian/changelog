@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.22) unstable; urgency=low
+
+  * Add utility to test url filter.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Thu, 28 May 2009 17:48:42 -0700
+
 vyatta-webproxy (0.2.21) unstable; urgency=low
 
   * Add a workaround for bug 4358 (Webproxy: Cache in /var/tmp isn't
