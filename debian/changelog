@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.25) unstable; urgency=low
+
+  * UNRELEASED
+
+ -- An-Cheng Huang <ancheng@vyatta.com>  Fri, 29 May 2009 18:37:47 -0700
+
 vyatta-webproxy (0.2.24) unstable; urgency=low
 
   * Check for undefined variable.
