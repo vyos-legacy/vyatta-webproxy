@@ -736,7 +736,7 @@ sub squidguard_get_acls {
 	$config->exists('local-block-keyword');
     # 6)
     my $def_action = $config->returnValue('default-action');
-    if ($def_action eq 'allow') {
+    if (! defined $def_action or $def_action eq 'allow') {
 	$acl .= 'all';
     } else {
 	$acl .= 'none';
