@@ -1,3 +1,10 @@
+vyatta-webproxy (0.2.26) unstable; urgency=low
+
+  * Add default: to node.def so it'll show up with "show service
+    webproxy
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Wed, 03 Jun 2009 08:45:44 -0700
+
 vyatta-webproxy (0.2.25) unstable; urgency=low
 
   * UNRELEASED
