@@ -463,7 +463,7 @@ sub squidguard_validate_conf {
 			       $blacklist_installed);
 
     # validate group filtering
-    $path = "$path policy-rule";
+    $path = "$path rule";
     $config->setLevel($path);    
     my @groups = $config->listNodes();
     foreach my $group (@groups) {
@@ -571,7 +571,7 @@ sub squidguard_get_source {
     my ($config, $path, $policy) = @_;
 
     my $output = '';
-    $config->setLevel("$path policy-rule $policy");
+    $config->setLevel("$path rule $policy");
     my $source = $config->returnValue('source-group');
 
     $output .= "src $source-$policy {\n";
@@ -747,7 +747,7 @@ sub squidguard_get_acls {
     my $redirect_url = $config->returnValue('redirect-url');
     if ($policy eq 'default') {
 	# Only the default policy needs to have some redirect url.  If
-        # the redirect url is not defined for a policy-rule, then it
+        # the redirect url is not defined for a rule, then it
 	# will use the default.
 	$redirect_url = $squidguard_redirect_def if ! defined $redirect_url;
     }
@@ -777,30 +777,30 @@ sub squidguard_get_values {
     my ($time_conf, @time_periods) = squidguard_get_times($config, $path);
     $output .= $time_conf if $time_conf;
 
-    $config->setLevel("$path policy-rule");
+    $config->setLevel("$path rule");
     my @policys = $config->listNodes();
     @policys = sort @policys;
 
-    # generate source conf for all policy-rule
+    # generate source conf for all rules
     my @sources = ();
     foreach my $policy (@policys) {
 	my $source_conf  = squidguard_get_source($config, $path, $policy);
 	$output .= $source_conf if $source_conf;
     }
  
-    # generate dest conf (for all default & policy-rule)
+    # generate dest conf (for all default & rules)
     foreach my $policy ('default', @policys) {
 	my $tmp_path = $path;
-	$tmp_path .= " policy-rule $policy" if $policy ne 'default';
+	$tmp_path .= " rule $policy" if $policy ne 'default';
 	my $dests_conf = squidguard_get_dests($config, $tmp_path, $policy);
 	$output .= $dests_conf if $dests_conf;  
     }
     
-    # generate acl conf (for all policy-rule & default)
+    # generate acl conf (for all rules & default)
     $output .= "acl {\n"; 
     foreach my $policy (@policys, 'default') {
 	my $tmp_path = $path;
-	$tmp_path .= " policy-rule $policy" if $policy ne 'default';
+	$tmp_path .= " rule $policy" if $policy ne 'default';
 	my $acl_conf = squidguard_get_acls($config, $tmp_path, $policy
 					   , \@time_periods, \@sources);
 	$output .= $acl_conf if $acl_conf;
