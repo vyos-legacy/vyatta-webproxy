@@ -2,7 +2,7 @@ multi:
 type:txt
 help: Set address for source-group
 
-syntax:expression: exec "${vyatta_sbindir}/vyatta-update-webproxy.pl \
+syntax:expression: exec "/opt/vyatta/sbin/vyatta-update-webproxy.pl \
                              --check-source-group \"$VAR(@)\" "
 
 comp_help: possible completions:
