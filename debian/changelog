@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.24+jenner4) unstable; urgency=low
+
+  * Change ${vyatta_sbin} to hard-coded path since webgui doesn't source
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Thu, 04 Jun 2009 15:28:06 -0700
+
 vyatta-webproxy (0.2.24+jenner3) unstable; urgency=low
 
   * Change 'policy-rule' to 'rule'.  Bug 4500.
