@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.27) unstable; urgency=low
+
+  * Change 'policy-rule' to 'rule'.  Bug 4500.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Thu, 04 Jun 2009 11:16:27 -0700
+
 vyatta-webproxy (0.2.26) unstable; urgency=low
 
   * Add default: to node.def so it'll show up with "show service
