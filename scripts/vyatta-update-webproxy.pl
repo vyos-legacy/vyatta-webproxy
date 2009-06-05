@@ -209,17 +209,11 @@ sub squid_get_values {
     $n_def_port = $squid_def_port if ! defined $n_def_port;
 
     my @block_mime_types = $config->returnValues('reply-block-mime');
-    foreach my $mime (@block_mime_types) {
-	my $acl_name = '';
-	if ($mime =~ /^(\S+)\/(\S+)$/ ) {
-	    $acl_name = "$1-$2";
-	    $acl_name = substr($acl_name, 0, 30) if length($acl_name) > 30;
-	} else {
-	    print "unexpected mime type [$mime]";
-	    next;
+    if (scalar(@block_mime_types)) {
+	foreach my $mime (@block_mime_types) {
+	    $output .= "acl BLOCK_MIME rep_mime_type $mime\n";
 	}
-	$output .= "acl $acl_name rep_mime_type $mime\n";
-	$output .= "http_reply_access deny $acl_name\n\n";
+	$output .= "http_reply_access deny BLOCK_MIME\n\n";
     }
 
     my $cache_size = $config->returnValue('cache-size');
