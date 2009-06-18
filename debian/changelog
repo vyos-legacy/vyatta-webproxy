@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.24+jenner7) unstable; urgency=low
+
+  * Allow https as a redirect-url for url-filter.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Thu, 18 Jun 2009 14:47:07 -0700
+
 vyatta-webproxy (0.2.24+jenner6) unstable; urgency=low
 
   * Bug4527: remove used node.def under node.tag
