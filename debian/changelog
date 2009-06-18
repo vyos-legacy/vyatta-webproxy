@@ -1,3 +1,10 @@
+vyatta-webproxy (0.2.30) unstable; urgency=low
+
+  * Bug4527: remove used node.def under node.tag
+  * Allow https as a redirect-url for url-filter.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Thu, 18 Jun 2009 15:51:54 -0700
+
 vyatta-webproxy (0.2.29) unstable; urgency=low
 
   * Shouldn't use user entered data as acl name.
