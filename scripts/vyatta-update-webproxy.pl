@@ -446,7 +446,7 @@ sub squidguard_validate_conf {
     $config->setLevel($path);
     my $redirect_url = $config->returnValue('redirect-url');
     $redirect_url    = $squidguard_redirect_def if ! defined $redirect_url;
-    if ($redirect_url !~ /^http:\/\/.*/) {
+    if ($redirect_url !~ /^https?:\/\/.*/) {
 	print "Invalid redirect-url [$redirect_url]. ";
         print "Should start with \"http://\"\n";
 	exit 1;
