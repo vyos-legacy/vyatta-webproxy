@@ -217,10 +217,6 @@ if (defined $update_bl) {
 }
 
 if (defined $auto_update_bl) {
-    if (!squidguard_is_blacklist_installed()) {
-	syslog("error", "No url-filtering blacklist installed");
-	exit 1;
-    }
     my $rc = squidguard_auto_update(0);
     exit 1 if $rc;
     squidguard_update_blacklist(0);
