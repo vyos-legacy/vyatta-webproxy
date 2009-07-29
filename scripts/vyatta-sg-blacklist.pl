@@ -27,6 +27,7 @@ use Getopt::Long;
 use POSIX;
 use IO::Prompt;
 use Sys::Syslog qw(:standard :macros);
+use File::Copy;
 
 use lib "/opt/vyatta/share/perl5";
 use Vyatta::Webproxy;
@@ -57,7 +58,7 @@ sub print_err {
     if ($interactive) {
 	print "$msg\n";
     } else {
-	syslog("error", $msg);
+	syslog(LOG_ERR, $msg);
     }    
 }
 
@@ -94,16 +95,27 @@ sub squidguard_clean_tmpfiles {
 }
 
 sub squidguard_auto_update {
-    my $interactive = shift;
+    my ($interactive, $file) = @_;
 
+    my $rc;
     my $db_dir = squidguard_get_blacklist_dir();
     my $tmp_blacklists = '/tmp/blacklists.gz';
-    my $opt = '';
-    $opt = "-q" if ! $interactive;
-    my $rc = system("wget -O $tmp_blacklists $opt $blacklist_url");
-    if ($rc) {
-	print_err($interactive, "Unable to download [$blacklist_url] $!");
-	return 1;
+    if (defined $file) {
+      # use existing file
+	$rc = copy($file, $tmp_blacklists);
+	if (!$rc) {
+	    print_err($interactive, "Unable to copy [$file] $!");
+	    return 1;
+	}
+    } else {
+      # get from net
+	my $opt = '';
+	$opt = "-q" if ! $interactive;
+	$rc = system("wget -O $tmp_blacklists $opt $blacklist_url");
+	if ($rc) {
+	    print_err($interactive, "Unable to download [$blacklist_url] $!");
+	    return 1;
+	}
     }
     
     print "Uncompressing blacklist...\n" if $interactive;
@@ -128,13 +140,13 @@ sub squidguard_auto_update {
     my $after_entries = squidguard_count_blacklist_entries();
     my $mode = "auto-update";
     $mode = "manual" if $interactive;
-    syslog("warning", 
+    syslog(LOG_WARNING, 
 	   "blacklist entries updated($mode) ($b4_entries/$after_entries)");
     return 0;
 }
 
 sub squidguard_install_blacklist_def {
-    squidguard_auto_update(1);
+    squidguard_auto_update(1, undef);
 }
 
 sub squidguard_update_blacklist {
@@ -159,10 +171,11 @@ sub squidguard_update_blacklist {
 #
 # main
 #
-my ($update_bl, $update_bl_cat, $auto_update_bl);
+my ($update_bl, $update_bl_cat, $update_bl_file, $auto_update_bl);
 
 GetOptions("update-blacklist!"           => \$update_bl,
 	   "update-blacklist-category=s" => \$update_bl_cat,
+	   "update-blacklist-file=s"     => \$update_bl_file,
 	   "auto-update-blacklist!"      => \$auto_update_bl,
 );
 
@@ -192,7 +205,7 @@ if (defined $update_bl) {
     } else {
 	if (prompt("Would you like to re-download the blacklist? [confirm]", 
 		   -y1d=>"y")) {
-	    my $rc = squidguard_auto_update(1);
+	    my $rc = squidguard_auto_update(1, undef);
 	    $updated = 1 if ! $rc;
 	}
     }
@@ -212,6 +225,17 @@ if (defined $update_bl) {
 	    squid_restart(1);
 	}
     }
+    squidguard_clean_tmpfiles();
+    exit 0;
+}
+
+if (defined $update_bl_file) {
+    if (! -e $update_bl_file) {
+ 	die "Error: file [$update_bl_file] doesn't exist";
+    }
+    my $rc = squidguard_auto_update(0, $update_bl_file);
+    exit 1 if $rc;
+    squidguard_update_blacklist(1);
     squidguard_clean_tmpfiles();
     exit 0;
 }
