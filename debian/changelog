@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.32) unstable; urgency=low
+
+  * Add option to install blacklist from file instead of net.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Wed, 29 Jul 2009 15:59:38 -0700
+
 vyatta-webproxy (0.2.31) unstable; urgency=low
 
   * Remove unnecessary check when doing non-interactive update.
