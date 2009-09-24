@@ -179,6 +179,10 @@ GetOptions("update-blacklist!"           => \$update_bl,
 	   "auto-update-blacklist!"      => \$auto_update_bl,
 );
 
+my $sg_updatestatus_file = '/var/lib/squidguard/updatestatus';
+system("touch $sg_updatestatus_file");
+system("echo update failed at `date` > $sg_updatestatus_file");
+
 if (defined $update_bl_cat) {
     squidguard_update_blacklist(1, $update_bl_cat);
     if (squidguard_is_configured()) {
@@ -188,7 +192,6 @@ if (defined $update_bl_cat) {
 	}
     }
     squidguard_clean_tmpfiles();
-    exit 0;
 }
 
 if (defined $update_bl) {
@@ -226,7 +229,6 @@ if (defined $update_bl) {
 	}
     }
     squidguard_clean_tmpfiles();
-    exit 0;
 }
 
 if (defined $update_bl_file) {
@@ -237,7 +239,6 @@ if (defined $update_bl_file) {
     exit 1 if $rc;
     squidguard_update_blacklist(1);
     squidguard_clean_tmpfiles();
-    exit 0;
 }
 
 if (defined $auto_update_bl) {
@@ -248,9 +249,9 @@ if (defined $auto_update_bl) {
 	squid_restart(0);
     }
     squidguard_clean_tmpfiles();
-    exit 0;
 }
 
-exit 1;
+system("echo update succeeded at `date` > $sg_updatestatus_file");
+exit 0;
 
 #end of file
