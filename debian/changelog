@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.33) unstable; urgency=low
+
+  * Fix 4954: webproxy blacklist auto-update not working.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Wed, 23 Sep 2009 18:30:59 -0700
+
 vyatta-webproxy (0.2.32) unstable; urgency=low
 
   * Add option to install blacklist from file instead of net.
