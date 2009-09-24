@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.24+jenner9) unstable; urgency=low
+
+  * Fix 4958: Squid Parent: child process 8748 exited due to signal 6
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Thu, 24 Sep 2009 15:13:18 -0700
+
 vyatta-webproxy (0.2.24+jenner8) unstable; urgency=low
 
   * Fix 4954: webproxy blacklist auto-update not working.
