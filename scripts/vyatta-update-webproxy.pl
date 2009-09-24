@@ -799,7 +799,14 @@ sub squidguard_get_values {
 					   , \@time_periods, \@sources);
 	$output .= $acl_conf if $acl_conf;
     }
-    $output .= "}\n"; 
+    $output .= "}\n";
+
+    # auto update
+    $config->setLevel($path);
+    my $old_auto_update = $config->returnOrigValue('auto-update');
+    my $auto_update     = $config->returnValue('auto-update');
+    squidguard_gen_cron($old_auto_update, $auto_update);
+ 
     return $output;
 }
 
