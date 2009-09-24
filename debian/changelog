@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.35) unstable; urgency=low
+
+  * Fix 4958: Squid Parent: child process 8748 exited due to signal 6
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Thu, 24 Sep 2009 15:17:20 -0700
+
 vyatta-webproxy (0.2.34) unstable; urgency=low
 
   * add support for persistent update status information
