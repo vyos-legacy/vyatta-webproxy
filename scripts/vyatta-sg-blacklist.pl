@@ -134,7 +134,7 @@ sub squidguard_auto_update {
 	print_err($interactive, "Unable to install [$blacklist_url] $!");
 	return 1;
     }
-    system("mv $archive/*-local-* $db_dir 2> /dev/null");
+    system("mv $archive/local-* $db_dir 2> /dev/null");
     system("rm -fr $tmp_blacklists /tmp/blacklists");
 
     my $after_entries = squidguard_count_blacklist_entries();
