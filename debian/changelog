@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.36) unstable; urgency=low
+
+  * Fix 4960: url-filter doesn't validate source-group used by rule
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Fri, 25 Sep 2009 13:01:23 -0700
+
 vyatta-webproxy (0.2.35) unstable; urgency=low
 
   * Fix 4958: Squid Parent: child process 8748 exited due to signal 6
