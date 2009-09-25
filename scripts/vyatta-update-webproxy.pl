@@ -364,10 +364,24 @@ sub squidguard_validate_filter {
     my @blacklists   = squidguard_get_blacklists();
     my %is_blacklist = map { $_ => 1 } @blacklists;
 
+    $config->setLevel('service webproxy url-filtering squidguard');
+    my @time_periods  = $config->listNodes('time-period');
+    my %time_hash     = map { $_ => 1 } @time_periods;
+    my @source_groups = $config->listNodes('source-group');
+    my %source_hash   = map { $_ => 1 } @source_groups;
+
     if ($group ne 'default') {
 	$config->setLevel("$path source-group");
 	my $source = $config->returnValue();
 	die "Must set source-group for [$group]\n" if ! $source;
+	die "rule [$group] source-group [$source] not defined\n" 
+	    if ! $source_hash{$source};
+	$config->setLevel("$path time-period");
+	my $time_period = $config->returnValue();
+	if (defined $time_period and $time_period ne '') {
+	    die "rule [$group] time-period [$time_period] not defined\n"
+		if ! $time_hash{$time_period};
+	}
     }
 
     $config->setLevel("$path block-category");
@@ -461,8 +475,8 @@ sub squidguard_validate_conf {
     $config->setLevel($path);    
     my @groups = $config->listNodes();
     foreach my $group (@groups) {
-	squidguard_validate_filter($config, "$path $group", 
-				   $group,$blacklist_installed);
+	squidguard_validate_filter($config, "$path $group", $group,
+				   $blacklist_installed);
     }
 
     return 0;
