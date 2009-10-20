@@ -1,3 +1,4 @@
+priority: 917
 help: Configure webproxy services
 
 end: if [ ${COMMIT_ACTION} = 'DELETE' ]; then
