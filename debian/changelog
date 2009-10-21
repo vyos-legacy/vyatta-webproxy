@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.38) unstable; urgency=low
+
+  * Fix 5029: url-filter no longer accepts negated time-period
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Tue, 20 Oct 2009 18:45:44 -0700
+
 vyatta-webproxy (0.2.37) unstable; urgency=low
 
   * priority pushed to node.def
