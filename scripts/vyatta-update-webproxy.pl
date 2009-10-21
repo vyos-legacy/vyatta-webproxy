@@ -379,6 +379,7 @@ sub squidguard_validate_filter {
 	$config->setLevel("$path time-period");
 	my $time_period = $config->returnValue();
 	if (defined $time_period and $time_period ne '') {
+	    $time_period =~ s/^!(.*)$/$1/;  # remove '!' if there
 	    die "rule [$group] time-period [$time_period] not defined\n"
 		if ! $time_hash{$time_period};
 	}
