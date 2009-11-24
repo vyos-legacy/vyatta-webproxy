@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# Module: 
+# Module: vyatta-sg-blacklist.pl
 # 
 # **** License ****
 # This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
 # 
 # Author: Stig Thormodsrud
 # Date: October 2008
-# Description: 
+# Description: script to download/update free url blacklist.
 # 
 # **** End License ****
 #

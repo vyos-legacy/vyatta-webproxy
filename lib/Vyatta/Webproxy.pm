@@ -43,6 +43,8 @@ our @EXPORT = qw(
 	webproxy_write_file
         webproxy_delete_local_entry
         webproxy_delete_all_local
+        squidguard_use_ec
+        squidguard_ec_name2cat
 );
 use base qw(Exporter);
 use File::Basename;
@@ -58,6 +60,8 @@ my $squidguard_blacklist_db  = '/var/lib/squidguard/db';
 my $squidguard_log_dir       = '/var/log/squid';
 my $squidguard_blacklist_log = "$squidguard_log_dir/blacklist.log";
 
+#vyattaguard globals
+my $vyattaguard = '/opt/vyatta/sbin/vg';
 
 sub squid_restart {
     my $interactive = shift;
@@ -103,21 +107,82 @@ sub squidguard_get_blacklist_log {
     return $squidguard_blacklist_log;
 }
 
+sub squidguard_ec_get_categorys {
+    my %cat_hash;
+
+    die "Must enable premium-filter" if ! squidguard_use_ec();
+    die "Missing vyattaguard package\n" if ! -e $vyattaguard;
+    my @lines = `$vyattaguard list`;
+    foreach my $line (@lines) {
+        my ($id, $category) = split ':', $line;
+        next if ! defined $category;
+        chomp $category;
+        $category =~ s/\s/\_/g;
+        $cat_hash{$id} = $category;
+    }
+    return %cat_hash;
+}
+
+
+sub squidguard_ec_cat2name {
+    my ($cat) = @_;
+
+    my %cat_hash = squidguard_ec_get_categorys();
+    return $cat_hash{$cat} if defined $cat_hash{$cat};
+    return;
+}
+
+sub squidguard_ec_name2cat {
+    my ($name) = @_;
+
+    my %cat_hash = squidguard_ec_get_categorys();
+    foreach my $key (keys (%cat_hash)) {
+        if ($cat_hash{$key} eq $name) {
+            return $key;
+        }
+    }
+    return;
+}
+
+sub squidguard_use_ec {
+    my $config = new Vyatta::Config;
+    $config->setLevel('service webproxy url-filtering squidguard');
+    if ($config->exists('enable-premium-filter')) {
+        return 0 if ! -e $vyattaguard;
+        #
+        # validate the premium license
+        #
+        my $ret = `$vyattaguard validate`;
+        return $ret;
+    }
+    return 0;
+}
+
 sub squidguard_get_blacklists {
-    my $dir = $squidguard_blacklist_db;
 
     my @blacklists = ();
-    opendir(DIR, $dir) || die "can't opendir $dir: $!";
-    my @dirs = readdir(DIR);
-    closedir DIR;
+    if (squidguard_use_ec()) {
+        die "Missing vyattaguard package\n" if ! -e $vyattaguard;
+        my %cat_hash = squidguard_ec_get_categorys();
+        foreach my $key (keys (%cat_hash)) {
+            next if ! defined $cat_hash{$key};
+            push @blacklists, $cat_hash{$key};
+        }
+    } else {
+        my $dir = $squidguard_blacklist_db;
+        opendir(DIR, $dir) || die "can't opendir $dir: $!";
+        my @dirs = readdir(DIR);
+        closedir DIR;
 
-    foreach my $file (@dirs) {
-	next if $file eq '.';
-	next if $file eq '..';
-	if (-d "$dir/$file") {
-	    push @blacklists, $file;
-	}
+        foreach my $file (@dirs) {
+            next if $file eq '.';
+            next if $file eq '..';
+            if (-d "$dir/$file") {
+                push @blacklists, $file;
+            }
+        }
     }
+
     return sort(@blacklists);
 }
 
@@ -239,7 +304,7 @@ sub squidguard_get_log_files {
 }
 
 sub squidguard_build_dest {
-    my ($category, $logging, $group) = @_;
+    my ($category, $logging, $group, $ec) = @_;
 
     my $output = '';
     my ($domains, $urls, $exps);
@@ -251,10 +316,16 @@ sub squidguard_build_dest {
 	    $category);
     }
 
+    my $ec_cat = undef;
+    if  (defined $ec) {
+        $ec_cat = squidguard_ec_name2cat($category);
+    }
+
     $output  = "dest $category-$group {\n";
     $output .= "\tdomainlist     $domains\n" if defined $domains;
     $output .= "\turllist        $urls\n"    if defined $urls;
     $output .= "\texpressionlist $exps\n"    if defined $exps;
+    $output .= "\teccategory     $ec_cat\n"  if defined $ec_cat;
     if ($logging) {
 	my $log = basename($squidguard_blacklist_log);
 	$output .= "\tlog            $log\n";

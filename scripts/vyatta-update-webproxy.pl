@@ -390,6 +390,10 @@ sub squidguard_validate_filter {
     my %is_block       = map { $_ => 1 } @block_category; 
     foreach my $category (@block_category) {
 	if (! defined $is_blacklist{$category} and $category ne 'all') {
+            if (squidguard_use_ec()) {
+                my $ec_cat = squidguard_ec_name2cat($category);
+                next if defined $ec_cat;
+            }
 	    print "Unknown blacklist category [$category] for policy [$group]\n";
 	    exit 1;
 	}
@@ -671,11 +675,15 @@ sub squidguard_get_dests {
 	$output .= squidguard_build_dest('local-block-keyword', $log, $group);
     }
 
+    $config->setLevel('service webproxy url-filtering squidguard');
+    my $ec = undef;
+    $ec = 1 if $config->exists('enable-premium-filter');
+
     foreach my $category (@block_category) {
 	next if $category eq '';
 	$log = 0;
 	$log = 1 if $is_logged{all} or $is_logged{$category};
-	$output .= squidguard_build_dest($category, $log, $group);
+	$output .= squidguard_build_dest($category, $log, $group, $ec);
     }
 
     return $output;
