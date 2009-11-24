@@ -1,3 +1,10 @@
+vyatta-webproxy (0.2.40) unstable; urgency=low
+
+  * Add the ability to configure external classifier for premium url
+    filter.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Tue, 24 Nov 2009 14:57:15 -0800
+
 vyatta-webproxy (0.2.39) unstable; urgency=low
 
   * dependency update
