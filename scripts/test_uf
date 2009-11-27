@@ -59,11 +59,17 @@ my $out = `$cmd`;
 chomp $out;
 
 if ($out =~ /302/) {
+    #
+    # example redirect using cgi script
+    # 
+    # http://<ip>/squidGuard-simple.cgi?
+    #      clientaddr=%a&srcclass=%s&targetclass=%t&url=%u
+    #
     if ($out =~ /squidGuard-simple/) {
         my ($tclass, $turl, $src) = ('','','');
         $tclass = $1 if $out =~ /targetclass=([^\&]+)/;
-        $turl   = $1 if $out =~ /url=([^\&]+)/;
-        $src    = $1 if $out =~ /srcclass=([^\s]+)/;
+        $src    = $1 if $out =~ /srcclass=([^\&]+)/;
+        $turl   = $1 if $out =~ /url=([^\s]+)/;
         print "Blocked:\n";
         print "\tsrc class: [$src]\n";
         print "\ttgt class: [$tclass]\n";
