@@ -389,57 +389,64 @@ sub squidguard_validate_filter {
 	}
     }
 
+    #
+    # check for valid block-category
+    #
     $config->setLevel("$path block-category");
     my @block_category = $config->returnValues();
     my %is_block       = map { $_ => 1 } @block_category; 
     foreach my $category (@block_category) {
-	if (! defined $is_blacklist{$category} and $category ne 'all') {
+	if (! defined $is_blacklist{$category}) {
             if (squidguard_use_ec()) {
                 my $ec_cat = squidguard_ec_name2cat($category);
                 next if defined $ec_cat;
             }
-	    print "Unknown blacklist category [$category] for policy [$group]\n";
+	    print "Unknown block-category [$category] for policy [$group]\n";
 	    exit 1;
-	}
-    }
-    if (defined $is_block{all}) {
-	if (!$blacklist_installed) {
-	    print "Can't use block-category [all] without an installed ";
-	    print "blacklist\n";
-	    exit 1;
-	}
-	@block_category = ();
-	foreach my $category (@blacklists) {
-	    push @block_category, $category;
 	}
     }
 
-    my $db_dir = squidguard_get_blacklist_dir();
-    foreach my $category (@block_category) {
+    #
+    # check for valid allow-category
+    #
+    $config->setLevel("$path allow-category");
+    my @allow_category = $config->returnValues();
+    my %is_allow       = map { $_ => 1 } @allow_category; 
+    foreach my $category (@allow_category) {
 	if (! defined $is_blacklist{$category}) {
-	    print "Unknown blacklist category [$category] for policy [$group]\n";
+            if (squidguard_use_ec()) {
+                my $ec_cat = squidguard_ec_name2cat($category);
+                next if defined $ec_cat;
+            }
+	    print "Unknown allow-category [$category] for policy [$group]\n";
 	    exit 1;
 	}
-	my ($domains, $urls, $exps) = 
-	    squidguard_get_blacklist_domains_urls_exps($category);
-	my $db_file = '';
-	if (defined $domains) {
-	    $db_file = "$db_dir/$domains.db";
-	    if (! -e $db_file) {
-		print "Missing DB for [$domains].\n";
-		print "Try running \"update webproxy blacklists\"\n";
-		exit 1;
-	    }
-	}
-	if (defined $urls) {
-	    $db_file = "$db_dir/$urls.db";
-	    if (! -e $db_file) {
-		print "Missing DB for [$urls].\n";
-		print "Try running \"update webproxy blacklists\"\n";
-		exit 1;
-	    }
-	}
-	# is it needed for exps?
+    }
+
+    if (! squidguard_use_ec()) {
+        my $db_dir = squidguard_get_blacklist_dir();
+        foreach my $category (@block_category, @allow_category) {
+            my ($domains, $urls, $exps) = 
+                squidguard_get_blacklist_domains_urls_exps($category);
+            my $db_file = '';
+            if (defined $domains) {
+                $db_file = "$db_dir/$domains.db";
+                if (! -e $db_file) {
+                    print "Missing DB for [$domains].\n";
+                    print "Try running \"update webproxy blacklists\"\n";
+                    exit 1;
+                }
+            }
+            if (defined $urls) {
+                $db_file = "$db_dir/$urls.db";
+                if (! -e $db_file) {
+                    print "Missing DB for [$urls].\n";
+                    print "Try running \"update webproxy blacklists\"\n";
+                    exit 1;
+                }
+            }
+            # is it needed for exps?
+        }
     }
 
     $config->setLevel("$path log");
@@ -645,6 +652,12 @@ sub squidguard_get_dests {
     my @block_category = $config->returnValues();
     my %is_block       = map { $_ => 1 } @block_category;    
 
+    # get allow-category
+    $config->setLevel("$path allow-category");
+    my @allow_category = $config->returnValues();
+    my %is_allow       = map { $_ => 1 } @allow_category;    
+
+    # get categories to log
     $config->setLevel("$path log");
     my @log_category = $config->returnValues();
     my $log_file = undef;
@@ -657,13 +670,6 @@ sub squidguard_get_dests {
 
     my @blacklists   = squidguard_get_blacklists();
     my %is_blacklist = map { $_ => 1 } @blacklists;
-    if ($is_block{all}) {
-	@block_category = ();
-	foreach my $category (@blacklists) {
-	    next if squidguard_is_category_local("$category-$group");
-	    push @block_category, $category;
-	}
-    }
 
     if ($local_ok) {
 	$output .= squidguard_build_dest('local-ok', 0, $group);
@@ -687,6 +693,11 @@ sub squidguard_get_dests {
 	next if $category eq '';
 	$log = 0;
 	$log = 1 if $is_logged{all} or $is_logged{$category};
+	$output .= squidguard_build_dest($category, $log, $group, $ec);
+    }
+    foreach my $category (@allow_category) {
+	next if $category eq '';
+	$log = 0;  # don't log allows
 	$output .= squidguard_build_dest($category, $log, $group, $ec);
     }
 
@@ -732,8 +743,9 @@ sub squidguard_get_acls {
     # 2) local-block  (local override, blacklist)
     # 3) in-addr      (allow-ipaddr-url or not)
     # 4) block-categories     (blacklist category)
-    # 5) local-block-keywords (local regex blacklist)
-    # 6) default-action (allow|block = all|none)
+    # 5) allow-categories     (blacklist category)
+    # 6) local-block-keywords (local regex blacklist)
+    # 7) default-action (allow|block = all|none)
 
     my $acl = "\t\tpass ";
     $config->setLevel($path);
@@ -753,9 +765,19 @@ sub squidguard_get_acls {
 	$acl .= $block_conf;
     }
     # 5)
+    my @allow_cats = $config->returnValues('allow-category');
+    if (scalar(@allow_cats) > 0) {
+	my $allow_conf = '';
+	foreach my $cat (@allow_cats) {
+	    $allow_conf .= "$cat-$policy ";
+	}
+	$acl .= $allow_conf;
+    }
+
+    # 6)
     $acl .= "!local-block-keyword-$policy " if 
 	$config->exists('local-block-keyword');
-    # 6)
+    # 7)
     my $def_action = $config->returnValue('default-action');
     if (! defined $def_action or $def_action eq 'allow') {
 	$acl .= 'all';
