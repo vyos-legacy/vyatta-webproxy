@@ -1,3 +1,11 @@
+vyatta-webproxy (0.2.41) unstable; urgency=low
+
+  * Add auto-update for premium-filter.
+  * Fix test_uf to work with srcclass.
+  * Add support for allow-category.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Fri, 27 Nov 2009 16:52:26 -0800
+
 vyatta-webproxy (0.2.40) unstable; urgency=low
 
   * Add the ability to configure external classifier for premium url
