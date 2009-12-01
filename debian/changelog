@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.42) unstable; urgency=low
+
+  * added required keyword to help text.
+
+ -- Michael Larson <slioch@slioch.vyatta.com>  Mon, 30 Nov 2009 16:37:09 -0800
+
 vyatta-webproxy (0.2.41) unstable; urgency=low
 
   * Add auto-update for premium-filter.
