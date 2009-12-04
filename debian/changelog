@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.43) unstable; urgency=low
+
+  * Fix 4038: Implement Safe Search Feature for popular search engines
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Fri, 04 Dec 2009 11:00:33 -0800
+
 vyatta-webproxy (0.2.42) unstable; urgency=low
 
   * added required keyword to help text.
