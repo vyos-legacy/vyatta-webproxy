@@ -45,6 +45,7 @@ our @EXPORT = qw(
         webproxy_delete_all_local
         squidguard_use_ec
         squidguard_ec_name2cat
+        squidguard_get_safesearch_rewrites
 );
 use base qw(Exporter);
 use File::Basename;
@@ -59,6 +60,7 @@ my $squid_mime_type = '/usr/share/squid3/mime.conf';
 my $squidguard_blacklist_db  = '/var/lib/squidguard/db';
 my $squidguard_log_dir       = '/var/log/squid';
 my $squidguard_blacklist_log = "$squidguard_log_dir/blacklist.log";
+my $squidguard_safesearch    = "/opt/vyatta/etc/safesearch_rewrites";
 
 #vyattaguard globals
 my $vyattaguard = '/opt/vyatta/sbin/vg';
@@ -107,6 +109,21 @@ sub squidguard_get_blacklist_log {
     return $squidguard_blacklist_log;
 }
 
+sub squidguard_get_safesearch_rewrites {
+    my @rewrites = ();
+    open(my $FILE, "<", $squidguard_safesearch) or die "Error: read $!";
+    my @lines = <$FILE>;
+    close($FILE);
+    chomp @lines;
+    foreach my $line (@lines) {
+	next if $line =~ /^#/;         # skip comments
+        if ($line =~ /^s\@/) {
+            push @rewrites, $line;
+        }
+    }
+    return @rewrites;
+}
+
 sub squidguard_ec_get_categorys {
     my %cat_hash;
 
@@ -122,7 +139,6 @@ sub squidguard_ec_get_categorys {
     }
     return %cat_hash;
 }
-
 
 sub squidguard_ec_cat2name {
     my ($cat) = @_;
@@ -238,10 +254,16 @@ sub squidguard_is_category_local {
 }
 
 sub squidguard_is_blacklist_installed {
-    my @blacklists = squidguard_get_blacklists();
-    foreach my $category (@blacklists) {
-	next if squidguard_is_category_local($category);
-	return 1;
+    if (squidguard_use_ec()) {
+        if (-e '/var/lib/sitefilter/urldb') {
+            return 1;
+        }
+    } else {
+        my @blacklists = squidguard_get_blacklists();
+        foreach my $category (@blacklists) {
+            next if squidguard_is_category_local($category);
+            return 1;
+        }
     }
     return 0;
 }

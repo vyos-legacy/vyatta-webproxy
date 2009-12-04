@@ -20,6 +20,9 @@ cgi_SCRIPTS = cgi/squidGuard-simple.cgi
 
 www_DATA = www/blocked.gif
 
+sysconf_DATA  = sysconf/safesearch_rewrites
+
+
 cpiop = find  . ! -regex '\(.*~\|.*\.bak\|.*\.swp\|.*\#.*\#\)' -print0 | \
   cpio -0pd
 

@@ -362,6 +362,20 @@ sub squidguard_gen_cron {
     system("chmod 755 $file");
 }
 
+sub squidguard_gen_safesearch {
+    my $output = '';
+    my @lines = squidguard_get_safesearch_rewrites();
+    return $output if scalar(@lines) < 1;
+
+    $output = "rewrite safesearch {\n";
+    foreach my $line (@lines) {
+        $output .= "\t$line\n";
+    }
+    $output .= "\tlog\trewrite.log\n";
+    $output .= "}\n\n";
+    return $output;
+}
+
 sub squidguard_validate_filter {
     my ($config, $path, $group, $blacklist_installed) = @_;
 
@@ -505,6 +519,8 @@ sub squidguard_get_constants {
 
     $output .= "dbhome /var/lib/squidguard/db\n";
     $output .= "logdir /var/log/squid\n\n";
+
+    $output .= squidguard_gen_safesearch();
 
     return $output;
 }
@@ -737,6 +753,9 @@ sub squidguard_get_acls {
     } else {
 	$output .= "\t$source {\n";
     }
+
+    $output .= "\t\trewrite safesearch\n" 
+        if $config->exists('enable-safe-search');
     
     # order of evaluation
     # 1) local-ok     (local override, whitelist)

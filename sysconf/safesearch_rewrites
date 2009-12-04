@@ -1,0 +1,10 @@
+#
+# The following are rewrite strings to force safe/strict search for
+# several popular search engines.
+#
+s@(.*\.google\..*/(custom|search|images|groups|news)?.*q=.*)@\1\&safe=active@i
+s@(.*\..*/yandsearch?.*text=.*)@\1\&fyandex=1@i
+s@(.*\.yahoo\..*/search.*p=.*)@\1\&vm=r@i
+s@(.*\.live\..*/.*q=.*)@\1\&adlt=strict@i
+s@(.*\.msn\..*/.*q=.*)@\1\&adlt=strict@i
+s@(.*\.bing\..*/search.*q=.*)@\1\&adlt=strict@i

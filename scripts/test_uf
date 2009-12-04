@@ -57,6 +57,7 @@ my $cmd  = "echo \"$url $ipaddr/ - - GET\" ";
 
 my $out = `$cmd`;
 chomp $out;
+print "\n";
 
 if ($out =~ /302/) {
     #
@@ -77,7 +78,10 @@ if ($out =~ /302/) {
         print "Blocked\n";
     }
     exit 1;
-} else {
+} elsif ($out eq '') {
     print "Allowed\n";
+    exit 0;
+} else {
+    print "Rewritten as [$out]\n";
     exit 0;
 }
