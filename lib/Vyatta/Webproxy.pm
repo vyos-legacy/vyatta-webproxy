@@ -127,7 +127,7 @@ sub squidguard_get_safesearch_rewrites {
 sub squidguard_ec_get_categorys {
     my %cat_hash;
 
-    die "Must enable premium-filter" if ! squidguard_use_ec();
+    die "Must enable vyattaguard" if ! squidguard_use_ec();
     die "Missing vyattaguard package\n" if ! -e $vyattaguard;
     my @lines = `$vyattaguard list`;
     foreach my $line (@lines) {
@@ -163,7 +163,7 @@ sub squidguard_ec_name2cat {
 sub squidguard_use_ec {
     my $config = new Vyatta::Config;
     $config->setLevel('service webproxy url-filtering squidguard');
-    if ($config->exists('enable-premium-filter')) {
+    if ($config->exists('vyattaguard')) {
         return 0 if ! -e $vyattaguard;
         #
         # validate the premium license

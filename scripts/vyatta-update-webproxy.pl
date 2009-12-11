@@ -703,7 +703,7 @@ sub squidguard_get_dests {
 
     $config->setLevel('service webproxy url-filtering squidguard');
     my $ec = undef;
-    $ec = 1 if $config->exists('enable-premium-filter');
+    $ec = 1 if $config->exists('vyattaguard');
 
     foreach my $category (@block_category) {
 	next if $category eq '';
