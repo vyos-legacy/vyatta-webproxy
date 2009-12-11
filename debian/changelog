@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.44) unstable; urgency=low
+
+  * Change "premium-filter" to "vyattaguard".
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Thu, 10 Dec 2009 18:21:00 -0800
+
 vyatta-webproxy (0.2.43) unstable; urgency=low
 
   * Fix 4038: Implement Safe Search Feature for popular search engines
