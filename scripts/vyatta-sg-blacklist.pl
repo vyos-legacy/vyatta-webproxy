@@ -28,6 +28,7 @@ use POSIX;
 use IO::Prompt;
 use Sys::Syslog qw(:standard :macros);
 use File::Copy;
+use Fcntl qw(:flock);
 
 use lib "/opt/vyatta/share/perl5";
 use Vyatta::Webproxy;
@@ -100,6 +101,7 @@ sub squidguard_auto_update {
     my $rc;
     my $db_dir = squidguard_get_blacklist_dir();
     my $tmp_blacklists = '/tmp/blacklists.gz';
+
     if (defined $file) {
       # use existing file
 	$rc = copy($file, $tmp_blacklists);
@@ -183,6 +185,10 @@ my $sg_updatestatus_file = '/var/lib/squidguard/updatestatus';
 system("touch $sg_updatestatus_file");
 system("echo update failed at `date` > $sg_updatestatus_file");
 
+my $lock_file = '/tmp/vyatta_bl_lock';
+open(my $lck, ">", $lock_file) || die "Lock failed\n";
+flock($lck, LOCK_EX);
+
 if (defined $update_bl_cat) {
     squidguard_update_blacklist(1, $update_bl_cat);
     if (squidguard_is_configured()) {
@@ -252,6 +258,7 @@ if (defined $auto_update_bl) {
 }
 
 system("echo update succeeded at `date` > $sg_updatestatus_file");
+close($lck);
 exit 0;
 
 #end of file
