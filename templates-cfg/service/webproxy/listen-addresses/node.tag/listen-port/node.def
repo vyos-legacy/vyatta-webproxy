@@ -1,0 +1,7 @@
+type: u32
+default: 8080
+syntax:expression: $VAR(@) > 1024 && $VAR(@) <= 65535; \
+       "Port must be between 1025 and 65535"
+help: Set default port 
+comp_help: possible completions:
+   <1025-65535>     Set default port number

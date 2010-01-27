@@ -1,0 +1,4 @@
+type: txt
+help: Set webproxy log to enable or disable (default: enable)
+default: "enable"
+syntax:expression: $VAR(@) in "enable", "disable"; "webproxy log must be enable or disable"

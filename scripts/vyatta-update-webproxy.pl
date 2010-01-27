@@ -157,25 +157,25 @@ sub squid_validate_conf {
     # Need to validate the config before issuing any iptables 
     # commands.
     #
-    $config->setLevel('service webproxy');
-    my $cache_size = $config->returnValue('cache-size');
-    if (! defined $cache_size) {
-	print "Must define cache-size\n";
-	exit 1;
-    }
+#    $config->setLevel('service webproxy');
+#    my $cache_size = $config->returnValue('cache-size');
+#    if (! defined $cache_size) {
+#	print "Must define cache-size\n";
+#	exit 1;
+#    }
 
-    my $append_domain = $config->returnValue('append-domain');
-    if (defined $append_domain) {
-	if ($append_domain =~ /^\.(.*)$/) {
-	    my @addrs = gethostbyname($1) or 
-		print "Warning: can't resolve $1: $!\n";
-	} else {
-	    print "Domain [$append_domain] must begin with '.'\n";
-	    exit 1;
-	}
-    }
+#    my $append_domain = $config->returnValue('append-domain');
+#    if (defined $append_domain) {
+#	if ($append_domain =~ /^\.(.*)$/) {
+#	    my @addrs = gethostbyname($1) or 
+#		print "Warning: can't resolve $1: $!\n";
+#	} else {
+#	    print "Domain [$append_domain] must begin with '.'\n";
+#	    exit 1;
+#	}
+#    }
 
-    $config->setLevel('service webproxy listen-address');
+    $config->setLevel('service webproxy listen-addresses');
     my @ipaddrs = $config->listNodes();
     if (scalar(@ipaddrs) <= 0) {
 	print "Must define at least 1 listen-address\n";
@@ -197,6 +197,459 @@ sub squid_validate_conf {
 
     return 0;
 }
+
+#############################################################################
+#======================An - squid_get_ldap_settings========================
+my $has_allowed_subnets;
+
+sub squid_get_ldap_settings 
+{
+    my $output = '';
+    my $config = new Vyatta::Config;
+
+    $config->setLevel("service webproxy authentication ldap-server-authentication");
+    my %ldap_server_status; 
+    %ldap_server_status = $config->listNodeStatus();
+    my @ldap_servers;
+    @ldap_servers= sort keys %ldap_server_status;
+     foreach my $ldap_server (@ldap_servers)	  
+    {
+	$config->setLevel("service webproxy authentication ldap-server-authentication $ldap_server");
+	my $base_dn; 
+	$base_dn = $config->returnValue("base-dn");
+ 	last if !defined $base_dn ;
+	my $base_group ;
+	$base_group= $config->returnValue("base-group");
+ 	last if !defined $base_group ;
+	my $bind_user; 
+	$bind_user  = $config->returnValue("bind-user");
+ 	last if !defined $bind_user ;
+	my $bind_password;
+	$bind_password = $config->returnValue("bind-password");
+ 	last if !defined $bind_password ;
+	$output .= "auth_param basic program /usr/lib/squid3/squid_ldap_auth  -b \"$base_dn\"";
+       $output .= " -D \"$bind_user\" -w $bind_password";
+       $output .= " -f \"(&(&(objectClass=person)(sAMAccountName=%s))(memberOf=$base_group))\"";
+       $output .= " -u sAMAccountName -P -v 3 -h $ldap_server -p 389 \n";
+    }	
+	if (length($output) != 0)
+	{
+		$output .= "auth_param basic children 5 \n";
+       	$output .= "auth_param basic credentialsttl 60 minutes \n";
+	      	$output .= "authenticate_ip_ttl 10 minutes \n";
+       	$output .= "acl for_inetusers proxy_auth REQUIRED \n";
+		if ($has_allowed_subnets)
+		{
+			$output .= "http_access allow allowed_subnets for_inetusers\n" ;	
+		}
+		else
+		{
+	      		$output .= "http_access allow net for_inetusers\n" ;	
+			
+		}
+	}
+	
+    return $output;
+}
+
+
+#======================An - squid_gen_local_pwd_file========================
+sub squid_gen_local_pwd_file 
+{
+    	my $pwd_file_path = '/usr/lib/squid3/userpwds';
+	my $file_hdl;
+	open($file_hdl,">$pwd_file_path") || die ;
+	my $config = new VyattaConfig;
+	$config->setLevel("service webproxy authentication");
+	if ($config->exists("local-authentication"))
+	{
+		$config->setLevel("service webproxy authentication local-authentication");
+		my %user_status;
+		%user_status = $config->listNodeStatus();
+		my @users;
+    		@users= sort keys %user_status;
+    		foreach my $user (@users)	  
+    		{
+			$config->setLevel("service webproxy authentication local-authentication $user");
+			my $encrypted_password; 
+			$encrypted_password = $config->returnValue("encrypted-password");
+			my $outline = $user . ":" . $encrypted_password . "\n";
+	 		print $file_hdl $outline ;
+		}
+	}
+	close($file_hdl);
+
+}
+
+
+#======================An - squid_get_local_auth_settings========================
+sub squid_get_local_auth_settings 
+{
+    	my $output = '';
+	$output .= "auth_param basic program /usr/lib/squid3/ncsa_auth  /usr/lib/squid3/userpwds  \n";
+    	$output .= "auth_param basic children 5 \n";
+	$output .= "auth_param basic credentialsttl 60 minutes \n";
+	$output .= "authenticate_ip_ttl 10 minutes \n";
+       $output .= "acl for_inetusers proxy_auth REQUIRED \n";
+	if ($has_allowed_subnets)
+	{
+		$output .= "http_access allow allowed_subnets for_inetusers\n" ;	
+	}
+	else
+	{
+		$output .= "http_access allow net for_inetusers\n" ;	
+	}
+	return $output;
+}
+
+
+
+
+
+#=========AN - squid_gen_conf==================
+sub squid_gen_conf
+{
+	my $output = '';
+	my $config = new Vyatta::Config;
+	$config->setLevel("service");
+	if (!($config->exists("webproxy"))) 
+	{		
+		return $output;
+	}
+	my $date = `date`; 
+	chomp $date;
+    	$output = "#\n# autogenerated by vyatta-update-webproxy.pl on $date\n#\n";
+	$output .= "shutdown_lifetime 5 seconds\n";
+	$output .= "icp_port 0\n";
+	
+	#======= listen addresses======
+	$config->setLevel("service webproxy");
+	if ($config->exists("listen-addresses"))
+	{
+		$config->setLevel("service webproxy listen-addresses");
+		my %listen_addresses_status;
+		%listen_addresses_status = $config->listNodeStatus();
+		my @listen_addresses;
+    		@listen_addresses= sort keys %listen_addresses_status;
+    		foreach my $listen_address (@listen_addresses)	  
+    		{
+			$config->setLevel("service webproxy listen-addresses $listen_address");
+			my $listen_port; 
+			$listen_port = $config->returnValue("listen-port");
+	 		last if !defined $listen_port ;
+			$output .= "http_port $listen_address:$listen_port\n";
+		}
+	}
+	#======= listen addresses - end =======
+	
+	#=========Log Management =======
+	
+	$config->setLevel("service webproxy");
+	if ($config->exists("log-settings"))
+	{
+		$config->setLevel("service webproxy log-settings");
+		my $log_enabled;
+		$log_enabled = $config->returnValue("log-enabled");
+		if ( $log_enabled eq "enable" )
+		{
+			$output .= "access_log /var/log/squid3/access.log\n";
+			$output .= "cache_log /var/log/squid3/cache.log\n";	
+		}
+		else
+		{
+			$output .= "access_log > /dev/null \n";
+			$output .= "cache_log > /dev/null \n";
+		}
+		
+		
+		
+		my $log_query_terms;
+		$log_query_terms = $config->returnValue("log-query-terms");
+		if ( $log_query_terms eq "enable" )
+		{
+			$output .= "strip_query_terms off\n";
+		}
+
+	}
+	
+
+
+	#=========Log Management - End =======
+
+
+	#======= cache mamagement======
+	
+	$config->setLevel("service webproxy");
+	if ($config->exists("cache-management"))
+	{
+		$config->setLevel("service webproxy cache-management");
+		
+		my $offline_mode_enabled;
+		$offline_mode_enabled = $config->returnValue("offline-mode-enabled");
+		if ($offline_mode_enabled eq "enable")
+		{
+			$output .= "offline_mode on\n";
+		}
+		
+		if ($config->exists("memory-cache-size"))
+		{
+			my $memory_cache_size;
+			$memory_cache_size = $config->returnValue("memory-cache-size");
+			if (defined $memory_cache_size)
+			{
+				$output .= "cache_mem $memory_cache_size MB\n";
+			}
+		}
+
+		if ($config->exists("harddisk-cache-size"))
+		{
+			my $harddisk_cache_size;
+			$harddisk_cache_size = $config->returnValue("harddisk-cache-size");
+			if ((defined $harddisk_cache_size) && ($harddisk_cache_size != 0) )
+			{
+				$output .= "cache_dir $squid_def_fs $squid_cache_dir $harddisk_cache_size 16 256 \n";
+			}
+			else
+			{
+				$output .= "cache_dir $squid_def_fs $squid_cache_dir 100 16 256 MB\n";
+			}
+		}
+		else
+		{
+			$output .= "cache_dir $squid_def_fs $squid_cache_dir 100 16 256 MB\n";
+
+		}
+
+		if ($config->exists("min-object-size"))
+		{
+			my $min_object_size;
+			$min_object_size = $config->returnValue("min-object-size");
+			if ((defined $min_object_size) && ($min_object_size !=0) )
+			{
+				$output .= "minimum_object_size $min_object_size KB\n";
+			}
+			else
+			{
+				$output .= "minimum_object_size 0 KB\n";
+
+			}
+		}
+		else
+		{
+			$output .= "minimum_object_size 0 KB\n";
+		}
+
+		if ($config->exists("max-object-size"))
+		{
+			my $max_object_size;
+			$max_object_size = $config->returnValue("max-object-size");
+			if ((defined $max_object_size) && ($max_object_size !=0) )
+			{
+				$output .= "maximum_object_size $max_object_size KB\n";
+			}
+			else
+			{
+				$output .= "maximum_object_size 4096 KB\n";
+
+			}
+		}
+		else
+		{
+			$output .= "maxnimum_object_size 4096 KB\n";
+		}
+
+#		if ($config->exists("memory-replacement-policy"))
+#		{
+#			my $memory_replacement_policy;
+#			$memory_replacement_policy = $config->returnValue("memory-replacement-policy");
+#			if (defined $memory_replacement_policy)
+#			{
+#				$output .= "memory_replacement_policy $memory_replacement_policy\n";
+#			}
+#		}
+		
+#		if ($config->exists("cache-replacement-policy"))
+#		{
+#			my $cache_replacement_policy;
+#			$cache_replacement_policy = $config->returnValue("cache-replacement-policy");
+#			if (defined $cache_replacement_policy)
+#			{
+#				$output .= "cache_replacement_policy $cache_replacement_policy\n";
+#			}
+#		}
+
+	}
+	#======= cache management - end =======
+
+	
+
+	#========= network based access control ==========
+	$config->setLevel("service webproxy");
+	$output .=	"acl net src 0.0.0.0/0.0.0.0 \n";
+	$output .=	"acl localhost src 127.0.0.1/255.255.255.255\n";
+	my ($has_unrestricted_ip_addresses,$has_banned_ip_addresses,$has_unrestricted_mac_addresses,$has_banned_mac_addresses);
+	$has_unrestricted_ip_addresses = 0;
+	$has_banned_ip_addresses = 0;
+	$has_unrestricted_mac_addresses = 0;
+	$has_banned_mac_addresses = 0;	
+	if ($config->exists("network-based-access-control"))
+	{
+		$config->setLevel("service webproxy network-based-access-control");
+		if  ($config->exists("allowed-subnets"))
+		{
+			$has_allowed_subnets = 1;
+			$config->setLevel("service webproxy network-based-access-control allowed-subnets");
+			my @allowed_subnets;
+			@allowed_subnets = split(m:\n:,$config->returnValue());
+			my $allowed_subnet;
+			foreach $allowed_subnet (@allowed_subnets)
+			{
+				$output .=   "acl allowed_subnets src $allowed_subnet\n";
+			}
+			
+		}
+
+		$config->setLevel("service webproxy network-based-access-control");
+		if  ($config->exists("unrestricted-ip-addresses"))
+		{
+			$has_unrestricted_ip_addresses = 1;
+			$config->setLevel("service webproxy network-based-access-control unrestricted-ip-addresses");
+			my @unrestricted_ip_addresses;
+			@unrestricted_ip_addresses = split(m:\n:,$config->returnValue()); 
+			my $unrestricted_ip_address;
+			foreach $unrestricted_ip_address (@unrestricted_ip_addresses)
+			{
+				$output .=   "acl unrestricted_ip_addresses src $unrestricted_ip_address\n";
+			}
+			
+		}
+
+		$config->setLevel("service webproxy network-based-access-control");
+		if  ($config->exists("banned-ip-addresses"))
+		{
+			$has_banned_ip_addresses = 1;
+			$config->setLevel("service webproxy network-based-access-control banned-ip-addresses");
+			my @banned_ip_addresses;
+			@banned_ip_addresses = split(m:\n:,$config->returnValue());
+			my $banned_ip_address;
+			foreach $banned_ip_address (@banned_ip_addresses)
+			{
+				$output .=   "acl banned_ip_addresses src $banned_ip_address\n";
+			}
+			
+		}
+
+	}	
+
+	#========= network based access control - end =====
+
+
+	#=========== Destination ports ========
+	$config->setLevel("service webproxy");
+	$output .=   "acl Safe_ports port 80 # http\n";
+	$output .=   "acl Safe_ports port 21 # ftp\n";
+	$output .=   "acl Safe_ports port 443 # https\n";
+	$output .=   "acl Safe_ports port 563 # snews\n";
+	$output .=   "acl Safe_ports port 70 # gopher\n";
+	$output .=   "acl Safe_ports port 210 # wais\n";
+	$output .=   "acl Safe_ports port 1025-65535 # unregistered ports\n";
+	$output .=   "acl Safe_ports port 280 # http-mgmt\n";
+	$output .=   "acl Safe_ports port 488 # gss-http\n";
+	$output .=   "acl Safe_ports port 591 # filemaker\n";
+	$output .=   "acl Safe_ports port 777 # multiling http\n";
+	$output .=   "acl Safe_ports port 8080 # Squids port (for icons)\n";
+	$output .=   "acl SSL_ports port 443 # https\n";
+	$output .=   "acl SSL_ports port 563 # snews\n";
+	if ($config->exists("destination-ports"))
+	{
+		$config->setLevel("service webproxy destination-ports");
+		if  ($config->exists("allowed-standard-ports"))
+		{
+			$config->setLevel("service webproxy destination-ports allowed-standard-ports");
+			my ($allowed_standard_ports,@allowed_standard_ports);
+			$allowed_standard_ports = $config->returnValue();
+			@allowed_standard_ports = split(m:\n:,$allowed_standard_ports);
+			my $allowed_standard_port;
+			foreach $allowed_standard_port (@allowed_standard_ports)
+			{
+				$output .=   "acl Safe_ports port $allowed_standard_port\n";
+			}
+			
+		}
+		
+		$config->setLevel("service webproxy destination-ports");
+		if  ($config->exists("allowed-ssl-ports"))
+		{
+			$config->setLevel("service webproxy destination-ports allowed-ssl-ports");
+			my @allowed_ssl_ports;
+			@allowed_ssl_ports = split(m:\n:,$config->returnValue());
+			my $allowed_ssl_port;
+			foreach $allowed_ssl_port (@allowed_ssl_ports)
+			{
+				$output .=   "acl Safe_ports port $allowed_ssl_port\n";
+			}
+			
+		}
+	}
+	#================Destination ports - end ======================
+
+	#================customization - start ======================
+	$output .= "acl CONNECT method CONNECT\n";
+	$output .= "\#Access to squid:local machine, no restriction\n";
+	$output .= "http_access allow         localhost\n";
+	$output .= "\#Deny not web services\n";
+	$output .= "http_access deny          !Safe_ports\n";
+	$output .= "http_access deny  CONNECT !SSL_ports\n";
+	$output .= "\#Set custom configured ACLs\n";
+	$output .= "http_access deny  banned_ip_addresses\n" if $has_banned_ip_addresses;
+	$output .= "http_access allow unrestricted_ip_addresses\n" if $has_unrestricted_ip_addresses;
+		
+	#======= Authentication ==============
+
+	$config->setLevel("service webproxy");
+	if ($config->exists("authentication"))
+	{
+		$config->setLevel("service webproxy authentication");
+		my $authentication_method;
+		my $authetication_settings;
+		$authentication_method = $config->returnValue("authentication-method");
+		if ($authentication_method eq "LDAP")
+		{
+			$authetication_settings = squid_get_ldap_settings();
+			$output .= $authetication_settings;	
+		}
+		if ($authentication_method eq "Local")
+		{
+			squid_gen_local_pwd_file();
+			$authetication_settings .= squid_get_local_auth_settings();
+			$output .= $authetication_settings;
+				
+		}
+		if ($authentication_method eq "None")
+		{
+			$output .= "http_access allow net \n" ;
+		}
+	}
+	#======================================
+
+	$output .= "http_access deny net\n";
+
+#	$output .= "\#Strip HTTP Header\n";
+#	$output .= "header_access X-Forwarded-For deny all\n";
+#	$output .= "header_access Via deny all\n";
+	return $output;
+}
+
+
+#==============================================
+
+
+
+
+
+
+#############################################################################
+
 
 sub squid_get_values {
     my $output = '';
@@ -908,10 +1361,11 @@ if ($update_webproxy) {
 
     squid_validate_conf();
     squidguard_validate_conf();
-    $config  = squid_get_constants();
-    $config .= squid_get_config_acls();
-    $config .= squid_get_http_access_constants();
-    $config .= squid_get_values();
+#    $config  = squid_get_constants();
+#    $config .= squid_get_config_acls();
+#    $config .= squid_get_http_access_constants();
+#    $config .= squid_get_values();
+	$config .= squid_gen_conf();	
     webproxy_write_file($squid_conf, $config);
     if ($squidguard_enabled) {
 	my $config2;

@@ -1,0 +1,28 @@
+#
+# Operational mode front-end for "ping" command
+#
+
+help:   Restart web proxy service
+
+run:	
+	processID=$(ps -ef | grep -v "grep" | grep "(squid)" | awk '{print $2}')
+	if [[ ! -z $processID  ]]; 
+	then
+		echo "Current Squid PID = " $processID
+		sudo /bin/kill -9 $processID  
+		echo "Stopping Squid is in progress"
+		until [[ -z $(ps -ef | grep -v "grep" | grep "(squid)" | awk '{print $2}') ]]
+		do	
+			sleep 1 
+		done
+	fi
+
+	sudo /usr/sbin/squid3 -D -YC
+	sleep 1
+	while [[  -z $(ps -ef | grep -v "grep" | grep "(squid)" | awk '{print $2}') ]]
+	do	
+		sleep 1 
+	done
+	echo "Starting Squid is in progress"
+	processID=$(ps -ef | grep -v "grep" | grep "(squid)" | awk '{print $2}')
+	echo "New Squid PID = " $processID

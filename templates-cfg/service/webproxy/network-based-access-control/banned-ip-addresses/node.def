@@ -1,0 +1,3 @@
+multi:
+type: ipv4
+help: Set the list of banned IP addresses

@@ -1,0 +1,7 @@
+type: u32
+default: 0
+help: Set min size of cached object in KB
+comp_help: possible completions:
+  <int>    Set min size of cached object in KB (default 0)
+
+

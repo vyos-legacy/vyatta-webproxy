@@ -1,0 +1,2 @@
+type: txt
+help: Set the base CN to authenticate against
