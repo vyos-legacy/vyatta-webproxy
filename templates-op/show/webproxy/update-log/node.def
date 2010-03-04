@@ -1,0 +1,6 @@
+help: Show update log for url-filter database
+run: if [ -r /var/lib/squidguard/updatestatus ]; then
+       cat /var/lib/squidguard/updatestatus
+     else
+       echo Update log not found
+     fi
