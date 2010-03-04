@@ -1,3 +1,10 @@
+vyatta-webproxy (0.2.47) unstable; urgency=low
+
+  * Fix 5387: ENH: allow vyattaguard database update to specific update-
+    hour
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Wed, 03 Mar 2010 17:28:27 -0800
+
 vyatta-webproxy (0.2.46) unstable; urgency=low
 
   * UNRELEASED
