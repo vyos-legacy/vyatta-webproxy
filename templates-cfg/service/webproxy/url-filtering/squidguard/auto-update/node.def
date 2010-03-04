@@ -1,8 +1,1 @@
-type: txt
-help: Set the update interval
-syntax:expression: $VAR(@) in "daily", "weekly", "monthly" ; "must be 'daily', 'weekly' or 'monthly'"
-comp_help: possible completions:
-   daily    Update blacklist daily
-   weekly   Update blacklist weekly
-   monthly  Update blacklist monthly
-
+help: Set auto-update options

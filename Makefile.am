@@ -4,6 +4,9 @@ share_perl5dir	  = $(datarootdir)/perl5/Vyatta
 bin_sudo_usersdir = $(bindir)/sudo-users
 cgidir            = /usr/lib/cgi-bin
 wwwdir            = /var/www/images
+curverdir         = $(sysconfdir)/config-migrate/current
+
+curver_DATA = cfg-version/webproxy@1
 
 sbin_SCRIPTS  = scripts/vyatta-update-webproxy.pl
 sbin_SCRIPTS += scripts/install-blacklist
