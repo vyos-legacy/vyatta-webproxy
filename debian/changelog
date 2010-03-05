@@ -1,3 +1,10 @@
+vyatta-webproxy (0.2.48) unstable; urgency=low
+
+  * Fix 5409: iptables: Too many links when deleting webproxy from
+    config
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Fri, 05 Mar 2010 10:34:08 -0800
+
 vyatta-webproxy (0.2.47) unstable; urgency=low
 
   * Fix 5387: ENH: allow vyattaguard database update to specific update-
