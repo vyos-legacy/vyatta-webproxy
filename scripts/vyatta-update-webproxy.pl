@@ -65,19 +65,22 @@ sub squid_enable_conntrack {
 
 sub squid_disable_conntrack {
     # remove the conntrack setup.
-    my @lines
-	= `iptables -t raw -L PREROUTING -vn --line-numbers | egrep ^[0-9]`;
-    foreach (@lines) {
-	my ($num, $ignore1, $ignore2, $chain, $ignore3, $ignore4, $in, $out,
-	    $ignore5, $ignore6) = split /\s+/;
-	if ($chain eq $squid_chain) {
-	    system("iptables -t raw -D PREROUTING $num");
-	    system("iptables -t raw -D OUTPUT $num");
-	    system("iptables -t raw -F $squid_chain");
-	    system("iptables -t raw -X $squid_chain");
-	    last;
-	}
+
+    my @lines;
+    foreach my $label ('PREROUTING', 'OUTPUT') {
+        @lines = `iptables -t raw -L $label -vn --line-numbers | egrep ^[0-9]`;
+        foreach (@lines) {
+            my ($num, $ignore1, $ignore2, $chain, $ignore3, $ignore4, $in, $out,
+                $ignore5, $ignore6) = split /\s+/;
+            if ($chain eq $squid_chain) {
+                system("iptables -t raw -D $label $num");
+                last;
+            }
+        }
     }
+    
+    system("iptables -t raw -F $squid_chain");
+    system("iptables -t raw -X $squid_chain");
 }
 
 sub squid_get_constants {
@@ -1384,6 +1387,8 @@ if ($stop_webproxy) {
     squid_get_values();
     webproxy_delete_all_local();
     system("rm -f $squid_conf $squidguard_conf");
+    system("touch $squid_conf $squidguard_conf");
+    system("chown proxy $squid_conf $squidguard_conf");
     squid_stop();
     exit 0;
 }
