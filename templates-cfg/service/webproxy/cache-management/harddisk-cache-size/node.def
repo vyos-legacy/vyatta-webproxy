@@ -1,7 +1,0 @@
-type: u32
-default: 100
-help: Set harddisk cache size in MB
-comp_help: possible completions:
-  <int>    Set size of disk cache in MB (default 100)
-  0        No harrdisk caching
-

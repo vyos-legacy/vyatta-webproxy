@@ -1,4 +1,0 @@
-type: txt
-help: Set webproxy offline mode to enable or disable (default: enable)
-default: "enable"
-syntax:expression: $VAR(@) in "enable", "disable"; "webproxy offline mode must be enable or disable"

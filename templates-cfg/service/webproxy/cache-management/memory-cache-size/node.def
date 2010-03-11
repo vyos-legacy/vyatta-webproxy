@@ -1,7 +1,0 @@
-type: u32
-default: 2
-help: Set memory cache size in MB
-comp_help: possible completions:
-  <int>    Set size of disk cache in MB (default 2)
-  0        No memory caching
-

@@ -1,7 +1,0 @@
-type: u32
-default: 4096
-help: Set max size of cached object in KB
-comp_help: possible completions:
-  <int>    Set max size of cached object in KB (default 4096)
-
-
