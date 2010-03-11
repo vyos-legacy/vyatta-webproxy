@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.49) unstable; urgency=low
+
+  * add hook for local squid config
+
+ -- An-Cheng Huang <ancheng@vyatta.com>  Thu, 11 Mar 2010 14:24:35 -0800
+
 vyatta-webproxy (0.2.48) unstable; urgency=low
 
   * Fix 5409: iptables: Too many links when deleting webproxy from
