@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.45+kenwood1) unstable; urgency=low
+
+  * UNRELEASED
+
+ -- An-Cheng Huang <ancheng@vyatta.com>  Wed, 17 Feb 2010 16:10:08 -0800
+
 vyatta-webproxy (0.2.45) unstable; urgency=low
 
   * Add lockfile to blacklist update.
