@@ -19,3 +19,6 @@ sed -i 's/etc\/init.d\/squid/etc\/init.d\/squid3/' /usr/sbin/update-squidguard
 sed -i 's/reload/restart/' /usr/sbin/update-squidguard
 chown proxy:adm /var/log/squid
 
+# create local conf placeholder
+touch /etc/squid3/local.conf
+

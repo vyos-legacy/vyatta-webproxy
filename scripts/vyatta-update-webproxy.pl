@@ -37,6 +37,7 @@ use strict;
 
 # squid globals
 my $squid_conf      = '/etc/squid3/squid.conf';
+my $local_conf      = '/etc/squid3/local.conf';
 my $squid_log       = '/var/log/squid3/access.log';
 my $squid_cache_dir = '/var/spool/squid3';
 my $squid_def_fs    = 'ufs';
@@ -918,6 +919,7 @@ if ($update_webproxy) {
     $config .= squid_get_http_access_constants();
     $config .= squid_get_values();
     webproxy_write_file($squid_conf, $config);
+    webproxy_append_file($squid_conf, $local_conf);
     if ($squidguard_enabled) {
 	my $config2;
 	$config2  = squidguard_get_constants();

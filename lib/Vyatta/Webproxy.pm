@@ -41,6 +41,7 @@ our @EXPORT = qw(
 	squid_stop
         squid_get_mime
 	webproxy_write_file
+	webproxy_append_file
         webproxy_delete_local_entry
         webproxy_delete_all_local
         squidguard_use_ec
@@ -393,6 +394,19 @@ sub webproxy_write_file {
     open(my $fh, '>', $file) || die "Couldn't open $file - $!";
     print $fh $config;
     close $fh;
+    return 1;
+}
+
+sub webproxy_append_file {
+    my ($dst, $src) = @_;
+
+    open(my $ih, '<', $src) || die "Couldn't open $src - $!";
+    open(my $oh, '>>', $dst) || die "Couldn't open $dst - $!";
+    for (<$ih>) {
+        print $oh $_;
+    }
+    close($oh);
+    close($ih);
     return 1;
 }
 
