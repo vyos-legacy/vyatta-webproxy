@@ -1,6 +1,15 @@
 help: Show update log for url-filter database
-run: if [ -r /var/lib/squidguard/updatestatus ]; then
-       cat /var/lib/squidguard/updatestatus
+run: if [ -e /opt/vyatta/config/active/service/webproxy/url-filtering/squidguard/vyattaguard/mode ] ;
+     then
+        if [ -r /var/lib/sitefilter/updatestatus ]; then
+           cat /var/lib/sitefilter/updatestatus
+        else
+           echo Update log not found
+        fi
      else
-       echo Update log not found
+        if [ -r /var/lib/squidguard/updatestatus ]; then
+           cat /var/lib/squidguard/updatestatus
+        else
+           echo Update log not found
+        fi
      fi
