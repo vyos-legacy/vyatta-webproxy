@@ -1,3 +1,10 @@
+vyatta-webproxy (0.2.45+kenwood4) unstable; urgency=low
+
+  * Fix 5387: ENH: allow vyattaguard database update to specific update-
+    hour
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Fri, 19 Mar 2010 19:27:11 -0700
+
 vyatta-webproxy (0.2.45+kenwood3) unstable; urgency=low
 
   * Revert "LDAP patch"
