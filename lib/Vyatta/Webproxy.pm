@@ -130,6 +130,8 @@ sub squidguard_ec_get_categorys {
 
     die "Must enable vyattaguard" if ! squidguard_use_ec();
     die "Missing vyattaguard package\n" if ! -e $vyattaguard;
+    exit 1 if ! -e '/var/lib/sitefilter/categories.txt';
+
     my @lines = `$vyattaguard list`;
     foreach my $line (@lines) {
         my ($id, $category) = split ':', $line;
