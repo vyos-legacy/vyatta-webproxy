@@ -13,7 +13,7 @@
 # General Public License for more details.
 # 
 # This code was originally developed by Vyatta, Inc.
-# Portions created by Vyatta are Copyright (C) 2008-2009 Vyatta, Inc.
+# Portions created by Vyatta are Copyright (C) 2008-2010 Vyatta, Inc.
 # All Rights Reserved.
 # 
 # Author: Stig Thormodsrud
@@ -358,8 +358,10 @@ sub squidguard_gen_cron {
     $output .= '  # not the right hour. do nothing.' . "\n";
     $output .= '  exit 0' . "\n";
     $output .= 'fi' . "\n";
-    if (squidguard_use_ec()) {
-        $output .= '/opt/vyatta/sbin/vg update --quiet' . "\n";
+    if (my $mode = squidguard_use_ec()) {
+        $output .= '/opt/vyatta/sbin/vg update --quiet';
+        $output .= ' -D' if $mode eq 'net-only';
+        $output .= "\n";
     } else {
         $output .= '/opt/vyatta/bin/sudo-users/vyatta-sg-blacklist.pl ';
         $output .= ' --auto-update-blacklist' . "\n";

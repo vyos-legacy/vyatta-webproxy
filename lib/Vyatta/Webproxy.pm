@@ -12,7 +12,7 @@
 # General Public License for more details.
 #
 # This code was originally developed by Vyatta, Inc.
-# Portions created by Vyatta are Copyright (C) 2008-2009 Vyatta, Inc.
+# Portions created by Vyatta are Copyright (C) 2008-2010 Vyatta, Inc.
 # All Rights Reserved.
 # 
 # Author: Stig Thormodsrud
@@ -165,14 +165,11 @@ sub squidguard_use_ec {
     my $config = new Vyatta::Config;
     $config->setLevel('service webproxy url-filtering squidguard');
     if ($config->exists('vyattaguard')) {
-        return 0 if ! -e $vyattaguard;
-        #
-        # validate the premium license
-        #
-        my $ret = `$vyattaguard validate`;
-        return $ret;
+        return if ! -e $vyattaguard;
+        my $mode = $config->returnValue('vyattaguard mode');
+        return $mode;
     }
-    return 0;
+    return;
 }
 
 sub squidguard_get_blacklists {
