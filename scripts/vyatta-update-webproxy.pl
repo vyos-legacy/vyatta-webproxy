@@ -80,8 +80,8 @@ sub squid_disable_conntrack {
         }
     }
     
-    system("iptables -t raw -F $squid_chain");
-    system("iptables -t raw -X $squid_chain");
+    system("iptables -t raw -F $squid_chain >& /dev/null");
+    system("iptables -t raw -X $squid_chain >& /dev/null");
 }
 
 sub squid_get_constants {
