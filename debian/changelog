@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.52) unstable; urgency=low
+
+  * Add extra check for tab completion with missing database.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Tue, 23 Mar 2010 11:46:59 -0700
+
 vyatta-webproxy (0.2.51) unstable; urgency=low
 
   * Add -D to update script if running in 'net-only' mode.
