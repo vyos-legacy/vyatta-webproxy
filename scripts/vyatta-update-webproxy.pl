@@ -292,7 +292,7 @@ sub squid_get_values {
 	    #handle port # change
 	    #
 	    if ($o_port ne $n_port and !$o_dt) {
-		my $cmd = "sudo iptables -t nat -D PREROUTING -i $intf ";
+		my $cmd = "sudo iptables -t nat -D WEBPROXY -i $intf ";
 		$cmd   .= "-p tcp --dport 80 -j REDIRECT --to-port $o_port";
 		#print "[$cmd]\n";
 		my $rc = system($cmd);
@@ -308,7 +308,7 @@ sub squid_get_values {
 	}
 	if (defined $A_or_D) {
 	    squid_enable_conntrack() if $A_or_D eq 'A';
-	    my $cmd = "sudo iptables -t nat -$A_or_D PREROUTING -i $intf ";
+	    my $cmd = "sudo iptables -t nat -$A_or_D WEBPROXY -i $intf ";
 	    $cmd   .= "-p tcp --dport 80 -j REDIRECT --to-port $n_port";
 	    #print "[$cmd]\n";
 	    my $rc = system($cmd);
@@ -924,10 +924,11 @@ sub squidguard_get_values {
 #
 # main
 #
-my ($update_webproxy, $stop_webproxy, $check_time, 
+my ($setup_webproxy, $update_webproxy, $stop_webproxy, $check_time, 
     $check_source_group, @delete_local);
 
-GetOptions("update!"               => \$update_webproxy,
+GetOptions("setup!"                => \$setup_webproxy,
+           "update!"               => \$update_webproxy,
            "stop!"                 => \$stop_webproxy,
 	   "check-time=s"          => \$check_time,
 	   "check-source-group=s"  => \$check_source_group,
@@ -943,6 +944,12 @@ foreach my $line (@lines) {
     if ($line =~ /inet\s+([0-9.]+)\/.*\s([\w.]+)$/) {
 	$config_ipaddrs{$1} = $2;
     }
+}
+
+if ($setup_webproxy) {
+    system("sudo iptables -t nat -N WEBPROXY");
+    system("sudo iptables -t nat -I VYATTA_PRE_DNAT_HOOK 1 -j WEBPROXY");
+    exit 0;
 }
 
 if ($update_webproxy) { 
@@ -976,6 +983,9 @@ if ($stop_webproxy) {
     system("touch $squid_conf $squidguard_conf");
     system("chown proxy $squid_conf $squidguard_conf");
     squid_stop();
+    system("sudo iptables -t nat -D VYATTA_PRE_DNAT_HOOK -j WEBPROXY");
+    system("sudo iptables -t nat -F WEBPROXY");
+    system("sudo iptables -t nat -X WEBPROXY");
     exit 0;
 }
 

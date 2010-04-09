@@ -1,6 +1,9 @@
 priority: 917
 help: Configure webproxy services
 
+
+create: sudo /opt/vyatta/sbin/vyatta-update-webproxy.pl --setup;	
+
 end: if [ ${COMMIT_ACTION} = 'DELETE' ]; then
         sudo /opt/vyatta/sbin/vyatta-update-webproxy.pl --stop;	
      else
