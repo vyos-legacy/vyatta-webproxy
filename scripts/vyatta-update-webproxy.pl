@@ -324,20 +324,24 @@ sub squid_get_values {
     squid_disable_conntrack() if $num_nats < 1;
 
     #
+    # default to NOT insert the client address in X-Forwarded-For header
+    #
+    $output .= "forwarded_for off\n\n";
+
+    #
     # check if squidguard is configured
     #
     $config->setLevel('service webproxy url-filtering');
+    if ($config->exists('disable')) {
+        $squidguard_enabled = 0;
+        return $output;
+    }
     if ($config->exists('squidguard')) {
 	$squidguard_enabled = 1;
 	$output .= "redirect_program /usr/bin/squidGuard -c $squidguard_conf\n";
 	$output .= "redirect_children 8\n";
 	$output .= "redirector_bypass on\n\n";
     }
-
-    #
-    # default to NOT insert the client address in X-Forwarded-For header
-    #
-    $output .= "forwarded_for off\n\n";
 
     return $output;
 }
