@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.56) unstable; urgency=low
+
+  * Fix 5528: EN: add support for disable url-filtering.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Fri, 09 Apr 2010 10:56:03 -0700
+
 vyatta-webproxy (0.2.55) unstable; urgency=low
 
   * Partial fix for QC138 - The filtering on sub-directories doesn't
