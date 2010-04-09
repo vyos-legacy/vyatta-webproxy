@@ -1,3 +1,10 @@
+vyatta-webproxy (0.2.55) unstable; urgency=low
+
+  * Partial fix for QC138 - The filtering on sub-directories doesn't
+    work correctly.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Thu, 08 Apr 2010 18:12:38 -0700
+
 vyatta-webproxy (0.2.54) unstable; urgency=low
 
   * Remove cron file on auto-update delete.
