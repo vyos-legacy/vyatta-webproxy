@@ -648,14 +648,24 @@ sub squidguard_get_dests {
 
     my $output = '';
 
-    # get local-ok
+
     $config->setLevel('service webproxy listen-address');
     my @listen_addrs = $config->listNodes();
+
+    # get local-ok
     $config->setLevel("$path local-ok");
     my @local_ok_sites = $config->returnValues();
     push @local_ok_sites, @listen_addrs;
     my $local_ok       = squidguard_generate_local('ok', 'domains', $group,
 						   @local_ok_sites);
+
+    # get local-ok-url
+    $config->setLevel("$path local-ok-url");
+    my @local_ok_url_sites = $config->returnValues();
+    push @local_ok_url_sites, @listen_addrs;
+    my $local_ok_url       = squidguard_generate_local('ok-url', 'urls', 
+                                                       $group,
+                                                       @local_ok_url_sites);
  
     # get local-block
     $config->setLevel("$path local-block");
@@ -663,6 +673,13 @@ sub squidguard_get_dests {
     my $local_block       = squidguard_generate_local('block', 'domains',
 						      $group,
 						      @local_block_sites);
+
+    # get local-block-url
+    $config->setLevel("$path local-block-url");
+    my @local_block_url_sites = $config->returnValues();
+    my $local_block_url       = squidguard_generate_local('block-url', 'urls',
+                                                         $group,
+ 						         @local_block_url_sites);
 
     # get local-block-keyword
     $config->setLevel("$path local-block-keyword");
@@ -699,10 +716,17 @@ sub squidguard_get_dests {
     if ($local_ok) {
 	$output .= squidguard_build_dest('local-ok', 0, $group);
     }
+    if ($local_ok_url) {
+	$output .= squidguard_build_dest('local-ok-url', 0, $group);
+    }
     my $log = 0;
     if ($local_block) {
 	$log = 1 if $is_logged{all} or $is_logged{"local-block-$group"};
 	$output .= squidguard_build_dest('local-block', $log, $group);
+    }
+    if ($local_block_url) {
+	$log = 1 if $is_logged{all} or $is_logged{"local-block-url-$group"};
+	$output .= squidguard_build_dest('local-block-url', $log, $group);
     }
     $log = 0;
     if (defined $local_block_keyword) {
@@ -768,22 +792,28 @@ sub squidguard_get_acls {
     
     # order of evaluation
     # 1) local-ok     (local override, whitelist)
-    # 2) local-block  (local override, blacklist)
-    # 3) in-addr      (allow-ipaddr-url or not)
-    # 4) block-categories     (blacklist category)
-    # 5) allow-categories     (blacklist category)
-    # 6) local-block-keywords (local regex blacklist)
-    # 7) default-action (allow|block = all|none)
+    # 2) local-ok-url (local override, whitelist)
+    # 3) local-block  (local override, blacklist)
+    # 4) local-block-url      (local override, blacklist)
+    # 5) in-addr      (allow-ipaddr-url or not)
+    # 6) block-categories     (blacklist category)
+    # 7) allow-categories     (blacklist category)
+    # 8) local-block-keywords (local regex blacklist)
+    # 9) default-action (allow|block = all|none)
 
     my $acl = "\t\tpass ";
     $config->setLevel($path);
     # 1)
     $acl .= "local-ok-$policy ";
     # 2)
-    $acl .= "!local-block-$policy " if $config->exists('local-block');
+    $acl .= "local-ok-url-$policy " if $config->exists('local-ok-url');
     # 3)
-    $acl .= "!in-addr "             if ! $config->exists('allow-ipaddr-url');
+    $acl .= "!local-block-$policy " if $config->exists('local-block');
     # 4)
+    $acl .= "!local-block-url-$policy " if $config->exists('local-block-url');
+    # 5)
+    $acl .= "!in-addr "             if ! $config->exists('allow-ipaddr-url');
+    # 6)
     my @block_cats = $config->returnValues('block-category');
     if (scalar(@block_cats) > 0) {
 	my $block_conf = '';
@@ -792,7 +822,7 @@ sub squidguard_get_acls {
 	}
 	$acl .= $block_conf;
     }
-    # 5)
+    # 7)
     my @allow_cats = $config->returnValues('allow-category');
     if (scalar(@allow_cats) > 0) {
 	my $allow_conf = '';
@@ -802,10 +832,10 @@ sub squidguard_get_acls {
 	$acl .= $allow_conf;
     }
 
-    # 6)
+    # 8)
     $acl .= "!local-block-keyword-$policy " if 
 	$config->exists('local-block-keyword');
-    # 7)
+    # 9)
     my $def_action = $config->returnValue('default-action');
     if (! defined $def_action or $def_action eq 'allow') {
 	$acl .= 'all';

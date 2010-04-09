@@ -1,0 +1,8 @@
+multi:
+type: txt
+help: Set site to ok
+comp_help: possible completions:
+  <text>   Set url to allow as ok (without http://)
+
+delete: sudo /opt/vyatta/sbin/vyatta-update-webproxy.pl \
+                --delete-local default local-ok-url "$VAR(@)";
