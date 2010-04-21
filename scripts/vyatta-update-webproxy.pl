@@ -351,6 +351,9 @@ sub squidguard_gen_cron {
 
     return if ! defined $update_hour;
 
+    $update_hour =~ s/^0*//;
+    $update_hour = 0 if ($update_hour eq '');
+
     my $file = "/etc/cron.hourly/vyatta-update-urlfilter";
     my $output;
     $output  = '#!/bin/bash' . "\n#\n";
