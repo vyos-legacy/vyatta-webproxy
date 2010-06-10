@@ -31,6 +31,7 @@ use lib '/opt/vyatta/share/perl5';
 use Vyatta::Config;
 use Vyatta::TypeChecker;
 use Vyatta::Webproxy;
+use Vyatta::IpTables::Mgr;
 
 use warnings;
 use strict;
@@ -52,37 +53,6 @@ my $squidguard_enabled       = 0;
 # global hash of ipv4 addresses on the system
 my %config_ipaddrs = ();
 
-
-sub squid_enable_conntrack {
-    system("iptables -t raw -L $squid_chain -n >& /dev/null");
-    if ($? >> 8) {
-	# chain does not exist yet. set up conntrack.
-	system("iptables -t raw -N $squid_chain");
-	system("iptables -t raw -A $squid_chain -j ACCEPT");
-	system("iptables -t raw -I PREROUTING 1 -j $squid_chain");
-	system("iptables -t raw -I OUTPUT     1 -j $squid_chain");
-    }
-}
-
-sub squid_disable_conntrack {
-    # remove the conntrack setup.
-
-    my @lines;
-    foreach my $label ('PREROUTING', 'OUTPUT') {
-        @lines = `iptables -t raw -L $label -vn --line-numbers | egrep ^[0-9]`;
-        foreach (@lines) {
-            my ($num, $ignore1, $ignore2, $chain, $ignore3, $ignore4, $in, $out,
-                $ignore5, $ignore6) = split /\s+/;
-            if ($chain eq $squid_chain) {
-                system("iptables -t raw -D $label $num");
-                last;
-            }
-        }
-    }
-    
-    system("iptables -t raw -F $squid_chain >& /dev/null");
-    system("iptables -t raw -X $squid_chain >& /dev/null");
-}
 
 sub squid_get_constants {
     my $output;
@@ -307,7 +277,7 @@ sub squid_get_values {
 	    }
 	}
 	if (defined $A_or_D) {
-	    squid_enable_conntrack() if $A_or_D eq 'A';
+	    ipt_enable_conntrack('iptables', $squid_chain) if $A_or_D eq 'A';
 	    my $cmd = "sudo iptables -t nat -$A_or_D WEBPROXY -i $intf ";
 	    $cmd   .= "-p tcp --dport 80 -j REDIRECT --to-port $n_port";
 	    #print "[$cmd]\n";
@@ -321,7 +291,7 @@ sub squid_get_values {
     }
     $output .= "\n";
 
-    squid_disable_conntrack() if $num_nats < 1;
+    ipt_disable_conntrack('iptables', $squid_chain) if $num_nats < 1;
 
     #
     # default to NOT insert the client address in X-Forwarded-For header
