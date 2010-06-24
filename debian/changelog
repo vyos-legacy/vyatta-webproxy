@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.60) unstable; urgency=low
+
+  * Fix 5739: webproxy generates continues to generate iptables errors.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Thu, 24 Jun 2010 15:04:04 -0700
+
 vyatta-webproxy (0.2.59) unstable; urgency=low
 
   * Change webproxy to use IpTables::Mgr to enable/disable conntrack.
