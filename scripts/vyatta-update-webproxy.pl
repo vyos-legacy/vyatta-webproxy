@@ -920,8 +920,12 @@ foreach my $line (@lines) {
 }
 
 if ($setup_webproxy) {
-    system("sudo iptables -t nat -N WEBPROXY");
-    system("sudo iptables -t nat -I VYATTA_PRE_DNAT_HOOK 1 -j WEBPROXY");
+    my $index = ipt_find_chain_rule('iptables', 'nat',
+                                    'VYATTA_PRE_DNAT_HOOK', 'WEBPROXY');
+    if (! defined $index) {
+        system("sudo iptables -t nat -N WEBPROXY");
+        system("sudo iptables -t nat -I VYATTA_PRE_DNAT_HOOK 1 -j WEBPROXY");
+    }
     exit 0;
 }
 
@@ -956,9 +960,14 @@ if ($stop_webproxy) {
     system("touch $squid_conf $squidguard_conf");
     system("chown proxy $squid_conf $squidguard_conf");
     squid_stop();
-    system("sudo iptables -t nat -D VYATTA_PRE_DNAT_HOOK -j WEBPROXY");
-    system("sudo iptables -t nat -F WEBPROXY");
-    system("sudo iptables -t nat -X WEBPROXY");
+
+    my $index = ipt_find_chain_rule('iptables', 'nat',
+                                    'VYATTA_PRE_DNAT_HOOK', 'WEBPROXY');
+    if (defined $index) {
+        system("sudo iptables -t nat -D VYATTA_PRE_DNAT_HOOK -j WEBPROXY");
+        system("sudo iptables -t nat -F WEBPROXY");
+        system("sudo iptables -t nat -X WEBPROXY");
+    }
     exit 0;
 }
 
