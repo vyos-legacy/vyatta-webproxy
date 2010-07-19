@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.61) unstable; urgency=low
+
+  * Webproxy help string clean up.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Mon, 19 Jul 2010 15:27:18 -0700
+
 vyatta-webproxy (0.2.60) unstable; urgency=low
 
   * Fix 5739: webproxy generates continues to generate iptables errors.
