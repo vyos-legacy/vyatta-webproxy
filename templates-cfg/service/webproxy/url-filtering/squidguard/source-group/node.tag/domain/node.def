@@ -1,7 +1,7 @@
 multi:
+
 type:txt
-help: Set domain for source-group
 
-comp_help: possible completions:
-  <txt>    Set the domain name for the source-group
+help: Domain for source-group
 
+val_help: Domain name for the source-group

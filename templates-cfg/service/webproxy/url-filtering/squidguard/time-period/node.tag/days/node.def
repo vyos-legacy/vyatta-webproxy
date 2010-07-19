@@ -1,22 +1,20 @@
 tag:
+
 type: txt
-help: Set time-period days
+
+help: Time-period days
 
 allowed: echo "Sun Mon Tue Wed Thu Fri Sat weekdays weekend all"
 
-syntax:expression: $VAR(@) in "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "weekdays", "weekend", "all" ; "days must be one of 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'weekdays', 'weekend', 'all'"
+syntax:expression: $VAR(@) in "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "weekdays", "weekend", "all" ; "Days must be one of 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'weekdays', 'weekend', 'all'."
 
-comp_help: possible completions
-  Sun       Set time-period day to Sunday
-  Mon       Set time-period day to Monday
-  Tue       Set time-period day to Tuesday
-  Wed       Set time-period day to Wednesday
-  Thu       Set time-period day to Thursday
-  Fri       Set time-period day to Friday
-  Sat       Set time-period day to Saturday
-  weekdays  Set time-period day to Monday through Friday
-  weekends  Set time-period day to Saturday and Sunday
-  all       Set time-period day to all days of the week
-
-
-
+val_help: Sun ; Sunday
+val_help: Mon ; Monday
+val_help: Tue ; Tuesday
+val_help: Wed ; Wednesday
+val_help: Thu ; Thursday
+val_help: Fri ; Friday
+val_help: Sat ; Saturday
+val_help: weekdays ; Monday through Friday
+val_help: weekends ; Saturday and Sunday
+val_help: all ; All days of the week

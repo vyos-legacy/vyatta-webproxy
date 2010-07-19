@@ -1,5 +1,7 @@
 type: txt
-help: Set the redirect url for filtered websites
+
+help: Redirect URL for filtered websites
+
 default: "http://www.google.com"
-comp_help: possible completions:
-  <txt>    Set url (example http://www.mysite.com)
+
+val_help: URL for redirect (default http://www.google.com)

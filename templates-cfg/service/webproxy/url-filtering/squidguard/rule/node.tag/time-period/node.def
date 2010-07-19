@@ -1,9 +1,9 @@
 type: txt
-help: Set the time-period for this group-policy
+
+help: Time-period for this rule
 
 allowed: local -a params
         params=( /opt/vyatta/config/active/service/webproxy/url-filtering/squidguard/time-period/* )
         echo -n ${params[@]##*/}
 
-comp_help: possible completions:
-  <txt>   Set the time-period for this group-policy
+val_help: Time period for this rule

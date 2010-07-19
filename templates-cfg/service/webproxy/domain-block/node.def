@@ -1,5 +1,5 @@
 multi:
+
 type: txt
-help: Set domain to block
-comp_help: possible completions:
-  <text>   Set domain to block
+
+help: Domain name to block

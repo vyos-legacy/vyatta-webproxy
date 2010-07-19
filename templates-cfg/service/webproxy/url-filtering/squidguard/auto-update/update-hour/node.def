@@ -1,7 +1,10 @@
 type: u32
+
 syntax:expression: $VAR(@) >= 0 && $VAR(@) <= 23;
-                   "Update hour must be between 0 and 23"
-help: Set hour of day for IPS rules update [REQUIRED]
-allowed: for (( i=0 ; i < 24; i++ )); do echo $i; done
+                   "Update hour must be between 0 and 23."
+
+help: Hour of day for database update [REQUIRED]
+
+val_help: u32:0-23 ; Hour for database update
 
 delete: sudo rm -f /etc/cron.hourly/vyatta-update-urlfilter

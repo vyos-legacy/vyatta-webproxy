@@ -1,8 +1,11 @@
 multi:
+
 type: txt
-help: Set site to block
-comp_help: possible completions:
-  <text>   Set IP address or name of site to block (without http://)
+
+help: Local site to block
+
+val_help: ipv4 ; IP address of site to block (without http://)
+val_help: <domain name> ; IP address of site to block 
 
 delete: sudo /opt/vyatta/sbin/vyatta-update-webproxy.pl \
                 --delete-local default local-block "$VAR(@)";

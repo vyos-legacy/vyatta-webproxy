@@ -1,10 +1,11 @@
 type: txt
-help: Set the default-action
+
+help: Default action
+
 default: "allow"
 
 syntax:expression: $VAR(@) in "allow", "block" ; \
                    "must be 'allow' or 'block'"
 
-comp_help: possible completions:
-  allow    Set default filter action to allow (default)
-  block    Set default filter action to block 
+val_help: allow ; Default filter action to allow (default)
+val_help: block ; Default filter action to block 

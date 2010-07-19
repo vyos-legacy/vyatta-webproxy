@@ -1,7 +1,5 @@
 tag:
+
 type:txt
 
-help: Set url-filter source group 
-
-comp_help: possible completions
-  <txt>    Set the name of the source group
+help: Source group name

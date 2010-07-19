@@ -1,9 +1,9 @@
 type: txt
-help: Set the source-group for this group-policy
+
+help: Source-group for this rule [REQUIRED]
 
 allowed: local -a params
         params=( /opt/vyatta/config/active/service/webproxy/url-filtering/squidguard/source-group/* )
         echo -n ${params[@]##*/}
 
-comp_help: possible completions:
-  <txt>   Set the source-group for this group-policy
+val_help: Source group for this rule

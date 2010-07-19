@@ -1,4 +1,7 @@
 multi:
+
 type: txt
-help: Set a category to block
+
+help: Category to block
+
 allowed: sudo /opt/vyatta/bin/sudo-users/vyatta-show-webproxy.pl --action="show-blacklists"

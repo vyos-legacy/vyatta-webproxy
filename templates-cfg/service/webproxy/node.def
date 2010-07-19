@@ -1,5 +1,5 @@
 priority: 917
-help: Configure webproxy services
+help: Webproxy service settings
 
 
 create: sudo /opt/vyatta/sbin/vyatta-update-webproxy.pl --setup;	

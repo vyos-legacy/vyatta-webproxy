@@ -1,7 +1,8 @@
 type: u32
-default: 100
-help: Set cache size in MB
-comp_help: possible completions:
-  <int>    Set size of disk cache in MB (default 100)
-  0        Disable caching
 
+default: 100
+
+help: Cache size in MB
+
+val_help: u32; Disk cache size in MB (default 100)
+val_help: 0; Disable disk caching
