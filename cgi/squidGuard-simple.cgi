@@ -6,32 +6,37 @@
 # By Pål Baltzersen 1998
 #
 
+use strict;
+use warnings;
+
 #
 # Uncomment and provide a real email address if you want it included in the 
 # redirect page.
 #
 #$admin = 'admin@foobar.com';
+#
+my $admin = undef;
 
-$QUERY_STRING  = $ENV{'QUERY_STRING'};
-$DOCUMENT_ROOT = $ENV{'DOCUMENT_ROOT'};
+my $QUERY_STRING  = $ENV{'QUERY_STRING'};
+my $DOCUMENT_ROOT = $ENV{'DOCUMENT_ROOT'};
 
-$clientaddr  = "";
-$clientname  = "";
-$clientident = "";
-$srcclass    = "";
-$targetclass = "";
-$url         = "";
+my $clientaddr  = "";
+my $clientname  = "";
+my $clientident = "";
+my $srcclass    = "";
+my $targetclass = "";
+my $url         = "";
 
-$time = time;
-@day  = ("Sunday", "Monday", "Tuesday", "Wednesday",
+my $time = time;
+my @day  = ("Sunday", "Monday", "Tuesday", "Wednesday",
 	 "Thursday","Friday","Saturday");
-@month = ("Jan","Feb","Mar","Apr","May","Jun",
+my @month = ("Jan","Feb","Mar","Apr","May","Jun",
 	  "Jul","Aug","Sep","Oct","Nov","Dec");
 
-$params = 'clientaddr|clientname|clientident|srcclass|targetclass|url';
+my $params = 'clientaddr|clientname|clientident|srcclass|targetclass|url';
 while ($QUERY_STRING =~ /^\&?([^&=]+)=([^&=]*)(.*)/) {
-    $key = $1;
-    $value = $2;
+    my $key = $1;
+    my $value = $2;
     $QUERY_STRING = $3;
     if ($key =~ /^($params)$/) {
 	eval "\$$key = \$value";
@@ -42,8 +47,8 @@ while ($QUERY_STRING =~ /^\&?([^&=]+)=([^&=]*)(.*)/) {
     }
 }
 
-($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = gmtime($time);
-$expire_time = sprintf("Expires: %s, %02d-%s-%02d %02d:%02d:%02d GMT\n\n", 
+my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = gmtime($time);
+my $expire_time = sprintf("Expires: %s, %02d-%s-%02d %02d:%02d:%02d GMT\n\n", 
 		      $day[$wday], $mday, $month[$mon], 
 		      $year, $hour, $min, $sec);
 
@@ -66,7 +71,7 @@ if ($url =~ /\.(gif|jpg|jpeg|mpg|mpeg|avi|mov)$/i) {
 	print "<TABLE BORDER=0 ALIGN=CENTER>\n";
 	print "<TR><TH ALIGN=RIGHT>Supplementary info";
 	print "<TH ALIGN=CENTER>:<TH ALIGN=LEFT>\n";
-	if ($cleintaddr ne "") {
+	if ($clientaddr ne "") {
 	    print "<TR><TH ALIGN=RIGHT>Client address";
 	    print "<TH ALIGN=CENTER>=<TH ALIGN=LEFT>$clientaddr\n";
 	}
@@ -74,7 +79,7 @@ if ($url =~ /\.(gif|jpg|jpeg|mpg|mpeg|avi|mov)$/i) {
 	    print "<TR><TH ALIGN=RIGHT>Client name";
 	    print "<TH ALIGN=CENTER>=<TH ALIGN=LEFT>$clientname\n";
 	}
-	if ($cliientident ne "") {
+	if ($clientident ne "") {
 	    print "<TR><TH ALIGN=RIGHT>User ident";
 	    print "<TH ALIGN=CENTER>=<TH ALIGN=LEFT>$clientident\n";
 	}
@@ -126,7 +131,7 @@ if ($url =~ /\.(gif|jpg|jpeg|mpg|mpeg|avi|mov)$/i) {
 
 	print "<TR><TH ALIGN=RIGHT>Supplementary info";
 	print "<TH ALIGN=CENTER>:<TH ALIGN=LEFT>\n";
-	if ($cleintaddr ne "") {
+	if ($clientaddr ne "") {
 	    print "<TR><TH ALIGN=RIGHT>Client address";
 	    print "<TH ALIGN=CENTER>=<TH ALIGN=LEFT>$clientaddr\n";
 	}
@@ -134,7 +139,7 @@ if ($url =~ /\.(gif|jpg|jpeg|mpg|mpeg|avi|mov)$/i) {
 	    print "<TR><TH ALIGN=RIGHT>Client name";
 	    print "<TH ALIGN=CENTER>=<TH ALIGN=LEFT>$clientname\n";
 	}
-	if ($cliientident ne "") {
+	if ($clientident ne "") {
 	    print "<TR><TH ALIGN=RIGHT>User ident";
 	    print "<TH ALIGN=CENTER>=<TH ALIGN=LEFT>$clientident\n";
 	}
