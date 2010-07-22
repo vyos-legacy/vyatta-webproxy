@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.62) unstable; urgency=low
+
+  * Fix spelling of clientaddr.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Thu, 22 Jul 2010 10:28:44 -0700
+
 vyatta-webproxy (0.2.61) unstable; urgency=low
 
   * Webproxy help string clean up.
