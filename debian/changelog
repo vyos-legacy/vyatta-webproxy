@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.62+larkspur1) unstable; urgency=low
+
+  * UNRELEASED
+
+ -- An-Cheng Huang <ancheng@vyatta.com>  Thu, 22 Jul 2010 17:20:13 -0700
+
 vyatta-webproxy (0.2.62) unstable; urgency=low
 
   * Fix spelling of clientaddr.
