@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.62+larkspur2) unstable; urgency=low
+
+  * Fix 5880: webproxy source-group name should not start with number
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Tue, 27 Jul 2010 17:09:53 -0700
+
 vyatta-webproxy (0.2.62+larkspur1) unstable; urgency=low
 
   * UNRELEASED
