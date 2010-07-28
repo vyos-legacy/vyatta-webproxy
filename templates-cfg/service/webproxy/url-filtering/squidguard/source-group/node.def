@@ -3,3 +3,6 @@ tag:
 type:txt
 
 help: Source group name
+
+syntax:expression: pattern $VAR(@) "^[^0-9]" ; \
+       "URL-filter source group name cannot start with a number."
