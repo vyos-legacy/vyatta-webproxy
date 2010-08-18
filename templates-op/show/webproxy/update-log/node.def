@@ -1,6 +1,6 @@
 help: Show update log for url-filter database
-run: if [ -e /opt/vyatta/config/active/service/webproxy/url-filtering/squidguard/vyattaguard/mode ] ;
-     then
+run: if cli-shell-api existsActive \
+          service webproxy url-filtering squidguard vyattaguard mode; then
         if [ -r /var/lib/sitefilter/updatestatus ]; then
            cat /var/lib/sitefilter/updatestatus
         else
