@@ -2,8 +2,7 @@ type: txt
 
 help: Time-period for this rule
 
-allowed: local -a params
-        params=( /opt/vyatta/config/active/service/webproxy/url-filtering/squidguard/time-period/* )
-        echo -n ${params[@]##*/}
+allowed: cli-shell-api listActiveNodes \
+           service webproxy url-filtering squidguard time-period
 
 val_help: Time period for this rule

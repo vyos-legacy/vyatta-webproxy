@@ -2,8 +2,7 @@ type: txt
 
 help: Source-group for this rule [REQUIRED]
 
-allowed: local -a params
-        params=( /opt/vyatta/config/active/service/webproxy/url-filtering/squidguard/source-group/* )
-        echo -n ${params[@]##*/}
+allowed: cli-shell-api listActiveNodes \
+           service webproxy url-filtering squidguard source-group
 
 val_help: Source group for this rule
