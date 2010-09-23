@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.69) unstable; urgency=low
+
+  * Fix new warning in squeeze version of squid3. (related to bug 6218)
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Wed, 22 Sep 2010 17:41:02 -0700
+
 vyatta-webproxy (0.2.68) unstable; urgency=low
 
   * UNRELEASED
