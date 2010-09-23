@@ -63,7 +63,7 @@ sub squid_get_constants {
     $output .= "acl manager proto cache_object\n";
     $output .= "acl localhost src 127.0.0.1/32\n";
     $output .= "acl to_localhost dst 127.0.0.0/8\n";
-    $output .= "acl net src 0.0.0.0/0\n";
+    $output .= "acl net src all\n";
     $output .= "acl SSL_ports port 443\n";
     $output .= "acl Safe_ports port 80          # http\n";
     $output .= "acl Safe_ports port 21          # ftp\n";
