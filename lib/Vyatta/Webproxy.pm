@@ -166,9 +166,9 @@ sub squidguard_ec_name2cat {
 sub squidguard_use_ec {
     my $config = new Vyatta::Config;
     $config->setLevel('service webproxy url-filtering squidguard');
-    if ($config->exists('vyattaguard')) {
+    if ($config->existsOrig('vyattaguard')) {
         return if ! -e $vyattaguard;
-        my $mode = $config->returnValue('vyattaguard mode');
+        my $mode = $config->returnOrigValue('vyattaguard mode');
         return $mode;
     }
     return;
