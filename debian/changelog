@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.71) unstable; urgency=low
+
+  * use exist() from config mode and existOrig() from op mode.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Tue, 16 Nov 2010 18:03:26 -0800
+
 vyatta-webproxy (0.2.70) unstable; urgency=low
 
   * Use $config->existsOrig() when called from op mode.
