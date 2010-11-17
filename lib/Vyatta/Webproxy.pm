@@ -164,11 +164,20 @@ sub squidguard_ec_name2cat {
 }
 
 sub squidguard_use_ec {
+    my $rc = system("cli-shell-api inSession");
+    my ($exist_func, $value_func);
+    if ($rc == 0) {
+        $exist_func = 'exists';
+        $value_func = 'returnValue';
+    } else {
+        $exist_func = 'existsOrig';
+        $value_func = 'returnOrigValue';
+    }
     my $config = new Vyatta::Config;
     $config->setLevel('service webproxy url-filtering squidguard');
-    if ($config->existsOrig('vyattaguard')) {
+    if ($config->$exist_func('vyattaguard')) {
         return if ! -e $vyattaguard;
-        my $mode = $config->returnOrigValue('vyattaguard mode');
+        my $mode = $config->$value_func('vyattaguard mode');
         return $mode;
     }
     return;
