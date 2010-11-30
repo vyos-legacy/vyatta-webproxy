@@ -196,8 +196,8 @@ sub squid_get_values {
 	$output .= "cache_dir $squid_def_fs $squid_cache_dir ";
         $output .= "$cache_size 16 256\n";
     } else {
-	# disable caching
-	$output .= "cache_dir null $squid_cache_dir\n";
+        $output .= "# disabling disk cache\n";
+	$output .= "# cache_dir null $squid_cache_dir\n";
     }
 
     if ($config->exists('disable-access-log')) {
