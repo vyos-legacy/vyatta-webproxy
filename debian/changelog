@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.73) unstable; urgency=low
+
+  * Fix 6218: [squeeze] squid generates error messages when starting
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Mon, 29 Nov 2010 16:35:21 -0800
+
 vyatta-webproxy (0.2.72) unstable; urgency=low
 
   * * move vyattaguard start/stop actions to service/webproxy/node.def
