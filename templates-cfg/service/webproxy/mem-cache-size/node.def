@@ -1,0 +1,5 @@
+type: u32
+
+help: Memory cache size in MB
+
+val_help: u32; Memory cache size in MB 

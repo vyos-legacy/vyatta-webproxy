@@ -200,6 +200,10 @@ sub squid_get_values {
 	$output .= "# cache_dir null $squid_cache_dir\n";
     }
 
+    my $mem_cache_size = $config->returnValue('mem-cache-size');
+    $mem_cache_size = 20 if ! defined $mem_cache_size;
+    $output .= "cache_mem $mem_cache_size MB\n";
+
     if ($config->exists('disable-access-log')) {
 	$output .= "access_log none\n\n";
     } else {
