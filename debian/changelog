@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.75) unstable; urgency=low
+
+  * https-filter start/stop and move ipaddr_intf hash to Misc.pm
+
+ -- Mohit Mehta <mohit@vyatta.com>  Wed, 01 Dec 2010 12:25:28 -0800
+
 vyatta-webproxy (0.2.74) unstable; urgency=low
 
   * Fix 6452: "WARNING cache_mem ..." is returned after "... webproxy
