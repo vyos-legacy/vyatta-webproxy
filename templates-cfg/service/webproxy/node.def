@@ -5,7 +5,7 @@ help: Webproxy service settings
 create: sudo /opt/vyatta/sbin/vyatta-update-webproxy.pl --setup;	
 
 end:
-     # start/stop vyattaguard
+     # start/stop vyattaguard. vg needs to start before squid and https
      vg_orig_mode=$(cli-shell-api returnActiveValue service webproxy \
                     url-filtering squidguard vyattaguard mode)
 
@@ -24,9 +24,28 @@ end:
        fi
      fi
 
+
      # start/stop squid which in turn kicks off squidguard
      if ! cli-shell-api exists service webproxy; then
          sudo /opt/vyatta/sbin/vyatta-update-webproxy.pl --stop;
      else
          sudo /opt/vyatta/sbin/vyatta-update-webproxy.pl --update;
+     fi
+
+
+     # start/stop vyattaguard https
+     cli-shell-api existsActive service webproxy url-filtering \
+                   squidguard vyattaguard https-category-filter
+     vg_orig_https=`echo $?`
+
+     cli-shell-api exists service webproxy url-filtering \
+                   squidguard vyattaguard https-category-filter
+     vg_https=`echo $?`
+
+     if [ "$vg_orig_https" != "$vg_https" ]; then
+       if [ "$vg_https" == "0" ]; then
+         sudo /opt/vyatta/bin/sudo-users/vyatta-vg.pl --start-vgd_https
+       else
+         sudo /opt/vyatta/bin/sudo-users/vyatta-vg.pl --stop-vgd_https
+       fi
      fi

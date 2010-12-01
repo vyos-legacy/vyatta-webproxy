@@ -32,6 +32,7 @@ use Vyatta::Config;
 use Vyatta::TypeChecker;
 use Vyatta::Webproxy;
 use Vyatta::IpTables::Mgr;
+use Vyatta::Misc;
 
 use warnings;
 use strict;
@@ -49,10 +50,6 @@ my $squid_chain     = 'WEBPROXY_CONNTRACK';
 my $squidguard_conf          = '/etc/squid/squidGuard.conf';
 my $squidguard_redirect_def  = 'http://www.google.com';
 my $squidguard_enabled       = 0;
-
-# global hash of ipv4 addresses on the system
-my %config_ipaddrs = ();
-
 
 sub squid_get_constants {
     my $output;
@@ -157,6 +154,8 @@ sub squid_validate_conf {
     }
 
     foreach my $ipaddr (@ipaddrs) {
+	my $config_ipaddrs_ref = get_ipaddr_intf_hash();
+	my %config_ipaddrs = %{$config_ipaddrs_ref};
 	if (!defined $config_ipaddrs{$ipaddr}) {
 	    print "listen-address [$ipaddr] is not a configured address\n";
 	    exit 1;
@@ -242,6 +241,8 @@ sub squid_get_values {
 	    $output .= "http_port $ipaddr:$n_port $transparent\n";
 	}
 
+	my $config_ipaddrs_ref = get_ipaddr_intf_hash();
+	my %config_ipaddrs = %{$config_ipaddrs_ref};
 	my $intf = $config_ipaddrs{$ipaddr};
 
 	#
@@ -911,17 +912,6 @@ GetOptions("setup!"                => \$setup_webproxy,
 	   "check-source-group=s"  => \$check_source_group,
 	   "delete-local=s{3}"     => \@delete_local,
 );
-
-#
-# make a hash of ipaddrs => interface
-#
-my @lines = `ip addr show | grep 'inet '`;
-chomp @lines;
-foreach my $line (@lines) {
-    if ($line =~ /inet\s+([0-9.]+)\/.*\s([\w.]+)$/) {
-	$config_ipaddrs{$1} = $2;
-    }
-}
 
 if ($setup_webproxy) {
     my $index = ipt_find_chain_rule('iptables', 'nat',
