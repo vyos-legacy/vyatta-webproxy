@@ -9,7 +9,6 @@ curverdir         = $(sysconfdir)/config-migrate/current
 curver_DATA = cfg-version/webproxy@1
 
 sbin_SCRIPTS  = scripts/vyatta-update-webproxy.pl
-sbin_SCRIPTS += scripts/install-blacklist
 sbin_SCRIPTS += scripts/test_uf
 
 bin_sudo_users_SCRIPTS  = scripts/vyatta-show-webproxy.pl
