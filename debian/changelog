@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.78) unstable; urgency=low
+
+  * release
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Thu, 02 Dec 2010 17:18:25 -0800
+
 vyatta-webproxy (0.2.77) unstable; urgency=low
 
   * Change squid/squidguard to use global data directory.
