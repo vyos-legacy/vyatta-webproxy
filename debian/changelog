@@ -1,3 +1,14 @@
+vyatta-webproxy (0.2.79) unstable; urgency=low
+
+  [ Daniil Baturin ]
+  * Resolved bug 6231, replaced "clear webproxy process" with "restart
+    webproxy".
+  * Removed old templates for "clear webproxy process"
+
+  [ Stig Thormodsrud ]
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Fri, 03 Dec 2010 14:02:33 -0800
+
 vyatta-webproxy (0.2.78) unstable; urgency=low
 
   * release
