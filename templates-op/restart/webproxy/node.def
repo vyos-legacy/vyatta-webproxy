@@ -1,0 +1,3 @@
+help: Restart webproxy service
+run:  sudo /opt/vyatta/bin/sudo-users/vyatta-restart-squid
+
