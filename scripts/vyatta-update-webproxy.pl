@@ -217,6 +217,17 @@ sub squid_get_values {
 	$output .= "append_domain $append_domain\n\n";
     }
 
+    # Cached objects sizes
+    my $max_size = $config->returnValue('maximum-object-size');
+    if ($max_size) {
+        $output .= "maximum_object_size $max_size KB\n";
+    }
+
+    my $min_size = $config->returnValue('minimum-object-size');
+    if ($min_size) {
+        $output .= "minimum_object_size $min_size KB\n";
+    }
+
     my $num_nats = 0;
     $config->setLevel('service webproxy listen-address');
     my %ipaddrs_status = $config->listNodeStatus();
