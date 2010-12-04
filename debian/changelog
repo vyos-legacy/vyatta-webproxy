@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.82) unstable; urgency=low
+
+  * More changes to use global data dir.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Sat, 04 Dec 2010 15:47:25 -0800
+
 vyatta-webproxy (0.2.81) unstable; urgency=low
 
   [ Daniil Baturin ]
