@@ -529,7 +529,7 @@ sub squidguard_generate_local {
 	return;
     }
 
-    system("mkdir $dir") if ! -d $dir;
+    system("mkdir -p $dir") if ! -d $dir;
     my $file  = "$dir/$type";
     my $value = join("\n", @local_values) . "\n";
     if (webproxy_write_file($file, $value)) {
@@ -919,6 +919,12 @@ if ($setup_webproxy) {
     if (! defined $index) {
         system("sudo iptables -t nat -N WEBPROXY");
         system("sudo iptables -t nat -I VYATTA_PRE_DNAT_HOOK 1 -j WEBPROXY");
+    }
+
+    my $db_dir = squidguard_get_blacklist_dir();
+    if (! -e $db_dir) {
+        system("mkdir -p $db_dir");
+        system("chown proxy $db_dir");
     }
     exit 0;
 }
