@@ -1,3 +1,16 @@
+vyatta-webproxy (0.2.81) unstable; urgency=low
+
+  [ Daniil Baturin ]
+  * Resolved bug 4555, added backend for setting maximum_object_size and
+    minimum_object_size
+  * Added templates for maximum and minimum object sizes for webproxy
+    (bug 4555)
+
+  [ Stig Thormodsrud ]
+  * Add unit size to val_help string.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Sat, 04 Dec 2010 14:40:37 -0800
+
 vyatta-webproxy (0.2.80) unstable; urgency=low
 
   * Recreate squidguard db dir if doesn't exist (like after init-
