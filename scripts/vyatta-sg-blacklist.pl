@@ -104,6 +104,17 @@ sub squidguard_auto_update {
     my $db_dir = squidguard_get_blacklist_dir();
     my $tmp_blacklists = '/tmp/blacklists.gz';
 
+    if (!squidguard_is_blacklist_installed()) {
+        my ($disk_free, $disk_required);
+        $disk_required = (30 * 1024 * 1024); # 30MB 
+        $disk_free = `df $db_dir | grep -v Filesystem | awk '{ print \$4 }'`;
+        chomp($disk_free);
+        $disk_free *= 1024;
+        if ($disk_free < $disk_required) {
+            die "Error: not enough disk space $disk_required\/$disk_free";
+        }
+    }
+
     if (defined $file) {
       # use existing file
 	$rc = copy($file, $tmp_blacklists);
@@ -184,6 +195,10 @@ GetOptions("update-blacklist!"           => \$update_bl,
 );
 
 my $sg_updatestatus_file = "$global_data_dir/squidguard/updatestatus";
+if (! -e "$global_data_dir/squidguard") {
+    system("mkdir -p $global_data_dir/squidguard/db");
+    system("chown proxy $global_data_dir/squidguard/db");
+}
 system("touch $sg_updatestatus_file");
 system("echo update failed at `date` > $sg_updatestatus_file");
 
