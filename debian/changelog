@@ -1,3 +1,10 @@
+vyatta-webproxy (0.2.80) unstable; urgency=low
+
+  * Recreate squidguard db dir if doesn't exist (like after init-
+    floppy).
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Sat, 04 Dec 2010 14:02:17 -0800
+
 vyatta-webproxy (0.2.79) unstable; urgency=low
 
   [ Daniil Baturin ]
