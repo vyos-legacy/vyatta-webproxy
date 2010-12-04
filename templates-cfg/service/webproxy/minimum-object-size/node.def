@@ -1,0 +1,3 @@
+type: u32
+help: Minimum size of object to be stored in cache in kilobytes
+val_help: u32; Object size
