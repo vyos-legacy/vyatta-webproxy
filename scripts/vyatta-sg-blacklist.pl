@@ -197,7 +197,9 @@ GetOptions("update-blacklist!"           => \$update_bl,
 my $sg_updatestatus_file = "$global_data_dir/squidguard/updatestatus";
 if (! -e "$global_data_dir/squidguard") {
     system("mkdir -p $global_data_dir/squidguard/db");
-    system("chown proxy $global_data_dir/squidguard/db");
+    my ($login, $pass, $uid, $gid) = getpwnam('proxy')
+        or die "proxy not in passwd file";
+    chown $uid, $gid, "$global_data_dir/squidguard/db";
 }
 system("touch $sg_updatestatus_file");
 system("echo update failed at `date` > $sg_updatestatus_file");

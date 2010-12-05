@@ -75,7 +75,9 @@ sub squid_get_constants {
     $output .= "acl CONNECT method CONNECT\n\n";
     
     system("touch $squid_log");
-    system("chown proxy.adm $squid_log");
+    my ($login, $pass, $uid, $gid) = getpwnam('proxy')
+        or die "proxy not in passwd file";
+    chown $uid, $gid, $squid_log;
 
     return $output;
 }
@@ -699,7 +701,9 @@ sub squidguard_get_dests {
     if (scalar(@log_category) > 0) {
 	$log_file = squidguard_get_blacklist_log();
 	system("touch $log_file");
-	system("chown proxy.adm $log_file");
+        my ($login, $pass, $uid, $gid) = getpwnam('proxy')
+            or die "proxy not in passwd file";
+        chown $uid, $gid, $log_file;
     }
     my %is_logged    = map { $_ => 1 } @log_category;    
 
@@ -935,7 +939,9 @@ if ($setup_webproxy) {
     my $db_dir = squidguard_get_blacklist_dir();
     if (! -e $db_dir) {
         system("mkdir -p $db_dir");
-        system("chown proxy $db_dir");
+        my ($login, $pass, $uid, $gid) = getpwnam('proxy')
+            or die "proxy not in passwd file";
+        chown $uid, $gid, $db_dir;
     }
     exit 0;
 }
@@ -969,7 +975,9 @@ if ($stop_webproxy) {
     webproxy_delete_all_local();
     system("rm -f $squid_conf $squidguard_conf");
     system("touch $squid_conf $squidguard_conf");
-    system("chown proxy $squid_conf $squidguard_conf");
+    my ($login, $pass, $uid, $gid) = getpwnam('proxy')
+        or die "proxy not in passwd file";
+    chown $uid, $gid, ($squid_conf, $squidguard_conf);
     squid_stop();
 
     my $index = ipt_find_chain_rule('iptables', 'nat',
