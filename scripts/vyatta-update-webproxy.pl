@@ -278,7 +278,7 @@ sub squid_get_values {
 	    #handle port # change
 	    #
 	    if ($o_port ne $n_port and !$o_dt) {
-		my $cmd = "sudo iptables -t nat -D WEBPROXY -i $intf ";
+		my $cmd = "iptables -t nat -D WEBPROXY -i $intf ";
 		$cmd   .= "-p tcp --dport 80 -j REDIRECT --to-port $o_port";
 		#print "[$cmd]\n";
 		my $rc = system($cmd);
@@ -294,7 +294,7 @@ sub squid_get_values {
 	}
 	if (defined $A_or_D) {
 	    ipt_enable_conntrack('iptables', $squid_chain) if $A_or_D eq 'A';
-	    my $cmd = "sudo iptables -t nat -$A_or_D WEBPROXY -i $intf ";
+	    my $cmd = "iptables -t nat -$A_or_D WEBPROXY -i $intf ";
 	    $cmd   .= "-p tcp --dport 80 -j REDIRECT --to-port $n_port";
 	    #print "[$cmd]\n";
 	    my $rc = system($cmd);
@@ -928,8 +928,8 @@ if ($setup_webproxy) {
     my $index = ipt_find_chain_rule('iptables', 'nat',
                                     'VYATTA_PRE_DNAT_HOOK', 'WEBPROXY');
     if (! defined $index) {
-        system("sudo iptables -t nat -N WEBPROXY");
-        system("sudo iptables -t nat -I VYATTA_PRE_DNAT_HOOK 1 -j WEBPROXY");
+        system("iptables -t nat -N WEBPROXY");
+        system("iptables -t nat -I VYATTA_PRE_DNAT_HOOK 1 -j WEBPROXY");
     }
 
     my $db_dir = squidguard_get_blacklist_dir();
@@ -975,9 +975,9 @@ if ($stop_webproxy) {
     my $index = ipt_find_chain_rule('iptables', 'nat',
                                     'VYATTA_PRE_DNAT_HOOK', 'WEBPROXY');
     if (defined $index) {
-        system("sudo iptables -t nat -D VYATTA_PRE_DNAT_HOOK -j WEBPROXY");
-        system("sudo iptables -t nat -F WEBPROXY");
-        system("sudo iptables -t nat -X WEBPROXY");
+        system("iptables -t nat -D VYATTA_PRE_DNAT_HOOK -j WEBPROXY");
+        system("iptables -t nat -F WEBPROXY");
+        system("iptables -t nat -X WEBPROXY");
     }
     exit 0;
 }
