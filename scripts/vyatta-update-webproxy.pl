@@ -166,9 +166,11 @@ sub squid_validate_conf {
     }
 
     #check for nameserver
-    if (system('grep -cq nameserver /etc/resolv.conf 2> /dev/null')) {
-	print "Warning: webproxy may not work properly without a nameserver\n";
-    }
+    open (my $resolv,'<',"/etc/resolv.conf")
+	or die "Can't open /etc/resolv.conf : $!";
+    warn "Warning: webproxy may not work properly without a nameserver\n"
+        unless (scalar(grep(/nameserver/, <$resolv>)));
+    close $resolv;
 
     return 0;
 }
