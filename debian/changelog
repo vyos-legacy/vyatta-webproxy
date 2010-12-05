@@ -1,3 +1,11 @@
+vyatta-webproxy (0.2.83) unstable; urgency=low
+
+  * Don't need use sudo when calling iptables.
+  * Address some of Stephen's code review comments.
+  * Address some of Stephen's code review comments.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Sat, 04 Dec 2010 16:39:52 -0800
+
 vyatta-webproxy (0.2.82) unstable; urgency=low
 
   * More changes to use global data dir.
