@@ -1,3 +1,14 @@
+vyatta-webproxy (0.2.84) unstable; urgency=low
+
+  [ Daniil Baturin ]
+  * Bug 6137, add backend for setting maximum reply body size.
+  * Bug 6137, add configuration templates for maximum reply body size.
+
+  [ Stig Thormodsrud ]
+  * Remove verb from help string.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Mon, 06 Dec 2010 15:08:02 -0800
+
 vyatta-webproxy (0.2.83) unstable; urgency=low
 
   * Don't need use sudo when calling iptables.
