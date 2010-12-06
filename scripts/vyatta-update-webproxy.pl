@@ -232,6 +232,12 @@ sub squid_get_values {
         $output .= "minimum_object_size $min_size KB\n";
     }
 
+    # Reply body maximum size
+    my $reply_max_size = $config->returnValue('reply-body-max-size');
+    if ($reply_max_size) {
+        $output .= "reply_body_max_size $reply_max_size KB\n";
+    }
+
     my $num_nats = 0;
     $config->setLevel('service webproxy listen-address');
     my %ipaddrs_status = $config->listNodeStatus();
