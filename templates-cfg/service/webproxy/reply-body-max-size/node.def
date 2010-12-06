@@ -1,3 +1,3 @@
 type: u32
-help: Set maximum reply body size in KB
+help: Maximum reply body size in KB
 val_help: u32; Reply size in KB
