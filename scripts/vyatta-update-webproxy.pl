@@ -163,7 +163,9 @@ sub squid_validate_conf {
 	    print "listen-address [$ipaddr] is not a configured address\n";
 	    exit 1;
 	}
-	# does it need to be primary ???
+        if (!is_primary_address($ipaddr)) {
+            print "Warning: webproxy is configured to listen on a non-primary address. This may cause troubles in transparent mode. \n";
+        }
     }
 
     #check for nameserver
