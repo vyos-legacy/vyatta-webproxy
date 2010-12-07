@@ -32,6 +32,7 @@ use Fcntl qw(:flock);
 
 use lib "/opt/vyatta/share/perl5";
 use Vyatta::Webproxy;
+use Vyatta::File;
 
 use warnings;
 use strict;
@@ -141,7 +142,7 @@ sub squidguard_auto_update {
     }
     my $b4_entries = squidguard_count_blacklist_entries();
     my $archive = "$global_data_dir/squidguard/archive";
-    system("mkdir -p $archive") if ! -d $archive;
+    mkdir_p($archive) if ! -d $archive;
     system("rm -rf $archive/*");
     system("mv $db_dir/* $archive 2> /dev/null");
     $rc = system("mv /tmp/blacklists/* $db_dir");
@@ -150,7 +151,8 @@ sub squidguard_auto_update {
 	return 1;
     }
     system("mv $archive/local-* $db_dir 2> /dev/null");
-    system("rm -fr $tmp_blacklists /tmp/blacklists");
+    rm_rf($tmp_blacklists);
+    rm_rf("/tmp/blacklists");
 
     my $after_entries = squidguard_count_blacklist_entries();
     my $mode = "auto-update";
@@ -171,7 +173,7 @@ sub squidguard_update_blacklist {
     print "Checking permissions...\n" if $interactive;
     my $db_dir = squidguard_get_blacklist_dir();
     system("chown -R proxy.proxy $db_dir > /dev/null 2>&1");
-    system("chmod 2770 $db_dir >/dev/null 2>&1");
+    chmod(2770, $db_dir);
 
     #
     # generate temporary config for each category & generate DB
@@ -201,7 +203,7 @@ if (! -e "$global_data_dir/squidguard") {
         or die "proxy not in passwd file";
     chown $uid, $gid, "$global_data_dir/squidguard/db";
 }
-system("touch $sg_updatestatus_file");
+touch($sg_updatestatus_file);
 system("echo update failed at `date` > $sg_updatestatus_file");
 
 my $lock_file = '/tmp/vyatta_bl_lock';

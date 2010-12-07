@@ -32,6 +32,7 @@ use Vyatta::Config;
 use Vyatta::TypeChecker;
 use Vyatta::Webproxy;
 use Vyatta::IpTables::Mgr;
+use Vyatta::File;
 use Vyatta::Misc;
 
 use warnings;
@@ -74,7 +75,7 @@ sub squid_get_constants {
     $output .= "acl Safe_ports port 777         # multiling http\n";
     $output .= "acl CONNECT method CONNECT\n\n";
     
-    system("touch $squid_log");
+    touch($squid_log);
     my ($login, $pass, $uid, $gid) = getpwnam('proxy')
         or die "proxy not in passwd file";
     chown $uid, $gid, $squid_log;
@@ -371,7 +372,7 @@ sub squidguard_gen_cron {
     }
 
     webproxy_write_file($file, $output); 
-    system("chmod 755 $file");
+    chmod 755, $file;
 }
 
 sub squidguard_gen_safesearch {
@@ -546,16 +547,16 @@ sub squidguard_generate_local {
     my $dir          = "$db_dir/$local_action";
 
     if (scalar(@local_values) <= 0) {
-	system("rm -rf $dir") if -d $dir;
+	rm_rf($dir) if -d $dir;
 	return;
     }
 
-    system("mkdir -p $dir") if ! -d $dir;
+    mkdir_p($dir) if ! -d $dir;
     my $file  = "$dir/$type";
     my $value = join("\n", @local_values) . "\n";
     if (webproxy_write_file($file, $value)) {
 	system("chown -R proxy.proxy $dir > /dev/null 2>&1");
-	system("touch $dir/local") if ! -e "$dir/local";
+	touch("$dir/local") if ! -e "$dir/local";
 	squidguard_generate_db(0, "local-$action-$group", $group);
     }
     return $local_action;
@@ -708,7 +709,7 @@ sub squidguard_get_dests {
     my $log_file = undef;
     if (scalar(@log_category) > 0) {
 	$log_file = squidguard_get_blacklist_log();
-	system("touch $log_file");
+	touch($log_file);
         my ($login, $pass, $uid, $gid) = getpwnam('proxy')
             or die "proxy not in passwd file";
         chown $uid, $gid, $log_file;
@@ -946,7 +947,7 @@ if ($setup_webproxy) {
 
     my $db_dir = squidguard_get_blacklist_dir();
     if (! -e $db_dir) {
-        system("mkdir -p $db_dir");
+        mkdir_p($db_dir);
         my ($login, $pass, $uid, $gid) = getpwnam('proxy')
             or die "proxy not in passwd file";
         chown $uid, $gid, $db_dir;
@@ -981,8 +982,10 @@ if ($stop_webproxy) {
     #
     squid_get_values();
     webproxy_delete_all_local();
-    system("rm -f $squid_conf $squidguard_conf");
-    system("touch $squid_conf $squidguard_conf");
+    rm_rf($squid_conf);
+    rm_rf($squidguard_conf);
+    touch($squid_conf);
+    touch($squidguard_conf);
     my ($login, $pass, $uid, $gid) = getpwnam('proxy')
         or die "proxy not in passwd file";
     chown $uid, $gid, ($squid_conf, $squidguard_conf);
