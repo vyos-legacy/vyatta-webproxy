@@ -1,3 +1,13 @@
+vyatta-webproxy (0.2.86) unstable; urgency=low
+
+  [ Daniil Baturin ]
+  * Bug 6233, add check for listen-address to be primary and issue a
+    warning otherwise
+
+  [ Stig Thormodsrud ]
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Tue, 07 Dec 2010 15:28:51 -0800
+
 vyatta-webproxy (0.2.85) unstable; urgency=low
 
   * Address more of Stephen code review comments.
