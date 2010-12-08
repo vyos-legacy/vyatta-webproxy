@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.87) unstable; urgency=low
+
+  * Fix "show webproxy update-log" to point to global datadir.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Tue, 07 Dec 2010 16:09:37 -0800
+
 vyatta-webproxy (0.2.86) unstable; urgency=low
 
   [ Daniil Baturin ]
