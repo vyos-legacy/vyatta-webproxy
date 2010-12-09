@@ -1,0 +1,11 @@
+type: u32
+
+help: LDAP version to use
+
+allowed: echo "3 4"
+
+default: 3
+
+
+
+

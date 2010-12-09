@@ -1,0 +1,5 @@
+type: u32
+
+help: Authenticated session time to live in minutes
+
+default: 60

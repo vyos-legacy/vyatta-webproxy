@@ -1,0 +1,7 @@
+type: u32
+
+help: LDAP port to use
+
+default: 389
+
+val_help: u32:1-65535 ; Default port number

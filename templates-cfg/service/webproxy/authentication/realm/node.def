@@ -1,0 +1,3 @@
+type: txt
+
+help: Name of authentication realm (e.g. "My Company proxy server")

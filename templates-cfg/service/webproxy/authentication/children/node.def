@@ -1,0 +1,6 @@
+type: u32
+
+help: Number of authentication helper processes
+
+default: 5
+

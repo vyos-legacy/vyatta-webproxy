@@ -1,0 +1,8 @@
+type: txt
+
+help: Authentication method
+
+syntax:expression: $VAR(@) in "ldap"; "The only supported method is LDAP now"
+
+allowed: echo "ldap"
+
