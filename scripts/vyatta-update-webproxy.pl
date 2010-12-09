@@ -167,6 +167,9 @@ sub squid_validate_conf {
 	}
     }
 
+    # If authentication is enabled, we need to make sure proxy is not transparent
+    my $auth_enabled = 1 if $config->exists("authentication method");
+
     $config->setLevel('service webproxy listen-address');
     my @ipaddrs = $config->listNodes();
     if (scalar(@ipaddrs) <= 0) {
@@ -183,6 +186,10 @@ sub squid_validate_conf {
 	}
         if (!is_primary_address($ipaddr)) {
             print "Warning: webproxy is configured to listen on a non-primary address. This may cause troubles in transparent mode. \n";
+        }
+        if ($auth_enabled && !$config->exists("$ipaddr disable-transparent")) {
+            print "Authentication can not be configured when proxy is in transparent mode\n";
+            exit 1;
         }
     }
 
@@ -359,6 +366,79 @@ sub squid_get_values {
 	$output .= "redirect_children 8\n";
 	$output .= "redirector_bypass on\n\n";
     }
+
+    return $output;
+}
+
+sub squid_get_auth_settings {
+    my $config = new Vyatta::Config;
+    $config->setLevel("service webproxy authentication");
+
+    my $output = '';
+    my $auth_method = $config->returnValue("method");
+    return unless $auth_method;
+
+    # Paths to authentication helpers
+    my $ldap_helper = "/usr/lib/squid3/squid_ldap_auth";
+
+    # Get global authentication settings
+    my $children = $config->returnValue("children");
+    my $credentials_ttl = $config->returnValue("credentials-ttl");
+    my $realm = $config->returnValue("realm");
+
+    # Set defaults	
+    $children = 5 unless $children;
+    $credentials_ttl = 60 unless $credentials_ttl;
+    $realm = "Vyatta Web Proxy" unless $realm;
+
+    $output .= "auth_param basic children $children\n";
+    $output .= "auth_param basic credentialsttl $credentials_ttl minute\n";
+    $output .= "auth_param basic realm $realm\n";
+
+    # LDAP settings
+    if ($auth_method eq 'ldap') {
+        $config->setLevel("service webproxy authentication ldap");
+
+        # Get LDAP settings
+        my $server = $config->returnValue("server");
+        my $port = $config->returnValue("port");
+        my $base_dn = $config->returnValue("base-dn");
+        my $bind_dn = $config->returnValue("bind-dn");
+        my $password = $config->returnValue("password");
+        my $filter = $config->returnValue("filter-expression");
+        my $username_attribute = $config->returnValue("username-attribute");
+        my $persistent = 1 if $config->exists("persistent-connection");
+        my $use_ssl = 1 if $config->exists("use-ssl");
+        my $version = $config->returnValue("version");
+
+        if (!$server) {
+            print "LDAP authentication is enabled, but server is not set\n";
+            exit 1;
+        }
+        elsif (!$bind_dn && $password) {
+            print "LDAP password can not be set when base-dn is not defined\n";
+            exit 1;
+        }
+        elsif (!$base_dn) {
+            print "LDAP base-dn must be set\n";
+            exit 1;
+        }
+
+        $output .= "auth_param basic program $ldap_helper ";
+        $output .= "-v $version ";
+        $output .= "-b $base_dn ";
+        $output .= "-D $bind_dn " if $bind_dn;
+        $output .= "-w $password " if $password;
+        $output .= "-f $filter " if $filter;
+        $output .= "-u $username_attribute " if $username_attribute;
+        $output .= "-p $port " if $port;
+        $output .= "-P " if $persistent;
+        $output .= "-ZZ " if $use_ssl;
+        $output .= "$server\n";
+    }
+
+    $output .= "acl auth proxy_auth REQUIRED\n";
+    $output .= "http_access allow auth\n";
 
     return $output;
 }
@@ -982,6 +1062,7 @@ if ($update_webproxy) {
     squidguard_validate_conf();
     $config  = squid_get_constants();
     $config .= squid_get_config_acls();
+    $config .= squid_get_auth_settings();
     $config .= squid_get_http_access_constants();
     $config .= squid_get_values();
     webproxy_write_file($squid_conf, $config);
