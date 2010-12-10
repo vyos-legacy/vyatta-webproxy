@@ -419,6 +419,10 @@ sub squid_get_auth_settings {
             print "LDAP password can not be set when base-dn is not defined\n";
             exit 1;
         }
+        elsif (!$password && $bind_dn) {
+            print "LDAP bind DN can not be set without password\n";
+            exit 1;
+        }
         elsif (!$base_dn) {
             print "LDAP base-dn must be set\n";
             exit 1;
