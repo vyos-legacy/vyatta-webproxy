@@ -72,7 +72,7 @@ exit 0 if $total_blocks < 1;
 #
 # print summary
 #
-my $format    = "%-35s  %15s\n";
+my $format    = "%-60s  %8s\n";
 
 printf($format, "Blocked category", "Count");
 printf($format, "----------------", "-----");
