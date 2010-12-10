@@ -25,7 +25,7 @@ touch /etc/squid3/local.conf
 
 # mv databases to global data directory
 if [ ! -d $datadir ]; then
-    mkdir -p $datadir ]
+    mkdir -p $datadir 
 fi
 if [ -d /var/lib/squidguard ]; then
     mv /var/lib/squidguard $datadir
