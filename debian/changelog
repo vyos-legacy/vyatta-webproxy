@@ -1,3 +1,10 @@
+vyatta-webproxy (0.2.90) unstable; urgency=low
+
+  * fix regex for category to include drops by rules as well. shorten
+    format length
+
+ -- Mohit Mehta <mohit@vyatta.com>  Fri, 10 Dec 2010 16:10:59 -0800
+
 vyatta-webproxy (0.2.89) unstable; urgency=low
 
   * Remove stray ']' in postinst.
