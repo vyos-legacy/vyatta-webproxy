@@ -55,7 +55,7 @@ foreach my $log (@log_files) {
         my ($date, $time, $pid, $category, $url, $requestor, $ident, $method) 
             = split;
         next if ! defined($category) or ! defined($requestor);
-        if ($category =~ /default\/([\w-]+)\//) {
+        if ($category =~ /\/([\w-]+)\//) {
             $category = $1;
         }
         if (defined($url) and $url =~ /^http:\/\/([^\/]+)\//) {
@@ -72,7 +72,7 @@ exit 0 if $total_blocks < 1;
 #
 # print summary
 #
-my $format    = "%-60s  %8s\n";
+my $format    = "%-50s  %8s\n";
 
 printf($format, "Blocked category", "Count");
 printf($format, "----------------", "-----");
