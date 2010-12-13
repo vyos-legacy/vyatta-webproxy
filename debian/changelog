@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.91) unstable; urgency=low
+
+  * code to view HTTP, HTTPS and combined blacklist log and summary
+
+ -- Mohit Mehta <mohit@vyatta.com>  Mon, 13 Dec 2010 11:49:13 -0800
+
 vyatta-webproxy (0.2.90) unstable; urgency=low
 
   * fix regex for category to include drops by rules as well. shorten
