@@ -25,6 +25,7 @@
 
 use lib "/opt/vyatta/share/perl5";
 use Vyatta::Webproxy qw(squidguard_get_log_files);
+use Getopt::Long;
 
 use warnings;
 use strict;
@@ -39,6 +40,10 @@ my %categories   = ();
 my %users        = ();
 my %sites        = ();
 
+my ($http_only, $https_only) = (undef, undef);
+
+GetOptions("http-only!"            => \$http_only,
+           "https-only!"           => \$https_only);
 
 my @log_files = squidguard_get_log_files();
 if (scalar(@log_files) < 1) {
@@ -54,16 +59,26 @@ foreach my $log (@log_files) {
     while (<$fh>) {
         my ($date, $time, $pid, $category, $url, $requestor, $ident, $method) 
             = split;
-        next if ! defined($category) or ! defined($requestor);
+        next if !defined($category) or !defined($requestor) or !defined($url);
         if ($category =~ /\/([\w-]+)\//) {
             $category = $1;
         }
-        if (defined($url) and $url =~ /^http:\/\/([^\/]+)\//) {
-            $sites{$1}++;
-        } 
-        $total_blocks++;
-        $categories{$category}++;
-        $users{$requestor}++;
+        if (!defined $https_only) {
+            if ($url =~ /^http:\/\/([^\/]+)\//) {
+                $sites{$1}++;
+                $total_blocks++;
+                $categories{$category}++;
+                $users{$requestor}++;
+            }
+        }
+        if (!defined $http_only) {
+            if ($url =~ /^(\S+)\:443$/) {
+                $sites{$1}++;
+                $total_blocks++;
+                $categories{$category}++;
+                $users{$requestor}++;
+            }
+        }
     }
     close $fh;
 }

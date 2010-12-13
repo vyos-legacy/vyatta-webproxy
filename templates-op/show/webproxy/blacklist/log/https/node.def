@@ -1,0 +1,10 @@
+help: Show HTTPS contents of webproxy blacklist log
+run:  LESSOPEN=less
+      if [ -e /var/log/squid/blacklist.log ]; then
+        less $_vyatta_less_options    \
+          --prompt="file %i of %m, page %dt of %D" \
+          -- `printf "%s\n" /var/log/squid/blacklist.log* \
+          | sort -nr` | grep '\:443 '
+      else
+        echo No webproxy blacklist log
+      fi
