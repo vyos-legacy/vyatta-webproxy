@@ -1,3 +1,10 @@
+vyatta-webproxy (0.2.92) unstable; urgency=low
+
+  * restart https-filter along with webproxy when running 'restart
+    webproxy'
+
+ -- Mohit Mehta <mohit@vyatta.com>  Tue, 14 Dec 2010 15:32:09 -0800
+
 vyatta-webproxy (0.2.91) unstable; urgency=low
 
   * code to view HTTP, HTTPS and combined blacklist log and summary
