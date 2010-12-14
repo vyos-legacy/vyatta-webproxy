@@ -30,7 +30,7 @@ end:
      fi
 
 
-     # start/stop vyattaguard https
+     # start/stop vyattaguard https. Has to be after squid restarted squidguard
      cli-shell-api existsActive service webproxy url-filtering \
                    squidguard vyattaguard https-filter
      vg_orig_https=`echo $?`
