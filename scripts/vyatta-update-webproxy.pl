@@ -642,6 +642,22 @@ sub squidguard_get_constants {
     return $output;
 }
 
+sub squidguard_get_ldap_settings {
+    my $config = shift;
+    $config->setLevel("service webproxy authentication ldap");
+
+    my $password = $config->returnValue("password");
+    my $bind_dn = $config->returnValue("bind-dn");
+    my $version = $config->returnValue("version");
+
+    my $output = '';
+    $output .= "ldapbinddn $bind_dn\n" if $bind_dn;
+    $output .= "ldapbindpass $password\n" if $password;
+    $output .= "ldapprotover $version\n" if $version;
+
+    return $output;
+}
+
 sub squidguard_generate_local {
     my ($action, $type, $group, @local_values) = @_;
 
@@ -724,6 +740,15 @@ sub squidguard_get_times {
     return ($output, @time_periods);
 }
 
+sub get_ldap_server {
+    my $config = shift;
+
+    $config->setLevel("service webproxy authentication ldap");
+    my $server = $config->returnValue("server");
+
+    return $server;
+}
+
 sub squidguard_get_source {
     my ($config, $path, $policy) = @_;
 
@@ -731,22 +756,75 @@ sub squidguard_get_source {
     $config->setLevel("$path rule $policy");
     my $source = $config->returnValue('source-group');
 
+    $config->setLevel("$path source-group $source");
+    my $address_set = $config->exists("address");
+    my $domain_set = $config->exists("domain");
+    my $user_group_set = $config->exists("user-group");
+    my $ldap_user_set = $config->exists("ldap-user-search");
+    my $ldap_ip_set = $config->exists("ldap-ip-search");
+
     $output .= "src $source-$policy {\n";
-    $config->setLevel("$path source-group $source address");	
-    my @addrs = $config->returnValues();
-    if (scalar(@addrs) > 0) {
-	foreach my $addr (@addrs) {
-	    $output .= "\tip $addr\n";
-	}
+
+    if ($address_set) {
+        $config->setLevel("$path source-group $source address");
+        my @addrs = $config->returnValues();
+        if (scalar(@addrs) > 0) {
+            foreach my $addr (@addrs) {
+                $output .= "\tip $addr\n";
+            }
+        }
+    }
+    elsif ($domain_set) {
+        $config->setLevel("$path source-group $source domain");
+        my @domains = $config->returnValues();
+        if (scalar(@domains) > 0) {
+            foreach my $domain (@domains) {
+                $output .= "\tdomain $domain\n";
+            }
+        }
+    }
+    elsif ($user_group_set) {
+        $config->setLevel("$path source-group $source user");
+        my $user_list = '';
+        my @users = $config->returnValues();
+        if (scalar(@users) > 0) {
+            foreach my $user (@users) {
+                $user_list .= "$user ";
+            }
+        }
+        $output .= "\tuser $user_list\n";
+    }
+    elsif ($ldap_user_set) {
+        my $ldap_server = get_ldap_server($config);
+        if ($ldap_server eq '') {
+            print "LDAP user search is set, but LDAP server is missing\n";
+            exit 1;
+        }
+
+        $config->setLevel("$path source-group $source ldap-user-search");
+        my @ldap_user_expressions = $config->returnValues();
+        if (scalar(@ldap_user_expressions) > 0) {
+            foreach my $ldap_user_expression (@ldap_user_expressions) {
+                $output .= "\tldapusersearch ldap://$ldap_server/$ldap_user_expression\n";
+            }
+        }
+    }
+    elsif ($ldap_ip_set) {
+        my $ldap_server = get_ldap_server($config);
+        if ($ldap_server eq '') {
+            print "LDAP user search is set, but LDAP server is missing\n";
+            exit 1;
+        }
+
+        $config->setLevel("$path source-group $source ldap-ip-search");
+        my @ldap_ip_expressions = $config->returnValues();
+        if (scalar(@ldap_ip_expressions) > 0) {
+            foreach my $ldap_ip_expression (@ldap_ip_expressions) {
+                $output .= "\tldapipsearch ldap://$ldap_server/$ldap_ip_expression\n";
+            }
+        }
     }
 
-    $config->setLevel("$path source-group $source domain");	
-    my @domains = $config->returnValues();
-    if (scalar(@domains) > 0) {
-	foreach my $domain (@domains) {
-	    $output .= "\tdomain $domain\n";
-	}
-    }
     $output .= "}\n";
     return $output;
 }
@@ -872,8 +950,8 @@ sub squidguard_get_acls {
     if ($policy eq 'default') {
 	$source = $policy;
     } else {
-	$source = $config->returnValue('source-group');
-	$source = "$source-$policy";
+       $source = $config->returnValue('source-group');
+       $source = "$source-$policy";
     } 
 
     my $time_period = $config->returnValue('time-period');
@@ -983,6 +1061,9 @@ sub squidguard_get_values {
     my $config = new Vyatta::Config;
 
     my $path = 'service webproxy url-filtering squidguard';
+    
+    # generate LDAP settings
+    $output .= squidguard_get_ldap_settings($config);
 
     # generate time conf
     my ($time_conf, @time_periods) = squidguard_get_times($config, $path);
