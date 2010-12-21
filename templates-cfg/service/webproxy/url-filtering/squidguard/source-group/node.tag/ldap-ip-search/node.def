@@ -1,0 +1,5 @@
+multi:
+
+type: txt
+
+help: LDAP search expression for an IP address list
