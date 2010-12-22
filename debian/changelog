@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.93) unstable; urgency=low
+
+  * Revert global data directory till next release.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Tue, 21 Dec 2010 18:49:38 -0800
+
 vyatta-webproxy (0.2.92) unstable; urgency=low
 
   * restart https-filter along with webproxy when running 'restart
