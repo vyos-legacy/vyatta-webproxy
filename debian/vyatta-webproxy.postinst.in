@@ -5,7 +5,6 @@ exec_prefix=@exec_prefix@
 sysconfdir=@sysconfdir@
 bindir=@bindir@
 sbindir=@sbindir@
-datadir=/opt/vyatta/etc/config/data
 
 # don't start squid on boot
 update-rc.d -f squid3 remove >/dev/null
@@ -23,13 +22,3 @@ chown proxy:adm /var/log/squid
 # create local conf placeholder
 touch /etc/squid3/local.conf
 
-# mv databases to global data directory
-if [ ! -d $datadir ]; then
-    mkdir -p $datadir 
-fi
-if [ -d /var/lib/squidguard ]; then
-    mv /var/lib/squidguard $datadir
-fi
-if [ -d /var/lib/sitefilter ]; then
-    mv /var/lib/sitefilter $datadir
-fi
