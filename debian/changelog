@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.93+mendocino3) unstable; urgency=low
+
+  * Fix 6693: the upper bound to the max-cache size generates an error
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Thu, 20 Jan 2011 17:21:27 -0800
+
 vyatta-webproxy (0.2.93+mendocino2) unstable; urgency=low
 
   * Fix 6701: for url-filtering squidguard accepts value 0 for a rule
