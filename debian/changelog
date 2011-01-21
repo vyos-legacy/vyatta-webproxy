@@ -1,3 +1,10 @@
+vyatta-webproxy (0.2.93+mendocino4) unstable; urgency=low
+
+  * Fix 6695: the upper bound to the mem-cache-size generates an error
+    even though it takes the configuration
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Thu, 20 Jan 2011 17:33:41 -0800
+
 vyatta-webproxy (0.2.93+mendocino3) unstable; urgency=low
 
   * Fix 6693: the upper bound to the max-cache size generates an error
