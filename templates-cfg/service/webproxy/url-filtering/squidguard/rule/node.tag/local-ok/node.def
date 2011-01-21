@@ -4,6 +4,12 @@ type: txt
 
 help: Local site to allow
 
+syntax:expression: ! pattern $VAR(@) "^http://" ; \
+                   "site should not start with http://"
+
+syntax:expression: ! pattern $VAR(@) "^https://" ; \
+                   "site should not start with https://"
+
 val_help: ipv4 ; IP address of site to allow as ok (without http://)
 val_help: <domain name> ; Domain to allow as ok
 
