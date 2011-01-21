@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.93+mendocino5) unstable; urgency=low
+
+  * Fix 6699: no check available on the local-block-url for http://
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Thu, 20 Jan 2011 18:06:26 -0800
+
 vyatta-webproxy (0.2.93+mendocino4) unstable; urgency=low
 
   * Fix 6695: the upper bound to the mem-cache-size generates an error
