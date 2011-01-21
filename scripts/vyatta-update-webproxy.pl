@@ -145,6 +145,17 @@ sub squid_validate_conf {
             exit 1;
         }
     }
+
+    my $mem_cache_size = $config->returnValue('mem-cache-size');
+    if (defined $mem_cache_size) {
+        my $tot_mem = `free -m | grep Mem | awk '{ print \$2 }'`;
+        chomp $tot_mem;
+        if ($mem_cache_size > (.50 * $tot_mem)) {
+            print "mem-cache-size must be less than 50% of memory\n";
+            exit 1;
+        }
+    }
+
     my $append_domain = $config->returnValue('append-domain');
     if (defined $append_domain) {
 	if ($append_domain =~ /^\.(.*)$/) {
