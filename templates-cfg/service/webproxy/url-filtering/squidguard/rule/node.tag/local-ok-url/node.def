@@ -4,6 +4,12 @@ type: txt
 
 help: Local URL to allow
 
+syntax:expression: ! pattern $VAR(@) "^http://" ; \
+                   "url should not start with http://"
+
+syntax:expression: ! pattern $VAR(@) "^https://" ; \
+                   "url should not start with https://"
+
 val_help: URL to allow as ok (without http://)
 
 delete: sudo /opt/vyatta/sbin/vyatta-update-webproxy.pl \
