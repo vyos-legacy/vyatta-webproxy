@@ -1,3 +1,13 @@
+vyatta-webproxy (0.2.95) unstable; urgency=low
+
+  * Fix 6701: for url-filtering squidguard accepts value 0 for a rule
+  * Fix 6693: the upper bound to the max-cache size generates an error
+  * Fix 6695: the upper bound to the mem-cache-size generates an error
+    even though it takes the configuration
+  * Fix 6699: no check available on the local-block-url for http://
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Thu, 20 Jan 2011 18:14:34 -0800
+
 vyatta-webproxy (0.2.94) unstable; urgency=low
 
   * new branch
