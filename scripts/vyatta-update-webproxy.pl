@@ -137,7 +137,14 @@ sub squid_validate_conf {
 	print "Must define cache-size\n";
 	exit 1;
     }
-
+    my $free_disk = `df -B M $squid_cache_dir | tail -1 | awk '{ print \$4 }'`;
+    chomp $free_disk;
+    if ($free_disk =~ /(\d+)M/) {
+        if ($cache_size >= $1) {
+            print "cache-size must be less than free disk space in /var/spool\n";
+            exit 1;
+        }
+    }
     my $append_domain = $config->returnValue('append-domain');
     if (defined $append_domain) {
 	if ($append_domain =~ /^\.(.*)$/) {
