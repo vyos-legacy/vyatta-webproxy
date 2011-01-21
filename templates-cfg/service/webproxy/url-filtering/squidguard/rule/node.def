@@ -4,4 +4,7 @@ type: u32
 
 help: URL filter rule for a source-group
 
-val_help: u32:1-1024 ; Rule number
+syntax:expression: $VAR(@) >= 1 && $VAR(@) <= 1024 ; \
+       "rule must between 1-1024"
+
+val_help: u32:1-1024; Rule number
