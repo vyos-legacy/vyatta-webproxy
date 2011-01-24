@@ -203,6 +203,7 @@ if (! -e '/var/lib/squidguard') {
 }
 touch($sg_updatestatus_file);
 system("echo update failed at `date` > $sg_updatestatus_file");
+system("sudo rm -f /var/lib/sitefilter/updatestatus");
 
 my $lock_file = '/tmp/vyatta_bl_lock';
 open(my $lck, ">", $lock_file) || die "Lock failed\n";
