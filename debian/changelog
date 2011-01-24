@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.96) unstable; urgency=low
+
+  * Fix 5784: show webproxy update-log doesn't work for Vyattaguard
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Mon, 24 Jan 2011 15:38:42 -0800
+
 vyatta-webproxy (0.2.95) unstable; urgency=low
 
   * Fix 6701: for url-filtering squidguard accepts value 0 for a rule
