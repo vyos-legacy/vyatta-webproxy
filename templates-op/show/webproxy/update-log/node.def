@@ -1,15 +1,8 @@
 help: Show update log for url-filter database
-run: if cli-shell-api existsActive \
-          service webproxy url-filtering squidguard vyattaguard mode; then
-        if [ -r "/var/lib/sitefilter/updatestatus" ]; then
+run:    if [ -r "/var/lib/sitefilter/updatestatus" ]; then
            cat "/var/lib/sitefilter/updatestatus"
-        else
-           echo Update log not found
-        fi
-     else
-        if [ -r "/var/lib/squidguard/updatestatus" ]; then
+        elif [ -r "/var/lib/squidguard/updatestatus" ]; then
            cat "/var/lib/squidguard/updatestatus"
         else
            echo Update log not found
         fi
-     fi
