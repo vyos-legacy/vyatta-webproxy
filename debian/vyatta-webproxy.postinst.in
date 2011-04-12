@@ -5,6 +5,7 @@ exec_prefix=@exec_prefix@
 sysconfdir=@sysconfdir@
 bindir=@bindir@
 sbindir=@sbindir@
+urlfilterdatadir=/opt/vyatta/etc/config/url-filtering
 
 # don't start squid on boot
 update-rc.d -f squid3 remove >/dev/null
@@ -22,3 +23,13 @@ chown proxy:adm /var/log/squid
 # create local conf placeholder
 touch /etc/squid3/local.conf
 
+# mv databases to global data directory
+if [ ! -d $urlfilterdatadir ]; then
+    mkdir -p $urlfilterdatadir
+fi
+if [ -d /var/lib/squidguard ]; then
+    mv /var/lib/squidguard $urlfilterdatadir
+fi
+if [ -d /var/lib/sitefilter ]; then
+    mv /var/lib/sitefilter $urlfilterdatadir
+fi

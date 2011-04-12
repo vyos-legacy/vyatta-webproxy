@@ -54,6 +54,8 @@ use strict;
 #
 my $blacklist_url = 'ftp://ftp.univ-tlse1.fr/pub/reseau/cache/squidguard_contrib/blacklists.tar.gz';
 
+my $global_data_dir = webproxy_get_global_data_dir();
+
 
 sub print_err {
     my ($interactive, $msg) = @_;
@@ -139,7 +141,7 @@ sub squidguard_auto_update {
 	return 1;
     }
     my $b4_entries = squidguard_count_blacklist_entries();
-    my $archive = '/var/lib/squidguard/archive';
+    my $archive = "$global_data_dir/squidguard/archive";
     mkdir_p($archive) if ! -d $archive;
     system("rm -rf $archive/*");
     system("mv $db_dir/* $archive 2> /dev/null");
@@ -194,12 +196,12 @@ GetOptions("update-blacklist!"           => \$update_bl,
 	   "auto-update-blacklist!"      => \$auto_update_bl,
 );
 
-my $sg_updatestatus_file = "/var/lib/squidguard/updatestatus";
-if (! -e '/var/lib/squidguard') {
-    system("mkdir -p /var/lib/squidguard/db");
+my $sg_updatestatus_file = "$global_data_dir/squidguard/updatestatus";
+if (! -e "$global_data_dir/squidguard") {
+    system("mkdir -p $global_data_dir/squidguard/db");
     my ($login, $pass, $uid, $gid) = getpwnam('proxy')
         or die "proxy not in passwd file";
-    chown $uid, $gid, '/var/lib/squidguard/db';
+    chown $uid, $gid, "$global_data_dir/squidguard/db";
 }
 touch($sg_updatestatus_file);
 system("echo update failed at `date` > $sg_updatestatus_file");

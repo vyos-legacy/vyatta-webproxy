@@ -44,6 +44,7 @@ our @EXPORT = qw(
 	webproxy_append_file
         webproxy_delete_local_entry
         webproxy_delete_all_local
+        webproxy_get_global_data_dir
         squidguard_use_ec
         squidguard_ec_name2cat
         squidguard_get_safesearch_rewrites
@@ -58,7 +59,8 @@ my $squid_init      = '/etc/init.d/squid3';
 my $squid_mime_type = '/usr/share/squid3/mime.conf';
 
 #squidGuard globals
-my $squidguard_blacklist_db  = '/var/lib/squidguard/db';
+my $urlfilter_data_dir            = '/opt/vyatta/etc/config/url-filtering';
+my $squidguard_blacklist_db  = "$urlfilter_data_dir/squidguard/db";
 my $squidguard_log_dir       = '/var/log/squid';
 my $squidguard_blacklist_log = "$squidguard_log_dir/blacklist.log";
 my $squidguard_safesearch    = "/opt/vyatta/etc/safesearch_rewrites";
@@ -66,6 +68,9 @@ my $squidguard_safesearch    = "/opt/vyatta/etc/safesearch_rewrites";
 #vyattaguard globals
 my $vyattaguard = '/opt/vyatta/sbin/vg';
 
+sub webproxy_get_global_data_dir {
+    return $urlfilter_data_dir;
+}
 
 sub squid_restart {
     my $interactive = shift;
@@ -131,7 +136,7 @@ sub squidguard_ec_get_categorys {
 
     die "Must enable vyattaguard" if ! squidguard_use_ec();
     die "Missing vyattaguard package\n" if ! -e $vyattaguard;
-    exit 1 if ! -e '/var/lib/sitefilter/categories.txt';
+    exit 1 if ! -e "$urlfilter_data_dir/sitefilter/categories.txt";
 
     my @lines = `$vyattaguard list`;
     foreach my $line (@lines) {
@@ -265,7 +270,7 @@ sub squidguard_is_category_local {
 
 sub squidguard_is_blacklist_installed {
     if (squidguard_use_ec()) {
-        if (-e '/var/lib/sitefilter/urldb') {
+        if (-e "$urlfilter_data_dir/sitefilter/urldb") {
             return 1;
         }
     } else {

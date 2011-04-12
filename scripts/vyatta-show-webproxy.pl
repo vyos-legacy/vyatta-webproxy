@@ -51,6 +51,7 @@ sub squidguard_show_blacklists {
 sub squidguard_show_blacklist_domains_urls {
     my ($type, $category, $searchtext) = @_;
 
+    my $global_data_dir = webproxy_get_global_data_dir();
     my @files = squidguard_get_blacklist_files($type, $category);
     foreach my $file (@files) {
 	if (-r $file) {
@@ -61,7 +62,7 @@ sub squidguard_show_blacklist_domains_urls {
 	    if (defined $searchtext) {
 		@lines = grep /$searchtext/i, @lines;
 		foreach my $line (@lines) {
-                    my $db_dir = '/var/lib/squidguard/db';
+                    my $db_dir = "$global_data_dir/squidguard/db";
 		    $file =~ /^$db_dir\/(.*)$/;
 		    print "$1     $line";
 		}
