@@ -215,7 +215,8 @@ if (defined $update_bl_cat) {
     squidguard_update_blacklist(1, $update_bl_cat);
     if (squidguard_is_configured()) {
 	print "\nThe webproxy daemon must be restarted\n";
-	if (prompt("Would you like to restart it now? [confirm]",-y1d=>"y")) {
+	if ((defined($ENV{VYATTA_PROCESS_CLIENT}) && $ENV{VYATTA_PROCESS_CLIENT} eq 'gui2_rest') || 
+	    prompt("Would you like to restart it now? [confirm]",-y1d=>"y")) {
 	    squid_restart(1);
 	}
     }
@@ -226,7 +227,8 @@ if (defined $update_bl) {
     my $updated = 0;
     if (!squidguard_is_blacklist_installed()) {
 	print "Warning: No url-filtering blacklist installed\n";
-	if (prompt("Would you like to download a default blacklist? [confirm]", 
+	if ((defined($ENV{VYATTA_PROCESS_CLIENT}) && $ENV{VYATTA_PROCESS_CLIENT} eq 'gui2_rest') || 
+	    prompt("Would you like to download a default blacklist? [confirm]", 
 		   -y1d=>"y")) {
 	    exit 1 if squidguard_install_blacklist_def();
 	    $updated = 1;
@@ -234,7 +236,8 @@ if (defined $update_bl) {
 	    exit 1;
 	}
     } else {
-	if (prompt("Would you like to re-download the blacklist? [confirm]", 
+	if ((defined($ENV{VYATTA_PROCESS_CLIENT}) && $ENV{VYATTA_PROCESS_CLIENT} eq 'gui2_rest') || 
+	    prompt("Would you like to re-download the blacklist? [confirm]", 
 		   -y1d=>"y")) {
 	    my $rc = squidguard_auto_update(1, undef);
 	    $updated = 1 if ! $rc;
@@ -242,7 +245,8 @@ if (defined $update_bl) {
     }
     if (! $updated) {
 	print "No blacklist updated\n";
-	if (!prompt("Do you still want to generate binary DB? [confirm]", 
+	if ((defined($ENV{VYATTA_PROCESS_CLIENT}) && $ENV{VYATTA_PROCESS_CLIENT} eq 'gui2_rest') || 
+	    !prompt("Do you still want to generate binary DB? [confirm]", 
 		   -y1d=>"y")) {
 	    exit 1;
 	}
@@ -252,7 +256,8 @@ if (defined $update_bl) {
     squidguard_update_blacklist(1);
     if (squidguard_is_configured()) {
 	print "\nThe webproxy daemon must be restarted\n";
-	if (prompt("Would you like to restart it now? [confirm]",-y1d=>"y")) {
+	if ((defined($ENV{VYATTA_PROCESS_CLIENT}) && $ENV{VYATTA_PROCESS_CLIENT} eq 'gui2_rest') || 
+	    prompt("Would you like to restart it now? [confirm]",-y1d=>"y")) {
 	    squid_restart(1);
 	}
     }
