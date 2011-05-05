@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.98) unstable; urgency=low
+
+  * "update webproxy blacklists" now compatible with REST api.
+
+ -- Michael Larson <mike@vyatta.com>  Thu, 05 May 2011 12:26:15 -0700
+
 vyatta-webproxy (0.2.97) unstable; urgency=low
 
   * revert and modify fc34cff21ac3eaff51f736fcc8fa28a3629a0402
