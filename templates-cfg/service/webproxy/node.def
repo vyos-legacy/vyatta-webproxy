@@ -5,6 +5,15 @@ help: Webproxy service settings
 create: sudo /opt/vyatta/sbin/vyatta-update-webproxy.pl --setup || exit 1
 
 end:
+     # validate https filter first bug 6793
+     cli-shell-api exists service webproxy url-filtering \
+                   squidguard vyattaguard https-filter
+     validateVGHttps=$?
+     echo $validateVGHttps
+     if [[ $validateVGHttps == 0 ]]; then
+         sudo /opt/vyatta/bin/sudo-users/vyatta-vg.pl --validate_https || exit 1
+     fi
+
      # start/stop vyattaguard. vg needs to start before squid and https
      vg_orig_mode=$(cli-shell-api returnActiveValue service webproxy \
                     url-filtering squidguard vyattaguard mode)
