@@ -9,7 +9,6 @@ end:
      cli-shell-api exists service webproxy url-filtering \
                    squidguard vyattaguard https-filter
      validateVGHttps=$?
-     echo $validateVGHttps
      if [[ $validateVGHttps == 0 ]]; then
          sudo /opt/vyatta/bin/sudo-users/vyatta-vg.pl --validate_https || exit 1
      fi
