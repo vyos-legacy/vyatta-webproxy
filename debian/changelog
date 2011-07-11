@@ -1,3 +1,10 @@
+vyatta-webproxy (0.2.102) unstable; urgency=low
+
+  * Bugfix: 7311 add allowed values to webproxy update hour to make it
+    consistent with content-inspection auto-update
+
+ -- John Southworth <john.southworth@vyatta.com>  Mon, 11 Jul 2011 18:59:46 -0500
+
 vyatta-webproxy (0.2.101) unstable; urgency=low
 
   * new branch
