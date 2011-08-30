@@ -1,3 +1,12 @@
+vyatta-webproxy (0.2.104) unstable; urgency=low
+
+  * Bugfix 7485: set a default update hour for webproxy, so if auto-
+    update is configured without an update-hour then it will update at
+    midnight
+  * 0.2.103
+
+ -- John Southworth <john.southworth@vyatta.com>  Tue, 30 Aug 2011 17:21:06 -0500
+
 vyatta-webproxy (0.2.103) unstable; urgency=low
 
   * Bugfix 7485: set a default update hour for webproxy, so if auto-
