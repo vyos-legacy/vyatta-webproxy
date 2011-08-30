@@ -1,3 +1,13 @@
+vyatta-webproxy (0.2.103) unstable; urgency=low
+
+  * Remove update toplevel node.def from webproxy, toplevel node.def
+    files go in vyatta-op
+  * Bugfix 7485: set a default update hour for webproxy, so if auto-
+    update is configured without an update-hour then it will update at
+    midnight
+
+ -- John Southworth <john.southworth@vyatta.com>  Tue, 30 Aug 2011 17:20:40 -0500
+
 vyatta-webproxy (0.2.102) unstable; urgency=low
 
   * Bugfix: 7311 add allowed values to webproxy update hour to make it
