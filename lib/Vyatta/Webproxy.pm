@@ -213,8 +213,8 @@ sub squidguard_get_blacklists {
             }
         }
     }
-
-    return sort(@blacklists);
+    @blacklists = sort(@blacklists);
+    return @blacklists;
 }
 
 sub squidguard_generate_db {
@@ -333,7 +333,7 @@ sub squidguard_get_blacklist_files {
 }
 
 sub squidguard_get_log_files {
-    open(my $LS, "ls $squidguard_log_dir/bl*.log* 2> /dev/null | sort -nr |");
+    open(my $LS, "-|", "ls $squidguard_log_dir/bl*.log* 2> /dev/null | sort -nr ");
     my @log_files = <$LS>;
     close $LS;
     chomp @log_files;
