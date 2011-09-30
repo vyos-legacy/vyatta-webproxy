@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.105) unstable; urgency=low
+
+  * fix perlcritic warnings for Webproxy.pm
+
+ -- John Southworth <john.southworth@vyatta.com>  Fri, 30 Sep 2011 17:08:27 -0500
+
 vyatta-webproxy (0.2.104) unstable; urgency=low
 
   * Bugfix 7485: set a default update hour for webproxy, so if auto-
