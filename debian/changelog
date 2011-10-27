@@ -1,3 +1,10 @@
+vyatta-webproxy (0.2.106) unstable; urgency=low
+
+  * Remove update toplevel node.def from webproxy, toplevel node.def
+    files go in vyatta-op
+
+ -- John Southworth <john.southworth@vyatta.com>  Thu, 27 Oct 2011 17:50:53 -0500
+
 vyatta-webproxy (0.2.105) unstable; urgency=low
 
   * fix perlcritic warnings for Webproxy.pm
