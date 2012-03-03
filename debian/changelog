@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.107) unstable; urgency=low
+
+  * new branch
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Sat, 03 Mar 2012 02:26:42 -0800
+
 vyatta-webproxy (0.2.106) unstable; urgency=low
 
   * Remove update toplevel node.def from webproxy, toplevel node.def
