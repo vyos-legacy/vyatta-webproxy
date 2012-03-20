@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.106+oxnard2) unstable; urgency=low
+
+  * Bugfix 7944: Replace & with _and_ so as not to break completion
+
+ -- John Southworth <john.southworth@vyatta.com>  Tue, 20 Mar 2012 09:17:57 -0700
+
 vyatta-webproxy (0.2.106+oxnard1) unstable; urgency=low
 
   * new branch
