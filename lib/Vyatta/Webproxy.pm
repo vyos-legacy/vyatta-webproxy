@@ -144,6 +144,7 @@ sub squidguard_ec_get_categorys {
         next if ! defined $category;
         chomp $category;
         $category =~ s/\s/\_/g;
+        $category =~ s/\&/\_and\_/g;
         $cat_hash{$id} = $category;
     }
     return %cat_hash;
