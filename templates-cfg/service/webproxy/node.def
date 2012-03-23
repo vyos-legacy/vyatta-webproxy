@@ -12,6 +12,14 @@ end:
      if [[ $validateVGHttps == 0 ]]; then
          sudo /opt/vyatta/bin/sudo-users/vyatta-vg.pl --validate_https || exit 1
      fi
+     if cli-shell-api exists service webproxy url-filtering \
+                      squidguard vyattaguard; then
+       if ! cli-shell-api exists service webproxy url-filtering \
+                          squidguard auto-update update-hour; then
+          echo "auto-update for url-filtering must be configured when vyattaguard is enabled"
+          exit 1
+       fi
+     fi
 
      # start/stop vyattaguard. vg needs to start before squid and https
      vg_orig_mode=$(cli-shell-api returnActiveValue service webproxy \
