@@ -1,3 +1,10 @@
+vyatta-webproxy (0.2.106+oxnard3) unstable; urgency=low
+
+  * Bugfix 7541: move auto-update detection to code that is always run
+    on commit
+
+ -- John Southworth <john.southworth@vyatta.com>  Fri, 23 Mar 2012 08:41:59 -0700
+
 vyatta-webproxy (0.2.106+oxnard2) unstable; urgency=low
 
   * Bugfix 7944: Replace & with _and_ so as not to break completion
