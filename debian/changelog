@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.110) unstable; urgency=low
+
+  * new branch
+
+ -- John Southworth <john.southworth@vyatta.com>  Fri, 12 Oct 2012 19:48:24 -0700
+
 vyatta-webproxy (0.2.109) unstable; urgency=low
 
   * Bugfix 7541: move auto-update detection to code that is always run
