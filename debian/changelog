@@ -1,3 +1,14 @@
+vyatta-webproxy (0.2.110+hydrogen2) unstable; urgency=low
+
+  * Added backend for proxy LDAP authentication
+  * Added configuration templates for proxy LDAP authentication.
+  * Web proxy LDAP auth: don't allow bind-dn to be set without a
+    password
+  * Add LDAP support to SquidGuard
+  * Add templates for user-group and LDAP search in SquidGuard
+
+ -- Daniil Baturin <daniil@baturin.org>  Mon, 02 Dec 2013 13:16:17 +0100
+
 vyatta-webproxy (0.2.110+hydrogen1) unstable; urgency=low
 
   * New branch
