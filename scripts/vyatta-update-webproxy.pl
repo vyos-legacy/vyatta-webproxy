@@ -376,7 +376,7 @@ sub squid_get_auth_settings {
 
     my $output = '';
     my $auth_method = $config->returnValue("method");
-    return unless $auth_method;
+    return "" unless $auth_method;
 
     # Paths to authentication helpers
     my $ldap_helper = "/usr/lib/squid3/squid_ldap_auth";
