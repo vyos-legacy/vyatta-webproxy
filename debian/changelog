@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.110+hydrogen3) unstable; urgency=low
+
+  * Bug #169: return empty string from squid_get_auth_settings(), as
+
+ -- Daniil Baturin <daniil@baturin.org>  Sun, 27 Apr 2014 02:31:18 +0200
+
 vyatta-webproxy (0.2.110+hydrogen2) unstable; urgency=low
 
   * Added backend for proxy LDAP authentication
