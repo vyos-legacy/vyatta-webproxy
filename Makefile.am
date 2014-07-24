@@ -15,6 +15,7 @@ bin_sudo_users_SCRIPTS  = scripts/vyatta-show-webproxy.pl
 bin_sudo_users_SCRIPTS += scripts/vyatta-sg-summary.pl
 bin_sudo_users_SCRIPTS += scripts/vyatta-sg-blacklist.pl
 bin_sudo_users_SCRIPTS += scripts/vyatta-restart-squid
+bin_sudo_users_SCRIPTS += scripts/vyatta-clear-squid
 
 share_perl5_DATA  = lib/Vyatta/Webproxy.pm
 

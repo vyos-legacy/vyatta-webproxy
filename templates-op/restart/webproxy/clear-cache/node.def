@@ -1,0 +1,3 @@
+help: Restart webproxy service and recreate empty cache
+run:  sudo /opt/vyatta/bin/sudo-users/vyatta-clear-squid
+
