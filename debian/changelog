@@ -1,3 +1,15 @@
+vyatta-webproxy (0.2.110+vyos1+helium3) unstable; urgency=low
+
+  [ Daniil Baturin ]
+  * Bug #169: return empty string from squid_get_auth_settings(), as
+
+  [ Ewald van Geffen ]
+  * Bugfix 2: Add a command to clear the squid web proxy cache
+
+  [ Daniil Baturin ]
+
+ -- Daniil Baturin <daniil@baturin.org>  Sat, 26 Jul 2014 19:49:53 +0200
+
 vyatta-webproxy (0.2.110+vyos1+helium2) unstable; urgency=low
 
   * Fix version
