@@ -1,7 +1,7 @@
 Source: vyatta-webproxy
 Section: contrib/net
 Priority: extra
-Maintainer: Vyatta Package Maintainers <maintainers@vyatta.com>
+Maintainer: VyOS Package Maintainers <maintainers@vyos.net>
 Build-Depends: debhelper (>= 5), autotools-dev
 Standards-Version: 3.7.2
 
@@ -14,6 +14,6 @@ Depends: perl,
  squid3,
  squid3-client,
  squidguard
-Description: Vyatta commands for webproxy
- Vyatta configuration/operational templates and scripts for the webproxy
+Description: VyOS commands for webproxy
+ VyOS configuration/operational templates and scripts for the webproxy
  system (squid & squidguard).
