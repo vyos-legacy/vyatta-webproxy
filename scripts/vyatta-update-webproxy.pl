@@ -438,7 +438,8 @@ sub squid_get_auth_settings {
         $output .= "-p $port " if $port;
         $output .= "-P " if $persistent;
         $output .= "-ZZ " if $use_ssl;
-        $output .= "$server\n";
+        $output .= "-R ";
+        $output .= "-h $server\n";
     }
 
     $output .= "acl auth proxy_auth REQUIRED\n";
