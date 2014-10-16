@@ -389,7 +389,7 @@ sub squid_get_auth_settings {
     # Set defaults	
     $children = 5 unless $children;
     $credentials_ttl = 60 unless $credentials_ttl;
-    $realm = "Vyatta Web Proxy" unless $realm;
+    $realm = "VyOS Web Proxy" unless $realm;
 
     $output .= "auth_param basic children $children\n";
     $output .= "auth_param basic credentialsttl $credentials_ttl minute\n";
