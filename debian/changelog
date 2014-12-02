@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.110+vyos2+lithium1) unstable; urgency=low
+
+  * New branch
+
+ -- Alex Harpin <development@landsofshadow.co.uk>  Tue, 02 Dec 2014 08:28:09 +0000
+ 
 vyatta-webproxy (0.2.110+vyos1+helium5) unstable; urgency=low
 
   * Bug #351: fix LDAP helper options.
