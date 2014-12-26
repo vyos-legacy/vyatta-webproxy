@@ -430,8 +430,8 @@ sub squid_get_auth_settings {
 
         $output .= "auth_param basic program $ldap_helper ";
         $output .= "-v $version ";
-        $output .= "-b $base_dn ";
-        $output .= "-D $bind_dn " if $bind_dn;
+        $output .= "-b \"$base_dn\" ";
+        $output .= "-D \"$bind_dn\" " if $bind_dn;
         $output .= "-w $password " if $password;
         $output .= "-f $filter " if $filter;
         $output .= "-u $username_attribute " if $username_attribute;
@@ -749,6 +749,14 @@ sub get_ldap_server {
 
     return $server;
 }
+sub get_ldap_port {
+    my $config = shift;
+
+    $config->setLevel("service webproxy authentication ldap");
+    my $port = $config->returnValue("port");
+
+    return $port;
+}
 
 sub squidguard_get_source {
     my ($config, $path, $policy) = @_;
@@ -764,6 +772,11 @@ sub squidguard_get_source {
     my $ldap_user_set = $config->exists("ldap-user-search");
     my $ldap_ip_set = $config->exists("ldap-ip-search");
 
+	my $ldap_port = get_ldap_port($config);
+	if ($ldap_port ne ''){
+		$ldap_port = ":$ldap_port";
+	}
+	
     $output .= "src $source-$policy {\n";
 
     if ($address_set) {
@@ -806,7 +819,7 @@ sub squidguard_get_source {
         my @ldap_user_expressions = $config->returnValues();
         if (scalar(@ldap_user_expressions) > 0) {
             foreach my $ldap_user_expression (@ldap_user_expressions) {
-                $output .= "\tldapusersearch ldap://$ldap_server/$ldap_user_expression\n";
+                $output .= "\tldapusersearch ldap://$ldap_server$ldap_port/$ldap_user_expression\n";
             }
         }
     }
@@ -821,7 +834,7 @@ sub squidguard_get_source {
         my @ldap_ip_expressions = $config->returnValues();
         if (scalar(@ldap_ip_expressions) > 0) {
             foreach my $ldap_ip_expression (@ldap_ip_expressions) {
-                $output .= "\tldapipsearch ldap://$ldap_server/$ldap_ip_expression\n";
+                $output .= "\tldapipsearch ldap://$ldap_server$ldap_port/$ldap_ip_expression\n";
             }
         }
     }
