@@ -1,3 +1,12 @@
+vyatta-webproxy (0.2.110+vyos2+lithium2) unstable; urgency=low
+
+  [ Igor Golubkov ]
+  * vyatta-webproxy: fixes for compatibility with active directory
+  
+  [ Alex Harpin ]
+
+ -- Alex Harpin <development@landsofshadow.co.uk>  Thu, 08 Jan 2015 18:20:57 +0000 
+
 vyatta-webproxy (0.2.110+vyos2+lithium1) unstable; urgency=low
 
   * New branch
