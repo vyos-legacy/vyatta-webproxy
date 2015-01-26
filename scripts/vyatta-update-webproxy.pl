@@ -178,19 +178,26 @@ sub squid_validate_conf {
     }
 
     foreach my $ipaddr (@ipaddrs) {
-	my $config_ipaddrs_ref = get_ipaddr_intf_hash();
-	my %config_ipaddrs = %{$config_ipaddrs_ref};
-	if (!defined $config_ipaddrs{$ipaddr}) {
-	    print "listen-address [$ipaddr] is not a configured address\n";
-	    exit 1;
-	}
-        if (!is_primary_address($ipaddr)) {
-            print "Warning: webproxy is configured to listen on a non-primary address. This may cause troubles in transparent mode. \n";
-        }
-        if ($auth_enabled && !$config->exists("$ipaddr disable-transparent")) {
-            print "Authentication can not be configured when proxy is in transparent mode\n";
-            exit 1;
-        }
+		my $config_ipaddrs_ref = get_ipaddr_intf_hash();
+		my %config_ipaddrs = %{$config_ipaddrs_ref};
+		if ($ipaddr eq "0.0.0.0"){
+			if(!$config->exists("$ipaddr disable-transparent")){
+				print "listen-address [$ipaddr] could not be used in transparent mode\n";
+				exit 1;
+			}
+		}else{
+			if (!defined $config_ipaddrs{$ipaddr}) {
+				print "listen-address [$ipaddr] is not a configured address\n";
+				exit 1;
+			}
+			if (!is_primary_address($ipaddr)) {
+				print "Warning: webproxy is configured to listen on a non-primary address. This may cause troubles in transparent mode. \n";
+			}
+		}
+		if ($auth_enabled && !$config->exists("$ipaddr disable-transparent")) {
+			print "Authentication can not be configured when proxy is in transparent mode\n";
+			exit 1;
+		}
     }
 
     #check for nameserver
