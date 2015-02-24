@@ -1,3 +1,10 @@
+vyatta-webproxy (0.2.110+vyos1+helium6) unstable; urgency=low
+
+  [ Igor Golubkov ]
+  * allow use of 0.0.0.0 as listen address (Bug #35)
+
+ -- Alex Harpin <development@landsofshadow.co.uk>  Tue, 24 Feb 2015 21:39:45 +0000
+ 
 vyatta-webproxy (0.2.110+vyos1+helium5) unstable; urgency=low
 
   * Bug #351: fix LDAP helper options.
