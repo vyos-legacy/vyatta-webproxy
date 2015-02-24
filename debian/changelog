@@ -1,3 +1,10 @@
+vyatta-webproxy (0.2.110+vyos1+helium7) unstable; urgency=low
+
+  [ Igor Golubkov ]
+  * Add quotes to squid ldap base dn and bind dn (Bug #423)
+
+ -- Alex Harpin <development@landsofshadow.co.uk>  Tue, 24 Feb 2015 23:39:31 +0000
+ 
 vyatta-webproxy (0.2.110+vyos1+helium6) unstable; urgency=low
 
   [ Igor Golubkov ]
