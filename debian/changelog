@@ -1,3 +1,10 @@
+vyatta-webproxy (0.2.110+vyos2+lithium4) unstable; urgency=low
+  
+  [ Alex Harpin ]
+  * vyatta-webproxy: use 'intercept' instead of 'transparent' in squid.conf
+
+ -- Alex Harpin <development@landsofshadow.co.uk>  Sat, 28 Feb 2015 18:43:54 +0000
+ 
 vyatta-webproxy (0.2.110+vyos2+lithium3) unstable; urgency=low
 
   [ Igor Golubkov ]
