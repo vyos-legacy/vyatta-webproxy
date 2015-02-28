@@ -290,10 +290,10 @@ sub squid_get_values {
 
 	my $o_dt = $config->existsOrig("$ipaddr disable-transparent");
 	my $n_dt = $config->exists("$ipaddr disable-transparent");
-	my $transparent = 'transparent';
+	my $transparent = 'intercept';
 	$transparent = '' if $n_dt;
 	if ($status ne 'deleted') {
-	    $num_nats++ if $transparent eq 'transparent';
+	    $num_nats++ if $transparent eq 'intercept';
 	    $output .= "http_port $ipaddr:$n_port $transparent\n";
 	}
 
