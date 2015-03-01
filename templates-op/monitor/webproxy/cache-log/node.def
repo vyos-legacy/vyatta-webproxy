@@ -1,0 +1,2 @@
+help: Monitor the last lines of the squid cache log
+run: tail --follow=name /var/log/squid3/cache.log
