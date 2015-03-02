@@ -1,3 +1,11 @@
+vyatta-webproxy (0.2.110+vyos2+lithium5) unstable; urgency=low
+  
+  [ Alex Harpin ]
+  * vyatta-webproxy: add monitoring of the squid access and cache logs
+  * vyatta-webproxy: set monitoring to use sudo for squid logs
+
+ -- Alex Harpin <development@landsofshadow.co.uk>  Mon, 02 Mar 2015 06:46:09 +0000
+ 
 vyatta-webproxy (0.2.110+vyos2+lithium4) unstable; urgency=low
   
   [ Alex Harpin ]
