@@ -779,10 +779,10 @@ sub squidguard_get_source {
     my $ldap_user_set = $config->exists("ldap-user-search");
     my $ldap_ip_set = $config->exists("ldap-ip-search");
 
-	my $ldap_port = get_ldap_port($config);
-	if ($ldap_port ne ''){
-		$ldap_port = ":$ldap_port";
-	}
+    my $ldap_port = get_ldap_port($config);
+    if (defined($ldap_port)){
+	    $ldap_port = ":$ldap_port";
+    }
 	
     $output .= "src $source-$policy {\n";
 
