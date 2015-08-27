@@ -274,6 +274,12 @@ sub squid_get_values {
         $output .= "reply_body_max_size $reply_max_size KB\n";
     }
 
+    # Reply outgoing address
+    my $outgoing_address = $config->returnValue('outgoing-address');
+    if ($outgoing_address) {
+        $output .= "tcp_outgoing_address $outgoing_address\n\n";
+    }
+
     my $num_nats = 0;
     $config->setLevel('service webproxy listen-address');
     my %ipaddrs_status = $config->listNodeStatus();
