@@ -201,6 +201,16 @@ sub squid_validate_conf {
         }
     }
 
+    $config->setLevel('service webproxy');
+    my $outgoing_address = $config->returnValue('outgoing-address');
+    my $config_ipaddrs_ref = get_ipaddr_intf_hash();
+    my %config_ipaddrs = %{$config_ipaddrs_ref};
+
+    if (!defined $config_ipaddrs{$outgoing_address}) {
+        print "outgoing-address [$outgoing_address] is not a configured address\n";
+        exit 1;
+    }
+
     #check for nameserver
     open(my $resolv,'<',"/etc/resolv.conf")
         or die "Can't open /etc/resolv.conf : $!";
