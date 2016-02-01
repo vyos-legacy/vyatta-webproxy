@@ -1,3 +1,9 @@
+vyatta-webproxy (0.2.110+vyos2+lithium9) unstable; urgency=medium
+
+  * Bug #596: do not try to check the outgoing-address if it's not configured. Attemtps to look it up in the hash when it's not defined caused the script to always fail.
+
+ -- Daniil Baturin <daniil@baturin.org>  Mon, 01 Feb 2016 06:07:55 -0500
+
 vyatta-webproxy (0.2.110+vyos2+lithium8) unstable; urgency=low
  
   [ Maciej Pasiak ]
