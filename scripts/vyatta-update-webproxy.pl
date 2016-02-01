@@ -206,7 +206,7 @@ sub squid_validate_conf {
     my $config_ipaddrs_ref = get_ipaddr_intf_hash();
     my %config_ipaddrs = %{$config_ipaddrs_ref};
 
-    if (!defined $config_ipaddrs{$outgoing_address}) {
+    if ((defined $outgoing_addrss) && !(defined $config_ipaddrs{$outgoing_address})) {
         print "outgoing-address [$outgoing_address] is not a configured address\n";
         exit 1;
     }
