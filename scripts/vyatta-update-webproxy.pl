@@ -67,6 +67,7 @@ sub squid_get_constants {
     $output .= "acl Safe_ports port 80          # http\n";
     $output .= "acl Safe_ports port 21          # ftp\n";
     $output .= "acl Safe_ports port 443         # https\n";
+    $output .= "acl Safe_ports port 873         # rsync\n";
     $output .= "acl Safe_ports port 70          # gopher\n";
     $output .= "acl Safe_ports port 210         # wais\n";
     $output .= "acl Safe_ports port 1025-65535  # unregistered ports\n";
