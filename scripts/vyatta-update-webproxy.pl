@@ -49,7 +49,7 @@ my $squid_chain     = 'WEBPROXY_CONNTRACK';
 
 # squidGuard globals
 my $squidguard_conf          = '/etc/squidguard/squidGuard.conf';
-my $squidguard_redirect_def  = 'http://www.google.com';
+my $squidguard_redirect_def  = 'http://block.vyos.net';
 my $squidguard_enabled       = 0;
 
 sub squid_get_constants {

@@ -2,6 +2,6 @@ type: txt
 
 help: Redirect URL for filtered websites
 
-default: "http://www.google.com"
+default: "http://block.vyos.net"
 
-val_help: URL for redirect (default http://www.google.com)
+val_help: URL for redirect (default http://block.vyos.net)
