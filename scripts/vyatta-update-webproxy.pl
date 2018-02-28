@@ -48,7 +48,7 @@ my $squid_def_port  = 3128;
 my $squid_chain     = 'WEBPROXY_CONNTRACK';
 
 # squidGuard globals
-my $squidguard_conf          = '/etc/squid/squidGuard.conf';
+my $squidguard_conf          = '/etc/squidguard/squidGuard.conf';
 my $squidguard_redirect_def  = 'http://www.google.com';
 my $squidguard_enabled       = 0;
 
