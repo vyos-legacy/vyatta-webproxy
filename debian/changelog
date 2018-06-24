@@ -1,3 +1,12 @@
+vyatta-webproxy (0.2.110+vyos2+current1) unstable; urgency=medium
+
+  [ Thomas Jepp ]
+  * Fix build depends.
+
+  [ Kim Hagen ]
+
+ -- Kim Hagen <kim.sidney@gmail.com>  Sun, 24 Jan 2016 15:29:59 -0500
+
 vyatta-webproxy (0.2.110+vyos2+lithium10) unstable; urgency=medium
 
   * Fix typo.
