@@ -1,3 +1,9 @@
+vyatta-webproxy (1.2.0-1) stable; urgency=medium
+
+  * New branch.
+
+ -- Daniil Baturin <daniil@baturin.org>  Fri, 28 Sep 2018 22:22:45 +0200
+
 vyatta-webproxy (0.2.110+vyos2+current1) unstable; urgency=medium
 
   [ Thomas Jepp ]
