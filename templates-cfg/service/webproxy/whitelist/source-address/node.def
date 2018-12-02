@@ -2,7 +2,7 @@ multi:
 
 type: txt
 
-help: Address/network to bypass the transparent proxy based on source address
+help: Source address/network to bypass the transparent proxy
 
 syntax:expression: exec "/opt/vyatta/sbin/vyatta-validate-type.pl iptables4_addr $VAR(@)"
 
