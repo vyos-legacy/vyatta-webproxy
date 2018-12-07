@@ -1,0 +1,15 @@
+multi:
+
+type: txt
+
+help: Source address/network to bypass the transparent proxy
+
+syntax:expression: exec "/opt/vyatta/sbin/vyatta-validate-type.pl iptables4_addr $VAR(@)"
+
+create: sudo iptables -t nat -I WEBPROXY 1 -p tcp --dport 80 -s '$VAR(@)' -m comment --comment 'webproxy whitelist source-address' -j RETURN
+
+delete: sudo iptables -t nat -D WEBPROXY -p tcp --dport 80 -s '$VAR(@)' -m comment --comment 'webproxy whitelist source-address' -j RETURN
+
+val_help: ipv4 ; IPv4 source address to bypass
+val_help: ipv4net ; IPv4 source network to bypass
+
