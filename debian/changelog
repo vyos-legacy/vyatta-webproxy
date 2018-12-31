@@ -1,8 +1,9 @@
-vyatta-webproxy (1.2.0-1) stable; urgency=medium
+vyatta-webproxy (0.2.110+vyos2+current2) unstable; urgency=low
 
-  * New branch.
+  * Bugfix T1054
+  * fixes posinst scripts since squidguard has its own location for ocnfig files
 
- -- Daniil Baturin <daniil@baturin.org>  Fri, 28 Sep 2018 22:22:45 +0200
+ -- hagbard <vyosdev@derith.de>  Wed, 28 Nov 2018 15:18:16 -0800
 
 vyatta-webproxy (0.2.110+vyos2+current1) unstable; urgency=medium
 
