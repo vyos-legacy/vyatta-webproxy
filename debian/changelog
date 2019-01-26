@@ -1,3 +1,9 @@
+vyatta-webproxy (1.2.0-1) unstable; urgency=medium
+
+  * New release.
+
+ -- Daniil Baturin <daniil@baturin.org>  Sun, 27 Jan 2019 00:01:54 +0100
+
 vyatta-webproxy (0.2.110+vyos2+current2) unstable; urgency=low
 
   * Bugfix T1054
