@@ -407,7 +407,7 @@ sub squid_get_auth_settings {
     return "" unless $auth_method;
 
     # Paths to authentication helpers
-    my $ldap_helper = "/usr/lib/squid3/squid_ldap_auth";
+    my $ldap_helper = "/usr/lib/squid3/basic_ldap_auth";
 
     # Get global authentication settings
     my $children = $config->returnValue("children");
