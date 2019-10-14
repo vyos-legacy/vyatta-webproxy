@@ -1,0 +1,2 @@
+help: Remote syslog for Squid logs: udp://host:port
+type: txt

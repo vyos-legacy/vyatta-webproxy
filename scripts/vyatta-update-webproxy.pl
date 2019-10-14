@@ -257,6 +257,10 @@ sub squid_get_values {
         $output .= "access_log none\n\n";
     } else {
         $output .= "access_log $squid_log squid\n\n";
+        if ($config->exists('remote-syslog')) {
+            my $remote_syslog =  $config->returnValue('remote-syslog');
+            $output .= "access_log $remote_syslog squid\n\n";
+        }
     }
 
     # by default we'll disable the store log
