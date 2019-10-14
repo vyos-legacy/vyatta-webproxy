@@ -41,7 +41,6 @@ use strict;
 # squid globals
 my $squid_conf      = '/etc/squid3/squid.conf';
 my $local_conf      = '/etc/squid3/local.conf';
-my $squid_log       = '/var/log/squid3/access.log';
 my $squid_cache_dir = '/var/spool/squid3';
 my $squid_def_fs    = 'ufs';
 my $squid_def_port  = 3128;
@@ -76,10 +75,8 @@ sub squid_get_constants {
     $output .= "acl Safe_ports port 777         # multiling http\n";
     $output .= "acl CONNECT method CONNECT\n\n";
 
-    touch($squid_log);
     my ($login, $pass, $uid, $gid) = getpwnam('proxy')
         or die "proxy not in passwd file";
-    chown $uid, $gid, $squid_log;
 
     return $output;
 }
@@ -256,7 +253,7 @@ sub squid_get_values {
     if ($config->exists('disable-access-log')) {
         $output .= "access_log none\n\n";
     } else {
-        $output .= "access_log $squid_log squid\n\n";
+        $output .= "access_log syslog:local7 squid\n\n";
     }
 
     # by default we'll disable the store log
