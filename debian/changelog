@@ -1,3 +1,9 @@
+vyatta-webproxy (1.2.4) unstable; urgency=low
+
+  * New release.
+
+ -- VyOS maintainers <maintainers@vyos.io>  Tue, 10 Dec 2019 23:40:06 +0200
+
 vyatta-webproxy (1.2.0-1) unstable; urgency=medium
 
   * New release.
@@ -952,4 +958,3 @@ vyatta-webproxy (0.1) unstable; urgency=low
   * Initial Release.
 
  -- Stig Thormodsrud <stig@vyatta.com>  Mon, 25 Aug 2008 10:54:14 -0700
-
