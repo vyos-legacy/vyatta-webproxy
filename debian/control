@@ -11,8 +11,8 @@ Depends: perl,
  vyatta-cfg (>= 0.15.33),
  vyatta-cfg-system,
  vyatta-op,
- squid3,
- squid3-client,
+ squid,
+ squidclient,
  squidguard
 Description: VyOS commands for webproxy
  VyOS configuration/operational templates and scripts for the webproxy

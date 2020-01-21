@@ -1,10 +1,10 @@
 #!/bin/sh
 
-CACHE="/var/spool/squid3"
-PID=`cat /var/run/squid3.pid 2>/dev/null`
+CACHE="/var/spool/squid"
+PID=`cat /var/run/squid.pid 2>/dev/null`
 
 if test -n "$PID"; then 
-   /etc/init.d/squid3 stop
+   /etc/init.d/squid stop
    if cli-shell-api existsActive service webproxy url-filtering \
                        squidguard vyattaguard https-filter; then
      echo Stopping VyattaGuard https filter...
@@ -15,8 +15,8 @@ if test -n "$PID"; then
    mv $CACHE $CACHE.old
    mkdir $CACHE
    chown -R proxy:proxy $CACHE
-   squid3 -z
-   /etc/init.d/squid3 start
+   squid -z
+   /etc/init.d/squid start
    rm -rf $CACHE.old
    fi
    if cli-shell-api existsActive service webproxy url-filtering \
@@ -30,7 +30,7 @@ else
    mv $CACHE $CACHE.old
    mkdir $CACHE
    chown -R proxy:proxy $CACHE
-   squid3 -z
+   squid -z
    rm -rf $CACHE.old
    fi
 fi
