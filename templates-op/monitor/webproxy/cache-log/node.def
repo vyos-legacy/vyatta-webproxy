@@ -1,2 +1,2 @@
 help: Monitor the last lines of the squid cache log
-run: sudo tail --follow=name /var/log/squid3/cache.log
+run: sudo tail --follow=name /var/log/squid/cache.log
