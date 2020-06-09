@@ -1,0 +1,8 @@
+type: u32
+
+default: 0
+
+syntax:expression: $VAR(@) >= 0 && $VAR(@) <= 65535; \
+       "Port must be between 0 and 65535."
+
+help: Default port = 0
