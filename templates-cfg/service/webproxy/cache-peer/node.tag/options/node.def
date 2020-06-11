@@ -1,0 +1,5 @@
+type: txt
+
+comp_help: default value = "no-query default"
+
+help: see squid documentation for options. use quotes.

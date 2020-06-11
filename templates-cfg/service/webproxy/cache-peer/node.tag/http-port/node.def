@@ -1,0 +1,8 @@
+type: u32
+
+default: 3128
+
+syntax:expression: $VAR(@) > 1024 && $VAR(@) <= 65535; \
+       "Port must be between 1025 and 65535."
+
+help: Default port = 3128

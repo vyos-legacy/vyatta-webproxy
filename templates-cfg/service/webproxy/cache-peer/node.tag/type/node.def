@@ -1,0 +1,9 @@
+type: txt
+
+allowed: echo "parent sibling multicast"
+
+default: "parent"
+
+syntax:expression: $VAR(@) in "parent", "sibling", "multicast"; "squid peer type must be parent, sibling or multicast. Default squid peer type is parent."
+
+help: Default squid peer type = parent

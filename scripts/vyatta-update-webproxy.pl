@@ -218,6 +218,21 @@ sub squid_validate_conf {
         unless (scalar(grep(/nameserver/, <$resolv>)));
     close $resolv;
 
+    #check for cache_peer address
+
+    if ($config->exists('cache-peer')) {
+        $config->setLevel('service webproxy cache-peer');
+        my @cache_peers = $config->listNodes();
+        foreach my $cache_peer (@cache_peers) {
+            $config->setLevel("service webproxy cache-peer $cache_peer");
+            my $cache_peer_address = $config->returnValue('address');
+            if(!$config->exists('address')){
+               print "cache_peer $cache_peer ADDRESS must be set\n";
+               exit 1;
+            }
+        }
+    }
+
     return 0;
 }
 
@@ -396,6 +411,27 @@ sub squid_get_values {
         $output .= "redirect_program /usr/bin/squidGuard -c $squidguard_conf\n";
         $output .= "redirect_children 8\n";
         $output .= "redirector_bypass on\n\n";
+    }
+
+    # if cache-peer address and port are set
+    $config->setLevel('service webproxy');
+    if ($config->exists('cache-peer')) {
+        $config->setLevel('service webproxy cache-peer');
+        my @cache_peers = $config->listNodes();
+        foreach my $cache_peer_name (@cache_peers) {
+            $config->setLevel("service webproxy cache-peer $cache_peer_name");
+            my $cache_peer_address = $config->returnValue('address');
+            my $cache_peer_type = $config->returnValue('type');
+            my $cache_peer_http_port = $config->returnValue('http-port');
+            my $cache_peer_icp_port = $config->returnValue('icp-port');
+            my $cache_peer_options = $config->returnValue('options');
+
+            if ($cache_peer_address) {
+                if (!defined $cache_peer_options) { $cache_peer_options = "no-query default"; }
+                $output .= "cache_peer $cache_peer_address $cache_peer_type $cache_peer_http_port $cache_peer_icp_port $cache_peer_options\n";
+            }
+        }
+        $output .= "never_direct allow all\n";
     }
 
     return $output;
