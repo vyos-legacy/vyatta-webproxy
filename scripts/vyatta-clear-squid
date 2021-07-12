@@ -1,28 +1,18 @@
 #!/bin/sh
 
-CACHE="/var/spool/squid3"
-PID=`cat /var/run/squid3.pid 2>/dev/null`
+CACHE="/var/spool/squid"
+PID=`cat /var/run/squid.pid 2>/dev/null`
 
-if test -n "$PID"; then 
-   /etc/init.d/squid3 stop
-   if cli-shell-api existsActive service webproxy url-filtering \
-                       squidguard vyattaguard https-filter; then
-     echo Stopping VyattaGuard https filter...
-      kill `cat /var/run/vgd_https.pid 2> /dev/null` 2> /dev/null
-   fi
+if test -n "$PID"; then
+   systemctl stop squid.service
    if [ -d "$CACHE" ]
    then
    mv $CACHE $CACHE.old
    mkdir $CACHE
    chown -R proxy:proxy $CACHE
-   squid3 -z
-   /etc/init.d/squid3 start
+   squid -z
+   systemctl restart squid.service
    rm -rf $CACHE.old
-   fi
-   if cli-shell-api existsActive service webproxy url-filtering \
-                       squidguard vyattaguard https-filter; then
-      echo Starting VyattaGuard https filter...
-      /opt/vyatta/sbin/vgd_https -D -q 1 -p /var/run/vgd_https.pid
    fi
 else
    if [ -d "$CACHE" ]
@@ -30,7 +20,7 @@ else
    mv $CACHE $CACHE.old
    mkdir $CACHE
    chown -R proxy:proxy $CACHE
-   squid3 -z
+   squid -z
    rm -rf $CACHE.old
    fi
 fi

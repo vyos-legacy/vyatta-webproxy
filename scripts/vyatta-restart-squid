@@ -1,14 +1,7 @@
 #!/bin/sh
 
 if cli-shell-api existsActive service webproxy; then
-   /etc/init.d/squid3 restart
-   if cli-shell-api existsActive service webproxy url-filtering \
-			squidguard vyattaguard https-filter; then
-      echo Stopping VyattaGuard https filter...
-      kill `cat /var/run/vgd_https.pid 2> /dev/null` 2> /dev/null
-      echo Starting VyattaGuard https filter...
-      /opt/vyatta/sbin/vgd_https -D -q 1 -p /var/run/vgd_https.pid
-   fi
+   systemctl restart squid.service
 else
    echo "webproxy service is not running"
 fi

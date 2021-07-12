@@ -8,20 +8,20 @@ sbindir=@sbindir@
 urlfilterdatadir=/opt/vyatta/etc/config/url-filtering
 
 # don't start squid on boot
-update-rc.d -f squid3 remove >/dev/null
+update-rc.d -f squid remove >/dev/null
 
 # save a copy of default config files
-cp /etc/squid3/squid.conf /etc/squid3/squid.conf.bak
+cp /etc/squid/squid.conf /etc/squid/squid.conf.bak
 cp /etc/squidguard/squidGuard.conf /etc/squidguard/squidGuard.conf.bak
-sed -i 's/nocreate/create 640 proxy adm/' /etc/logrotate.d/squid3
-sed -i 's/delaycompress//' /etc/logrotate.d/squid3
-sed -i 's/compress//' /etc/logrotate.d/squid3
-sed -i 's/etc\/init.d\/squid/etc\/init.d\/squid3/' /usr/sbin/update-squidguard 
+sed -i 's/nocreate/create 640 proxy adm/' /etc/logrotate.d/squid
+sed -i 's/delaycompress//' /etc/logrotate.d/squid
+sed -i 's/compress//' /etc/logrotate.d/squid
+sed -i 's/etc\/init.d\/squid/etc\/init.d\/squid/' /usr/sbin/update-squidguard
 sed -i 's/reload/restart/' /usr/sbin/update-squidguard
-chown proxy:adm /var/log/squid3
+chown proxy:adm /var/log/squid
 
 # create local conf placeholder
-touch /etc/squid3/local.conf
+touch /etc/squid/local.conf
 
 # mv databases to global data directory
 if [ ! -d $urlfilterdatadir ]; then
