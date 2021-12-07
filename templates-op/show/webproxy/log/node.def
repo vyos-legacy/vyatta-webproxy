@@ -1,10 +1,10 @@
 help: Show contents of webproxy access log
 run: LESSOPEN=less
-     if [ -e /var/log/squid3/access.log ]
+     if [ -e /var/log/squid/access.log ]
      then
        sudo less $_vyatta_less_options \
          --prompt="file %i of %m, page %dt of %D" \
-         -- `printf "%s\n" /var/log/squid3/access.log* | sort -nr`
+         -- `printf "%s\n" /var/log/squid/access.log* | sort -nr`
      else
        echo No webproxy log
      fi

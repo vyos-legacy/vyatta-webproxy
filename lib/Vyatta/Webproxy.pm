@@ -55,13 +55,12 @@ use File::Compare;
 use Vyatta::Config;
 
 #squid globals
-my $squid_init      = '/etc/init.d/squid3';
-my $squid_mime_type = '/usr/share/squid3/mime.conf';
+my $squid_mime_type = '/usr/share/squid/mime.conf';
 
 #squidGuard globals
 my $urlfilter_data_dir            = '/opt/vyatta/etc/config/url-filtering';
 my $squidguard_blacklist_db  = "$urlfilter_data_dir/squidguard/db";
-my $squidguard_log_dir       = '/var/log/squid3';
+my $squidguard_log_dir       = '/var/log/squid';
 my $squidguard_blacklist_log = "$squidguard_log_dir/blacklist.log";
 my $squidguard_safesearch    = "/opt/vyatta/etc/safesearch_rewrites";
 
@@ -77,11 +76,11 @@ sub squid_restart {
 
     my $opt = '';
     $opt = "> /dev/null 2>&1" if ! $interactive;
-    system("$squid_init restart $opt");
+    system("systemctl restart squid.service $opt");
 }
 
 sub squid_stop {
-    system("$squid_init stop");
+    system("systemctl stop squid.service");
 }
 
 sub squid_get_mime {
